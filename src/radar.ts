@@ -1,5 +1,6 @@
 import { openDb } from "./db/open.js";
 import { SearchRunRepo } from "./db/search-runs.js";
+import { CandidateRepo } from "./db/candidates.js";
 import { SqliteCacheStore } from "./db/cache.js";
 import { SerpApiProvider } from "./search/serpapi.js";
 import { CachedSearchProvider } from "./search/local-cache.js";
@@ -7,6 +8,7 @@ import { ReplaySearchProvider } from "./search/replay.js";
 import { shouldInvestigate } from "./discovery/prefilter.js";
 import { canonicalUrl } from "./discovery/url.js";
 import { QUERIES } from "./discovery/query-registry.js";
+import { detectCandidateHints, findOfficialUrl } from "./discovery/candidate-detect.js";
 import type { SearchProvider, SearchHit, SearchRequest } from "./search/types.js";
 import { mkdirSync } from "node:fs";
 import { writeFileSync, existsSync, readFileSync } from "node:fs";
@@ -66,6 +68,7 @@ export type RadarResult = {
 export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
   const db = await openDb(config.dbPath);
   const runRepo = new SearchRunRepo();
+  const candidateRepo = new CandidateRepo();
 
   // Build provider
   let provider: SearchProvider;
@@ -154,6 +157,18 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
         const scoreText = `${hit.title} ${hit.snippet ?? ""}`;
         if (shouldInvestigate(scoreText)) {
           candidates.push(hit);
+
+          // Extract structured hints and store candidate
+          const hints = detectCandidateHints(hit);
+          const officialUrl = findOfficialUrl(response.hits, hints.providerHint);
+          await candidateRepo.upsert({
+            providerHint: hints.providerHint,
+            productHint: hints.productHint,
+            changeType: hints.changeType,
+            officialSourceUrl: officialUrl,
+            priority: hints.confidence,
+            notes: { searchId, queryId: row.query_id, url: hit.url },
+          });
         }
       }
 
