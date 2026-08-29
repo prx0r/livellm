@@ -1,4 +1,4 @@
-import type { SearchRequest } from "../search/types";
+import type { SearchRequest } from "../search/types.js";
 
 export type DiscoveryQuery = {
   id: string;

@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { SearchRequest } from "./types";
+import type { SearchRequest } from "./types.js";
 
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);

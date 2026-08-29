@@ -1,4 +1,4 @@
-import type { SearchProvider, SearchRequest, SearchResponse, SearchHit } from "./types";
+import type { SearchProvider, SearchRequest, SearchResponse, SearchHit } from "./types.js";
 
 type SerpRaw = {
   search_metadata?: { id?: string; status?: string };

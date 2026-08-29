@@ -1,5 +1,5 @@
-import type { SearchProvider, SearchRequest, SearchResponse } from "./types";
-import { requestHash } from "./canonical-request";
+import type { SearchProvider, SearchRequest, SearchResponse } from "./types.js";
+import { requestHash } from "./canonical-request.js";
 
 export interface CacheStore {
   get(key: string): Promise<{ expiresAt: number; value: SearchResponse } | null>;

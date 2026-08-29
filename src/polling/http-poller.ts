@@ -1,4 +1,4 @@
-import { observationHashes } from "./hash";
+import { observationHashes } from "./hash.js";
 
 export type SourceState = {
   url: string;

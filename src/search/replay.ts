@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { SearchProvider, SearchRequest, SearchResponse } from "./types";
-import { requestHash } from "./canonical-request";
+import type { SearchProvider, SearchRequest, SearchResponse } from "./types.js";
+import { requestHash } from "./canonical-request.js";
 
 export class ReplaySearchProvider implements SearchProvider {
   constructor(private fixtureDir: string) {}
