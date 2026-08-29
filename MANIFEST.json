@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-08-25",
+  "purpose": "LLMDeals x SerpApi live radar integration",
+  "file_count": 25,
+  "security": "No API keys or credentials included.",
+  "official_docs": [
+    "https://serpapi.com/search-api",
+    "https://serpapi.com/google-light-api",
+    "https://serpapi.com/google-news-light-api",
+    "https://serpapi.com/account-api",
+    "https://serpapi.com/search-archive-api",
+    "https://serpapi.com/search-index-api",
+    "https://serpapi.com/json-restrictor",
+    "https://serpapi.com/markdown-output",
+    "https://serpapi.com/google-news-api"
+  ]
+}
