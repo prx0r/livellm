@@ -1,0 +1,58 @@
+{
+  "request": {
+    "engine": "search_index",
+    "q": "AI model API pricing free tier credits coding agent subscription",
+    "params": {
+      "mode": "deep"
+    }
+  },
+  "searchId": "synthetic_index_deep_004",
+  "fromCache": false,
+  "cacheSource": "replay",
+  "hits": [
+    {
+      "position": 1,
+      "title": "Together AI Pricing — Open Source Models",
+      "url": "https://together.ai/pricing",
+      "snippet": "Together AI offers competitive pricing for open source Llama, Mistral, and Qwen models."
+    },
+    {
+      "position": 2,
+      "title": "Fireworks AI Free Tier — 1M Tokens Monthly",
+      "url": "https://fireworks.ai/pricing",
+      "snippet": "Fireworks AI provides 1M free tokens monthly for their serverless inference API."
+    },
+    {
+      "position": 3,
+      "title": "DeepSeek API Pricing — Cheapest Chinese LLM",
+      "url": "https://platform.deepseek.com/api-docs/pricing",
+      "snippet": "DeepSeek API pricing at $0.14 per million tokens for their latest model."
+    }
+  ],
+  "raw": {
+    "search_metadata": {
+      "id": "synthetic_index_deep_004",
+      "status": "Success"
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "title": "Together AI Pricing — Open Source Models",
+        "link": "https://together.ai/pricing",
+        "snippet": "Together AI offers competitive pricing for open source Llama, Mistral, and Qwen models."
+      },
+      {
+        "position": 2,
+        "title": "Fireworks AI Free Tier — 1M Tokens Monthly",
+        "link": "https://fireworks.ai/pricing",
+        "snippet": "Fireworks AI provides 1M free tokens monthly for their serverless inference API."
+      },
+      {
+        "position": 3,
+        "title": "DeepSeek API Pricing — Cheapest Chinese LLM",
+        "link": "https://platform.deepseek.com/api-docs/pricing",
+        "snippet": "DeepSeek API pricing at $0.14 per million tokens for their latest model."
+      }
+    ]
+  }
+}

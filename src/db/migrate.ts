@@ -4,10 +4,7 @@ import { openDb, saveDb } from "./open.js";
 
 export async function migrate(dbPath?: string): Promise<void> {
   const db = await openDb(dbPath);
-  const schemaPath = resolve(
-    import.meta.dirname ?? process.cwd(),
-    "../../db/001_serpapi_radar.sql"
-  );
+  const schemaPath = resolve(process.cwd(), "db", "001_serpapi_radar.sql");
   const sql = readFileSync(schemaPath, "utf8");
   // Split by semicolons and execute each statement
   const statements = sql

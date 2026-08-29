@@ -18,6 +18,7 @@
     "account": "node dist/cli.js account"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.20.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.0",

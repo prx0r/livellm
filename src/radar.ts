@@ -112,12 +112,16 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
     } catch {}
   }
 
-  for (const row of rows) {
-    const lastRun = row.last_run_at ? new Date(row.last_run_at).getTime() : 0;
-    const intervalMs = row.min_interval_seconds * 1000;
+  const isReplay = config.mode === "replay";
 
-    if (now - lastRun < intervalMs) {
-      continue; // Not yet due
+  for (const row of rows) {
+    // In replay mode, skip interval check (no API credits spent)
+    if (!isReplay) {
+      const lastRun = row.last_run_at ? new Date(row.last_run_at).getTime() : 0;
+      const intervalMs = row.min_interval_seconds * 1000;
+      if (now - lastRun < intervalMs) {
+        continue; // Not yet due
+      }
     }
 
     const request = {

@@ -1,0 +1,100 @@
+{
+  "request": {
+    "engine": "google_light",
+    "q": "(\"free inference\" OR \"free API credits\") (LLM OR \"AI model\")",
+    "params": {
+      "hl": "en",
+      "gl": "us"
+    }
+  },
+  "searchId": "synthetic_light_free_003",
+  "fromCache": false,
+  "cacheSource": "replay",
+  "hits": [
+    {
+      "position": 1,
+      "title": "Free LLM API Credits Comparison 2026",
+      "url": "https://llmprice.com/free-credits",
+      "snippet": "Compare free API credits from OpenAI, Anthropic, Google, Mistral and more.",
+      "publishedAt": "2026-08-20T10:00:00Z"
+    },
+    {
+      "position": 2,
+      "title": "Groq Free Inference Tier — 10K Tokens/Day",
+      "url": "https://groq.com/free-tier",
+      "snippet": "Groq offers free inference with 10K tokens per day on Llama 3 models.",
+      "publishedAt": "2026-08-15T08:00:00Z"
+    }
+  ],
+  "envelope": {
+    "results": [],
+    "relatedQuestions": [
+      {
+        "question": "Which LLM APIs have free tiers?",
+        "snippet": "OpenAI, Anthropic, Google, Groq..."
+      },
+      {
+        "question": "How to get free API credits for AI models?",
+        "snippet": "Sign up for developer programs..."
+      }
+    ],
+    "relatedSearches": [
+      {
+        "query": "free LLM API 2026"
+      },
+      {
+        "query": "AI model free tier comparison"
+      },
+      {
+        "query": "GPT-4 free API access"
+      }
+    ],
+    "metadata": {
+      "searchId": "synthetic_light_free_003",
+      "status": "Success",
+      "engine": "google_light",
+      "query": "(\"free inference\" OR \"free API credits\") (LLM OR \"AI model\")"
+    }
+  },
+  "raw": {
+    "search_metadata": {
+      "id": "synthetic_light_free_003",
+      "status": "Success"
+    },
+    "organic_results": [
+      {
+        "position": 1,
+        "title": "Free LLM API Credits Comparison 2026",
+        "link": "https://llmprice.com/free-credits",
+        "snippet": "Compare free API credits from OpenAI, Anthropic, Google, Mistral and more."
+      },
+      {
+        "position": 2,
+        "title": "Groq Free Inference Tier — 10K Tokens/Day",
+        "link": "https://groq.com/free-tier",
+        "snippet": "Groq offers free inference with 10K tokens per day on Llama 3 models."
+      }
+    ],
+    "related_questions": [
+      {
+        "question": "Which LLM APIs have free tiers?",
+        "snippet": "OpenAI, Anthropic, Google, Groq..."
+      },
+      {
+        "question": "How to get free API credits for AI models?",
+        "snippet": "Sign up for developer programs..."
+      }
+    ],
+    "related_searches": [
+      {
+        "query": "free LLM API 2026"
+      },
+      {
+        "query": "AI model free tier comparison"
+      },
+      {
+        "query": "GPT-4 free API access"
+      }
+    ]
+  }
+}

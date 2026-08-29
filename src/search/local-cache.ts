@@ -8,6 +8,15 @@ export interface CacheStore {
 
 const inflight = new Map<string, Promise<SearchResponse>>();
 
+/**
+ * SPEC: Cached search provider with singleflight dedup.
+ *
+ * Features:
+ * - Local cache layer (SQLite-backed)
+ * - Singleflight: concurrent identical queries share one SerpApi call
+ * - TTL-based expiration (default 1 hour, matching SerpApi's cache)
+ * - Cache source tracking for provenance
+ */
 export class CachedSearchProvider implements SearchProvider {
   constructor(
     private inner: SearchProvider,
@@ -17,15 +26,23 @@ export class CachedSearchProvider implements SearchProvider {
 
   async search(request: SearchRequest): Promise<SearchResponse> {
     const key = requestHash(request);
+
+    // Check local cache
     const cached = await this.cache.get(key);
     if (cached && cached.expiresAt > Date.now()) {
-      return { ...cached.value, fromCache: true };
+      return {
+        ...cached.value,
+        fromCache: true,
+        cacheSource: "local_cache",
+      };
     }
 
+    // Singleflight: if same request is in-flight, wait for it
     const existing = inflight.get(key);
     if (existing) return existing;
 
-    const promise = this.inner.search(request)
+    const promise = this.inner
+      .search(request)
       .then(async (value) => {
         await this.cache.put(key, Date.now() + this.ttlMs, value);
         return value;

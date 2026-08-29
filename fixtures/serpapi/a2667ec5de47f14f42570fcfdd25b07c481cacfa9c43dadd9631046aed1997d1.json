@@ -1,0 +1,133 @@
+{
+  "request": {
+    "engine": "google_news_light",
+    "q": "(\"AI API\" OR \"LLM API\") (pricing OR \"free tier\" OR credits OR quota OR subscription)",
+    "params": {
+      "hl": "en",
+      "gl": "us"
+    }
+  },
+  "searchId": "synthetic_news_economics_001",
+  "fromCache": false,
+  "cacheSource": "replay",
+  "hits": [
+    {
+      "position": 1,
+      "title": "OpenAI Cuts GPT-4 API Pricing by 50%",
+      "url": "https://techcrunch.com/2026/08/28/openai-cuts-gpt4-api-pricing",
+      "snippet": "OpenAI announced a 50% reduction in GPT-4 API pricing, bringing the cost down to $0.01 per 1K tokens for input.",
+      "source": {
+        "name": "TechCrunch"
+      },
+      "publishedAt": "2026-08-28T14:00:00Z",
+      "publishedAtRaw": "Aug 28, 2026"
+    },
+    {
+      "position": 2,
+      "title": "Anthropic Introduces Free Tier for Claude API",
+      "url": "https://theverge.com/2026/08/27/anthropic-free-tier-claude",
+      "snippet": "Anthropic launches a free tier for Claude API with 100K tokens per day quota for developers.",
+      "source": {
+        "name": "The Verge"
+      },
+      "publishedAt": "2026-08-27T10:00:00Z",
+      "publishedAtRaw": "Aug 27, 2026"
+    },
+    {
+      "position": 3,
+      "title": "Google Gemini API Pricing Comparison 2026",
+      "url": "https://arstechnica.com/2026/08/26/gemini-api-pricing",
+      "snippet": "A comprehensive comparison of Google Gemini API pricing tiers and free quota limits.",
+      "source": {
+        "name": "Ars Technica"
+      },
+      "publishedAt": "2026-08-26T08:00:00Z",
+      "publishedAtRaw": "Aug 26, 2026"
+    },
+    {
+      "position": 4,
+      "title": "LLM API Rate Limits Explained",
+      "url": "https://medium.com/@dev/llm-rate-limits-2026",
+      "snippet": "Tutorial on understanding LLM API rate limits and how to handle them in production.",
+      "source": {
+        "name": "Medium"
+      },
+      "publishedAt": "2026-08-25T12:00:00Z",
+      "publishedAtRaw": "Aug 25, 2026"
+    },
+    {
+      "position": 5,
+      "title": "Mistral AI Launches Developer Credits Program",
+      "url": "https://venturebeat.com/2026/08/28/mistral-developer-credits",
+      "snippet": "Mistral AI announces $10M in developer credits for new API users, with 50K free tokens monthly.",
+      "source": {
+        "name": "VentureBeat"
+      },
+      "publishedAt": "2026-08-28T16:00:00Z",
+      "publishedAtRaw": "Aug 28, 2026"
+    }
+  ],
+  "raw": {
+    "search_metadata": {
+      "id": "synthetic_news_economics_001",
+      "status": "Success"
+    },
+    "news_results": [
+      {
+        "position": 1,
+        "title": "OpenAI Cuts GPT-4 API Pricing by 50%",
+        "link": "https://techcrunch.com/2026/08/28/openai-cuts-gpt4-api-pricing",
+        "snippet": "OpenAI announced a 50% reduction in GPT-4 API pricing, bringing the cost down to $0.01 per 1K tokens for input.",
+        "source": {
+          "name": "TechCrunch"
+        },
+        "iso_date": "2026-08-28T14:00:00Z",
+        "date": "Aug 28, 2026"
+      },
+      {
+        "position": 2,
+        "title": "Anthropic Introduces Free Tier for Claude API",
+        "link": "https://theverge.com/2026/08/27/anthropic-free-tier-claude",
+        "snippet": "Anthropic launches a free tier for Claude API with 100K tokens per day quota for developers.",
+        "source": {
+          "name": "The Verge"
+        },
+        "iso_date": "2026-08-27T10:00:00Z",
+        "date": "Aug 27, 2026"
+      },
+      {
+        "position": 3,
+        "title": "Google Gemini API Pricing Comparison 2026",
+        "link": "https://arstechnica.com/2026/08/26/gemini-api-pricing",
+        "snippet": "A comprehensive comparison of Google Gemini API pricing tiers and free quota limits.",
+        "source": {
+          "name": "Ars Technica"
+        },
+        "iso_date": "2026-08-26T08:00:00Z",
+        "date": "Aug 26, 2026"
+      },
+      {
+        "position": 4,
+        "title": "LLM API Rate Limits Explained",
+        "link": "https://medium.com/@dev/llm-rate-limits-2026",
+        "snippet": "Tutorial on understanding LLM API rate limits and how to handle them in production.",
+        "source": {
+          "name": "Medium"
+        },
+        "iso_date": "2026-08-25T12:00:00Z",
+        "date": "Aug 25, 2026"
+      },
+      {
+        "position": 5,
+        "title": "Mistral AI Launches Developer Credits Program",
+        "link": "https://venturebeat.com/2026/08/28/mistral-developer-credits",
+        "snippet": "Mistral AI announces $10M in developer credits for new API users, with 50K free tokens monthly.",
+        "source": {
+          "name": "VentureBeat"
+        },
+        "iso_date": "2026-08-28T16:00:00Z",
+        "date": "Aug 28, 2026"
+      }
+    ]
+  }
+}

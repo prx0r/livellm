@@ -1,0 +1,89 @@
+{
+  "request": {
+    "engine": "google_news_light",
+    "q": "(\"coding agent\" OR \"AI coding\") (pricing OR plan OR subscription OR credits)",
+    "params": {
+      "hl": "en",
+      "gl": "us"
+    }
+  },
+  "searchId": "synthetic_news_coding_002",
+  "fromCache": false,
+  "cacheSource": "replay",
+  "hits": [
+    {
+      "position": 1,
+      "title": "Cursor Introduces Pro Plan at $20/month",
+      "url": "https://cursor.sh/blog/pro-plan",
+      "snippet": "Cursor launches Pro plan with unlimited completions and priority access for $20/month subscription.",
+      "source": {
+        "name": "Cursor Blog"
+      },
+      "publishedAt": "2026-08-28T09:00:00Z",
+      "publishedAtRaw": "Aug 28, 2026"
+    },
+    {
+      "position": 2,
+      "title": "GitHub Copilot Free Tier Limits Changed",
+      "url": "https://github.blog/2026-08-27-copilot-free-tier",
+      "snippet": "GitHub updates Copilot free tier: 2000 completions and 50 chat messages per month.",
+      "source": {
+        "name": "GitHub Blog"
+      },
+      "publishedAt": "2026-08-27T11:00:00Z",
+      "publishedAtRaw": "Aug 27, 2026"
+    },
+    {
+      "position": 3,
+      "title": "Windsurf AI Coding Agent Pricing Review",
+      "url": "https://dev.to/review/windsurf-pricing-2026",
+      "snippet": "Review of Windsurf AI coding agent pricing and subscription tiers.",
+      "source": {
+        "name": "DEV.to"
+      },
+      "publishedAt": "2026-08-26T15:00:00Z",
+      "publishedAtRaw": "Aug 26, 2026"
+    }
+  ],
+  "raw": {
+    "search_metadata": {
+      "id": "synthetic_news_coding_002",
+      "status": "Success"
+    },
+    "news_results": [
+      {
+        "position": 1,
+        "title": "Cursor Introduces Pro Plan at $20/month",
+        "link": "https://cursor.sh/blog/pro-plan",
+        "snippet": "Cursor launches Pro plan with unlimited completions and priority access for $20/month subscription.",
+        "source": {
+          "name": "Cursor Blog"
+        },
+        "iso_date": "2026-08-28T09:00:00Z",
+        "date": "Aug 28, 2026"
+      },
+      {
+        "position": 2,
+        "title": "GitHub Copilot Free Tier Limits Changed",
+        "link": "https://github.blog/2026-08-27-copilot-free-tier",
+        "snippet": "GitHub updates Copilot free tier: 2000 completions and 50 chat messages per month.",
+        "source": {
+          "name": "GitHub Blog"
+        },
+        "iso_date": "2026-08-27T11:00:00Z",
+        "date": "Aug 27, 2026"
+      },
+      {
+        "position": 3,
+        "title": "Windsurf AI Coding Agent Pricing Review",
+        "link": "https://dev.to/review/windsurf-pricing-2026",
+        "snippet": "Review of Windsurf AI coding agent pricing and subscription tiers.",
+        "source": {
+          "name": "DEV.to"
+        },
+        "iso_date": "2026-08-26T15:00:00Z",
+        "date": "Aug 26, 2026"
+      }
+    ]
+  }
+}
