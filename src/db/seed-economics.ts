@@ -92,18 +92,18 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
 
     // === Direct providers (not through OpenCode) ===
 
-    // Groq — free tier, fastest inference
+    // Groq — fast inference (gpt-oss models, Llama now enterprise-only)
     {
-      entity: "Groq:Llama 3.3 70B",
-      input: 0.059, cached: 0.0059, output: 0.079,
+      entity: "Groq:gpt-oss-120b",
+      input: 0.15, cached: 0.015, output: 0.6,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 500, cached: 0, output: 200 },
-      contextTokens: 128_000, freeQuota: 14_400, freePeriod: "day",
-      requestsPerDay: 30, qualityTier: "balanced", speedTier: "ultrafast", tps: 350,
+      contextTokens: 131_072, freeQuota: 14_400, freePeriod: "day",
+      requestsPerDay: 30, qualityTier: "balanced", speedTier: "ultrafast", tps: 300,
     },
     {
-      entity: "Groq:Llama 3.1 8B",
-      input: 0.05, cached: 0.005, output: 0.08,
+      entity: "Groq:gpt-oss-20b",
+      input: 0.075, cached: 0.0075, output: 0.3,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 500, cached: 0, output: 200 },
       contextTokens: 131_072, freeQuota: 14_400, freePeriod: "day",
@@ -113,7 +113,7 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     // DeepSeek direct — cheapest frontier
     {
       entity: "DeepSeek:V3",
-      input: 0.27, cached: 0.07, output: 1.1,
+      input: 0.14, cached: 0.014, output: 0.28,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 1000, cached: 0, output: 200 },
       contextTokens: 128_000, freeQuota: null, freePeriod: null,
@@ -159,7 +159,7 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     },
     {
       entity: "OpenAI:gpt-4.1-nano",
-      input: 0.1, cached: 0.025, output: 0.4,
+      input: 0.1, cached: 0.05, output: 0.4,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 1_048_576, freeQuota: null, freePeriod: null,
@@ -187,7 +187,7 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     // Google
     {
       entity: "Google:Gemini 2.5 Flash",
-      input: 0.15, cached: 0.0375, output: 0.6,
+      input: 0.30, cached: 0.075, output: 2.50,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 1_048_576, freeQuota: 1500, freePeriod: "day",
@@ -204,19 +204,19 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
 
     // Mistral
     {
-      entity: "Mistral:Mistral Large",
-      input: 2, cached: 0.6, output: 6,
+      entity: "Mistral:Mistral Large 3",
+      input: 0.50, cached: 0.15, output: 1.50,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 1000, cached: 0, output: 500 },
-      contextTokens: 128_000, freeQuota: null, freePeriod: null,
+      contextTokens: 262_144, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 70,
     },
     {
-      entity: "Mistral:Mistral Small",
-      input: 0.1, cached: 0.03, output: 0.3,
+      entity: "Mistral:Mistral Small 4",
+      input: 0.15, cached: 0.045, output: 0.60,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 1000, cached: 0, output: 500 },
-      contextTokens: 128_000, freeQuota: null, freePeriod: null,
+      contextTokens: 256_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "fast", speedTier: "fast", tps: 150,
     },
   ];
