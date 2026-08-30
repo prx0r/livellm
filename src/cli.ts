@@ -298,6 +298,21 @@ async function run() {
       break;
     }
 
+    case "assets": {
+      const { AssetStore } = await import("./db/assets.js");
+      const store = new AssetStore();
+      const stats = await store.getStats();
+      console.log("Asset Store Statistics:");
+      console.log(`  Total assets: ${stats.totalAssets}`);
+      console.log(`  By type:`);
+      for (const [type, count] of Object.entries(stats.byType)) {
+        console.log(`    ${type}: ${count}`);
+      }
+      if (stats.oldestAsset) console.log(`  Oldest: ${stats.oldestAsset}`);
+      if (stats.newestAsset) console.log(`  Newest: ${stats.newestAsset}`);
+      break;
+    }
+
     case "glm-demo": {
       const { runGlmDemo } = await import("./demo/glm-promo.js");
       await runGlmDemo();

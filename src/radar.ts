@@ -1,6 +1,7 @@
 import { openDb } from "./db/open.js";
 import { SearchRunRepo } from "./db/search-runs.js";
 import { CandidateRepo } from "./db/candidates.js";
+import { AssetStore } from "./db/assets.js";
 import { SqliteCacheStore } from "./db/cache.js";
 import { SerpApiProvider, getSerpApiAccount, allowedPaidBatch } from "./search/serpapi.js";
 import { CachedSearchProvider } from "./search/local-cache.js";
@@ -9,6 +10,7 @@ import { shouldInvestigate } from "./discovery/prefilter.js";
 import { canonicalUrl } from "./discovery/url.js";
 import { QUERIES } from "./discovery/query-registry.js";
 import { detectCandidateHints, findOfficialUrl } from "./discovery/candidate-detect.js";
+import { requestHash } from "./search/canonical-request.js";
 import type { SearchProvider, SearchHit, SearchRequest } from "./search/types.js";
 import { mkdirSync } from "node:fs";
 import { writeFileSync, existsSync, readFileSync } from "node:fs";
@@ -69,6 +71,7 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
   const db = await openDb(config.dbPath);
   const runRepo = new SearchRunRepo();
   const candidateRepo = new CandidateRepo();
+  const assetStore = new AssetStore();
 
   // Build provider
   let provider: SearchProvider;
@@ -161,6 +164,16 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
       const response = await provider.search(request);
       const searchId = response.searchId;
       const rawHits = response.hits.length;
+
+      // Store SerpApi response as asset (content-addressed)
+      if (response.raw) {
+        await assetStore.storeSerpApiResult({
+          queryId: row.query_id,
+          searchId: response.searchId,
+          requestHash: requestHash(request),
+          response: response.raw,
+        });
+      }
 
       // Track budget usage (replay doesn't count)
       if (!isReplay && !response.fromCache) {

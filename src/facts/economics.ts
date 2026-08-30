@@ -157,9 +157,8 @@ export function calculateEconomics(
     notes.push(`${plan.promotionMultiplier}× usage promotion`);
   }
 
-  const effectiveMultiple = plan.usageValueUsd
-    ? simulatedMonthly / plan.usageValueUsd
-    : simulatedMonthly / plan.monthlyPrice;
+  // Multiple = how much value you get vs what you pay
+  const effectiveMultiple = simulatedMonthly / plan.monthlyPrice;
 
   // Reconciliation
   let reconciliationResidual: number | undefined;

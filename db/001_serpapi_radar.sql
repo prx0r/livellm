@@ -202,3 +202,19 @@ CREATE TABLE IF NOT EXISTS search_cache (
   response_json TEXT NOT NULL,
   serpapi_search_id TEXT
 );
+
+CREATE TABLE IF NOT EXISTS asset_store (
+  asset_id TEXT PRIMARY KEY,
+  asset_type TEXT NOT NULL,
+  content_hash TEXT NOT NULL UNIQUE,
+  content_json TEXT NOT NULL,
+  source_url TEXT,
+  search_id TEXT,
+  query_id TEXT,
+  observed_at TEXT NOT NULL,
+  metadata_json TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_asset_hash ON asset_store(content_hash);
+CREATE INDEX IF NOT EXISTS idx_asset_type ON asset_store(asset_type);
+CREATE INDEX IF NOT EXISTS idx_asset_observed ON asset_store(observed_at);
