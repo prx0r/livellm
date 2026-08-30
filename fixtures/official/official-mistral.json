@@ -1,104 +1,64 @@
 {
-  "search_metadata": {
-    "id": "6a937bb013f4b6cc44006dff",
-    "status": "Success",
-    "json_endpoint": "https://serpapi.com/searches/3e7MVofnC-fcugVM-VcFLpO5E8HVzZASpTiX-WQIGQs/6a937bb013f4b6cc44006dff.json",
-    "markdown_endpoint": "https://serpapi.com/searches/3e7MVofnC-fcugVM-VcFLpO5E8HVzZASpTiX-WQIGQs/6a937bb013f4b6cc44006dff.md",
-    "created_at": "2026-08-30 00:39:12 UTC",
-    "processed_at": "2026-08-30 00:39:12 UTC",
-    "google_light_url": "https://www.google.com/search?q=site%3Amistral.ai+OR+site%3Aconsole.mistral.ai+pricing&oq=site%3Amistral.ai+OR+site%3Aconsole.mistral.ai+pricing&hl=en&gl=us&sourceid=chrome&ie=UTF-8&gbv=1",
-    "raw_html_file": "https://serpapi.com/searches/3e7MVofnC-fcugVM-VcFLpO5E8HVzZASpTiX-WQIGQs/6a937bb013f4b6cc44006dff.html",
-    "total_time_taken": 0.83
-  },
-  "search_parameters": {
-    "engine": "google_light",
-    "q": "site:mistral.ai OR site:console.mistral.ai pricing",
-    "google_domain": "google.com",
-    "hl": "en",
-    "gl": "us",
-    "device": "desktop"
-  },
-  "search_information": {
-    "query_displayed": "site:mistral.ai OR site:console.mistral.ai pricing",
-    "organic_results_state": "Results for exact spelling"
-  },
   "organic_results": [
     {
       "position": 1,
       "title": "Pricing - Mistral",
       "link": "https://mistral.ai/pricing/",
-      "displayed_link": "mistral.ai › pricing",
       "snippet": "$10 /mo in API credits. Most models are priced per million tokens, Mistral Large costs $0.5 /M tokens in and $1.5 /M tokens out. get Mistral Pro for $5.99 / ..."
     },
     {
       "position": 2,
       "title": "Pricing - Mistral",
       "link": "https://mistral.ai/pricing/api/",
-      "displayed_link": "mistral.ai › pricing › api",
       "snippet": "Explore pricing for Mistral Vibe and APIs. Pricing P Regional inference +10% costs by 90%. available for 75% above list pricing on select APIs. Tools Price ( ..."
     },
     {
       "position": 3,
       "title": "AI in abundance - Mistral",
       "link": "https://mistral.ai/news/september-24-release/",
-      "displayed_link": "mistral.ai › news › september-24-release",
-      "snippet": "Today, we are releasing: A free tier on la Plateforme. A pricing update over our entire family of models. A new, better Mistral Small.",
-      "date": "Sep 17, 2024"
+      "snippet": "Today, we are releasing: A free tier on la Plateforme. A pricing update over our entire family of models. A new, better Mistral Small."
     },
     {
       "position": 4,
       "title": "Pricing | Mistral Docs",
       "link": "https://docs.mistral.ai/inference/pricing",
-      "displayed_link": "docs.mistral.ai › inference › pricing",
       "snippet": "Discover our pricing plans. for Mistral models, Mistral Large 3 ↗ $0.5 $0.05 $1.5 Mistral Medium 3.5 ↗ $1.5 ・ $4 /1000 Pages $0.4 ・ $0.003 /Min $0.0003 /Min"
     },
     {
       "position": 5,
       "title": "Usage and limits | Mistral Docs",
       "link": "https://docs.mistral.ai/admin/billing-usage/usage-limits",
-      "displayed_link": "docs.mistral.ai › admin › billing-usage › usage-limits",
       "snippet": "For current pricing and model availability, see Mistral pricing. To review your plan, included monthly usage, and pay-as-you-go settings, see Subscriptions."
     },
     {
       "position": 6,
       "title": "Introducing Mistral OCR 3",
       "link": "https://mistral.ai/news/mistral-ocr-3/",
-      "displayed_link": "mistral.ai › news › mistral-ocr-3",
-      "snippet": "available at an industry-leading price of $2 per 1,000 pages, with a 50% Batch-API discount, reducing the cost to $1 per 1,000 pages.",
-      "date": "Dec 17, 2025"
+      "snippet": "available at an industry-leading price of $2 per 1,000 pages, with a 50% Batch-API discount, reducing the cost to $1 per 1,000 pages."
     },
     {
       "position": 7,
       "title": "Mistral Studio | Your AI production platform.",
       "link": "https://mistral.ai/products/studio/",
-      "displayed_link": "mistral.ai › products › studio",
       "snippet": "One platform to build, deploy, and govern agentic AI systems—all with enterprise privacy, security, and full ownership of your data. Pricing Plans API pricing"
     },
     {
       "position": 8,
-      "title": "Pricing - Mistral",
-      "link": "https://mistral.ai/pricing/enterprise-deployments/",
-      "displayed_link": "mistral.ai › pricing › enterprise-deployments",
-      "snippet": "Our sales experts are here to provide all the details you need. Fill out the form, and we'll reach out to discuss how Mistral can meet your needs."
-    },
-    {
-      "position": 9,
       "title": "Fine-Tuning - Mistral Docs",
       "link": "https://docs.mistral.ai/resources/deprecated/finetuning",
-      "displayed_link": "docs.mistral.ai › resources › deprecated › finetuning",
       "snippet": "Every fine-tuning job comes with a minimum fee of $4, and there's a monthly storage fee of $2 for each model. For more detailed pricing information, please ..."
     },
     {
-      "position": 10,
+      "position": 9,
       "title": "Introducing: Devstral 2 and Mistral Vibe CLI.",
       "link": "https://mistral.ai/news/devstral-2-vibe-cli/",
-      "displayed_link": "mistral.ai › news › devstral-2-vibe-cli",
-      "snippet": "Devstral 2 is currently offered free via our API. After the free period, the API pricing will be $0.40/$2.00 per million tokens (input/output) ...",
-      "date": "Dec 9, 2025"
+      "snippet": "Devstral 2 is currently offered free via our API. After the free period, the API pricing will be $0.40/$2.00 per million tokens (input/output) ..."
+    },
+    {
+      "position": 10,
+      "title": "Careers at Mistral | Build the future of frontier AI.",
+      "link": "https://mistral.ai/careers/",
+      "snippet": "Frontier-scale infrastructure for training and inference. Pricing. Plans ... Pricing. Solutions. Delivery methodology · Model customization · Coding · Document ..."
     }
-  ],
-  "serpapi_pagination": {
-    "current": 1,
-    "next": "https://serpapi.com/search.json?device=desktop&engine=google_light&gl=us&google_domain=google.com&hl=en&q=site%3Amistral.ai+OR+site%3Aconsole.mistral.ai+pricing&start=10&location=Austin%2C+TX%2C+Texas%2C+United+States"
-  }
+  ]
 }

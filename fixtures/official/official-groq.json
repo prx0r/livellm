@@ -1,101 +1,64 @@
 {
-  "search_metadata": {
-    "id": "6a937baeb13aa7dc754cf103",
-    "status": "Success",
-    "json_endpoint": "https://serpapi.com/searches/1ElvVnEFObJtP678-Mpc1d9q09-rytOGPKrAlL_H_dM/6a937baeb13aa7dc754cf103.json",
-    "markdown_endpoint": "https://serpapi.com/searches/1ElvVnEFObJtP678-Mpc1d9q09-rytOGPKrAlL_H_dM/6a937baeb13aa7dc754cf103.md",
-    "created_at": "2026-08-30 00:39:10 UTC",
-    "processed_at": "2026-08-30 00:39:10 UTC",
-    "google_light_url": "https://www.google.com/search?q=site%3Aconsole.groq.com+rate+limits+pricing&oq=site%3Aconsole.groq.com+rate+limits+pricing&hl=en&gl=us&sourceid=chrome&ie=UTF-8&gbv=1",
-    "raw_html_file": "https://serpapi.com/searches/1ElvVnEFObJtP678-Mpc1d9q09-rytOGPKrAlL_H_dM/6a937baeb13aa7dc754cf103.html",
-    "total_time_taken": 1.65
-  },
-  "search_parameters": {
-    "engine": "google_light",
-    "q": "site:console.groq.com rate limits pricing",
-    "google_domain": "google.com",
-    "hl": "en",
-    "gl": "us",
-    "device": "desktop"
-  },
-  "search_information": {
-    "query_displayed": "site:console.groq.com rate limits pricing",
-    "organic_results_state": "Results for exact spelling"
-  },
   "organic_results": [
     {
       "position": 1,
       "title": "Rate Limits - GroqDocs - Groq Console",
       "link": "https://console.groq.com/docs/rate-limits",
-      "displayed_link": "console.groq.com › docs › rate-limits",
       "snippet": "Rate limits act as control measures to regulate how frequently users and applications can access our API within specified timeframes."
     },
     {
       "position": 2,
       "title": "Spend Limits - GroqDocs - Groq Console",
       "link": "https://console.groq.com/docs/spend-limits",
-      "displayed_link": "console.groq.com › docs › spend-limits",
       "snippet": "Go to Settings → Billing → Limits · Click Add Limit and enter your monthly budget in USD · Add alert thresholds at 50%, 75%, and 90% of your limit · Click Save ..."
     },
     {
       "position": 3,
       "title": "Groq Batch API - GroqDocs",
       "link": "https://console.groq.com/docs/batch",
-      "displayed_link": "console.groq.com › docs › batch",
       "snippet": "Pricing is at a 50% cost discount compared to synchronous API pricing. All batch tokens are billed at the 50% batch rate regardless of cache status. See your ..."
     },
     {
       "position": 4,
       "title": "Supported Models - GroqDocs - Groq Console",
       "link": "https://console.groq.com/docs/models",
-      "displayed_link": "console.groq.com › docs › models",
       "snippet": "RATE LIMITS (DEVELOPER PLAN) - $0.04 per hour 400K … intended for evaluation purposes only. RATE LIMITS (DEVELOPER PLAN) $40.00 per 1M characters 50K TPM250 RPM"
     },
     {
       "position": 5,
       "title": "Flex Processing - GroqDocs - Groq Console",
       "link": "https://console.groq.com/docs/flex-processing",
-      "displayed_link": "console.groq.com › docs › flex-processing",
       "snippet": "Flex processing is available for all models to paid customers only with 10x higher rate limits compared to on-demand processing. Pricing matches the on-demand ..."
     },
     {
       "position": 6,
       "title": "Compound - GroqDocs - Groq Console",
       "link": "https://console.groq.com/docs/compound/systems/compound",
-      "displayed_link": "console.groq.com › docs › compound › systems › compound",
       "snippet": "Rate limits for groq/compound are. PRICING Underlying Model Pricing (per 1M tokens) Input $0.15 Output $0.60 Pricing. Basic Web Search $5 / 1000 requests ..."
     },
     {
       "position": 7,
       "title": "Billing FAQs - GroqDocs",
       "link": "https://console.groq.com/docs/billing-faqs",
-      "displayed_link": "console.groq.com › docs › billing-faqs",
       "snippet": "Significantly increased rate limits for production workloads. Yes, Groq provides Spend Limits to help you control your API costs. You can set automated ..."
     },
     {
       "position": 8,
       "title": "Prompt Caching - GroqDocs - Groq Console",
       "link": "https://console.groq.com/docs/prompt-caching",
-      "displayed_link": "console.groq.com › docs › prompt-caching",
       "snippet": "Pricing discount will only apply on successful cache hits. Cached tokens do not count towards your rate limits. However, cached tokens are subtracted from ..."
     },
     {
       "position": 9,
       "title": "Compound Mini - GroqDocs",
       "link": "https://console.groq.com/docs/agentic-tooling/compound-beta-mini",
-      "displayed_link": "console.groq.com › docs › agentic-tooling › compound-beta-mini",
       "snippet": "PRICING ; Basic Web Search. $5 / 1000 requests ; Advanced Web Search. $8 / 1000 requests ; Visit Website. $1 / 1000 requests ; Code Execution. $0.18 / hour ; Wolfram ..."
     },
     {
       "position": 10,
       "title": "Llama 3.1 8B - GroqDocs - Groq Console",
       "link": "https://console.groq.com/docs/model/llama-3.1-8b-instant",
-      "displayed_link": "console.groq.com › docs › model",
       "snippet": "This model offers a balance of speed and performance with significant cost savings compared to larger models. Technical capabilities include native function ..."
     }
-  ],
-  "serpapi_pagination": {
-    "current": 1,
-    "next": "https://serpapi.com/search.json?device=desktop&engine=google_light&gl=us&google_domain=google.com&hl=en&q=site%3Aconsole.groq.com+rate+limits+pricing&start=10&location=Austin%2C+TX%2C+Texas%2C+United+States"
-  }
+  ]
 }

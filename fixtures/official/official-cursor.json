@@ -1,107 +1,64 @@
 {
-  "search_metadata": {
-    "id": "6a937bb188de92ccd273f9a8",
-    "status": "Success",
-    "json_endpoint": "https://serpapi.com/searches/0DP6Q0iPzoCTbOInWxETTk4f44k4uEOD2TbRdCSruUg/6a937bb188de92ccd273f9a8.json",
-    "markdown_endpoint": "https://serpapi.com/searches/0DP6Q0iPzoCTbOInWxETTk4f44k4uEOD2TbRdCSruUg/6a937bb188de92ccd273f9a8.md",
-    "created_at": "2026-08-30 00:39:13 UTC",
-    "processed_at": "2026-08-30 00:39:13 UTC",
-    "google_light_url": "https://www.google.com/search?q=site%3Acursor.sh+pricing+plan+subscription&oq=site%3Acursor.sh+pricing+plan+subscription&hl=en&gl=us&sourceid=chrome&ie=UTF-8&gbv=1",
-    "raw_html_file": "https://serpapi.com/searches/0DP6Q0iPzoCTbOInWxETTk4f44k4uEOD2TbRdCSruUg/6a937bb188de92ccd273f9a8.html",
-    "total_time_taken": 2.5
-  },
-  "search_parameters": {
-    "engine": "google_light",
-    "q": "site:cursor.sh pricing plan subscription",
-    "google_domain": "google.com",
-    "hl": "en",
-    "gl": "us",
-    "device": "desktop"
-  },
-  "search_information": {
-    "query_displayed": "site:cursor.sh pricing plan subscription",
-    "organic_results_state": "Results for exact spelling"
-  },
   "organic_results": [
     {
       "position": 1,
       "title": "Cursor · Pricing",
       "link": "https://cursor.sh/pricing",
-      "displayed_link": "cursor.sh › pricing",
-      "snippet": "Includes: ✓ No credit card required ✓. Individual $20 / mo. $40 / user. Every plan includes a set amount of model usage. All prices are exclusive of any ..."
+      "snippet": "Every plan includes a set amount of model usage. On-demand usage allows you to continue using models after your included amount is consumed, billed in arrears."
     },
     {
       "position": 2,
       "title": "Models & Pricing | Cursor Docs",
       "link": "https://cursor.sh/docs/models",
-      "displayed_link": "cursor.sh › Docs",
       "snippet": "There are two business plans: Teams and Enterprise (Custom). Teams offers two seat types: Standard ($40/user/mo) and Premium ($120/user/mo), where Premium adds ..."
     },
     {
       "position": 3,
       "title": "Cursor Docs — Agent, Rules, MCP, Skills & CLI",
       "link": "https://cursor.sh/docs",
-      "displayed_link": "cursor.sh › docs",
       "snippet": "Cursor is a coding agent for building ambitious software. Cursor Models & Pricing Compare models, usage pools, and plan pricing Changelog. See all model ..."
     },
     {
       "position": 4,
-      "title": "How do I unsubscribe? - Bug Reports - Cursor - Community Forum",
-      "link": "https://forum.cursor.sh/t/how-do-i-unsubscribe/4319",
-      "displayed_link": "forum.cursor.sh › Support › Bug Reports",
-      "snippet": "You can unsubscribe in Dashboard > Usage & Billing > Manage Subscription and then unsubscribe there. There you can manage your subscription ...",
-      "date": "Apr 16, 2024"
+      "title": "Terms of Service - Cursor",
+      "link": "https://cursor.sh/terms-of-service",
+      "snippet": "The Service may include certain subscription-based plans with automatically recurring payments for periodic charges (“Subscription Service”)."
     },
     {
       "position": 5,
-      "title": "Terms of Service - Cursor",
-      "link": "https://cursor.sh/terms-of-service",
-      "displayed_link": "cursor.sh › terms-of-service",
-      "snippet": "The Service may include certain subscription-based plans with automatically recurring payments for periodic charges (“Subscription Service”).",
-      "date": "Aug 13, 2026"
+      "title": "How do I unsubscribe? - Bug Reports - Cursor - Community Forum",
+      "link": "https://forum.cursor.sh/t/how-do-i-unsubscribe/4319",
+      "snippet": "You can unsubscribe in Dashboard > Usage & Billing > Manage Subscription and then unsubscribe there. There you can manage your subscription ..."
     },
     {
       "position": 6,
       "title": "I don't get it.. What is advantage to paying Cursor AI vs using a ...",
       "link": "https://forum.cursor.sh/t/i-dont-get-it-what-is-advantage-to-paying-cursor-ai-vs-using-a-chatgpt-4-key/2514",
-      "displayed_link": "forum.cursor.sh › i-dont-get-it-what-is-advantage-to-paying-cursor-ai-vs-u...",
-      "snippet": "Often people choose to subscribe to pro because it's a cheaper (we have bulk OpenAI pricing) Pro subscription and Anthropic key:",
-      "date": "Jan 23, 2024"
+      "snippet": "Often people choose to subscribe to pro because it's a cheaper (we have bulk OpenAI pricing) Pro subscription and Anthropic key:"
     },
     {
       "position": 7,
       "title": "Cursor: AI Coding Agent for Building Ambitious Software",
       "link": "https://cursor.sh/",
-      "displayed_link": "cursor.sh",
       "snippet": "Cursor is your coding agent for building ambitious software. Ask Cursor to plan or build anything. Enterprise Pricing Code Review"
     },
     {
       "position": 8,
       "title": "What's New in Cursor — Latest Updates & Release Notes",
       "link": "https://changelog.cursor.sh/",
-      "displayed_link": "changelog.cursor.sh",
-      "snippet": "Cursor can now monitor your PRs, watch a Slack thread, or run scheduled tasks. Subscriptions are available for cloud agents only, for now. ...",
-      "date": "3 days ago"
+      "snippet": "Cursor can now monitor your PRs, watch a Slack thread, or run scheduled tasks. Subscriptions are available for cloud agents only, for now. ..."
     },
     {
       "position": 9,
       "title": "Introducing Cursor 2.0 and Composer",
       "link": "https://cursor.sh/blog/2-0",
-      "displayed_link": "cursor.sh › blog",
-      "snippet": "Composer is a frontier model that is 4x faster than similarly intelligent models. The model is built for low-latency agentic coding in Cursor, ...",
-      "date": "Oct 29, 2025"
+      "snippet": "Composer is a frontier model that is 4x faster than similarly intelligent models. The model is built for low-latency agentic coding in Cursor, ..."
     },
     {
       "position": 10,
       "title": "Autocomplete doesn't work this week - Cursor - Community Forum",
       "link": "https://forum.cursor.sh/t/autocomplete-doesnt-work-this-week/4562",
-      "displayed_link": "forum.cursor.sh › Support › Help",
-      "snippet": "There is a limit with the free plan according to their pricing page: Pricing | Cursor - The AI-first Code Editor · dandv June 28, 2024, 5:51am ...",
-      "date": "Apr 26, 2024"
+      "snippet": "There is a limit with the free plan according to their pricing page: Pricing | Cursor - The AI-first Code Editor · dandv June 28, 2024, 5:51am ..."
     }
-  ],
-  "serpapi_pagination": {
-    "current": 1,
-    "next": "https://serpapi.com/search.json?device=desktop&engine=google_light&gl=us&google_domain=google.com&hl=en&q=site%3Acursor.sh+pricing+plan+subscription&start=10&location=Austin%2C+TX%2C+Texas%2C+United+States"
-  }
+  ]
 }

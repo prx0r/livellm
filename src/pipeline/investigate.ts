@@ -3,18 +3,20 @@
  *
  * For each candidate:
  * 1. Fetch the official source page
- * 2. Extract relevant content (cheerio-based)
+ * 2. Extract relevant content
  * 3. Run AI extraction
  * 4. Validate facts deterministically
  * 5. Supersede old facts if values changed
  * 6. Create change events
  */
 
+import crypto from "node:crypto";
 import type { ProposedFact } from "../facts/schema.js";
 import { extractFacts } from "../facts/extract-ai.js";
 import { supersedeFact, getCurrentValue } from "../facts/supersede.js";
 import { FactRepo } from "../db/facts.js";
 import { CandidateRepo } from "../db/candidates.js";
+import { openDb, saveDb } from "../db/open.js";
 
 export type InvestigateConfig = {
   replayDir?: string;
@@ -140,9 +142,20 @@ export async function investigateCandidate(
         continue;
       }
 
-      // Create evidence record (use a dummy observation ID for now)
+      // Create source observation for this official source fetch
+      const db = await openDb();
+      const observationId = crypto.randomUUID();
+      db.run(
+        `INSERT INTO source_observations
+          (observation_id, source_id, observed_at, http_status, changed)
+         VALUES (?, ?, ?, 200, 1)`,
+        [observationId, `official:${providerName}`, new Date().toISOString()]
+      );
+      saveDb();
+
+      // Create evidence record linked to the observation
       const evidenceId = await factRepo.createEvidence({
-        observationId: notes.searchId ?? "synthetic",
+        observationId,
         field: fact.field,
         quoteText: fact.evidence.quote,
       });
