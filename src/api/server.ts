@@ -1,10 +1,12 @@
 /**
  * SPEC: LiveLLM HTTP API Server
  *
- * Four endpoints. Every response includes freshness, confidence, provenance.
+ * Six endpoints. Every response includes freshness, confidence, provenance.
  *
  * GET  /v1/market              — compact market snapshot, grouped by model
+ * GET  /v1/market?models=X     — filter to specific models
  * GET  /v1/models/:model       — detailed model facts with routes + promotions
+ * GET  /v1/economics/:model    — pricing facts + cost-per-1K for agents
  * GET  /v1/changes             — recent market changes (filterable by since)
  * GET  /v1/evidence/:id        — full provenance bundle for a fact
  * GET  /v1/health              — health check
@@ -265,6 +267,7 @@ const routes: Route[] = [
             value: f.value,
             unit: f.unit,
             confidence: f.confidence,
+            verification_state: f.verificationState ?? "unknown",
             valid_from: f.validFrom,
             evidence_id: f.evidenceId,
           })),
@@ -590,6 +593,7 @@ export function createServer(port = 3847): http.Server {
     console.log("Endpoints:");
     console.log("  GET  /v1/market");
     console.log("  GET  /v1/models/:model");
+    console.log("  GET  /v1/economics/:model");
     console.log("  GET  /v1/changes");
     console.log("  GET  /v1/evidence/:id");
     console.log("  GET  /v1/health");

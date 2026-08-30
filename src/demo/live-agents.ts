@@ -317,25 +317,22 @@ function escapeHtml(s: string): string {
 // ─── Main ──────────────────────────────────────────────────────────
 
 function runRadar(): string {
-  try {
-    return execSync(`node dist/cli.js radar --mode replay --fixture-dir ./fixtures/serpapi 2>&1`, {
-      encoding: "utf8",
-      timeout: 30_000,
-    });
-  } catch (err: any) {
-    return err.stdout ?? err.message;
+  const result = execSync(`node dist/cli.js radar --mode replay --fixture-dir ./fixtures/serpapi 2>&1`, {
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  if (!result.includes("Complete:")) {
+    throw new Error(`Radar failed:\n${result}`);
   }
+  return result;
 }
 
 function runInvestigate(): string {
-  try {
-    return execSync(`node dist/cli.js investigate 2>&1`, {
-      encoding: "utf8",
-      timeout: 30_000,
-    });
-  } catch (err: any) {
-    return err.stdout ?? err.message;
-  }
+  const result = execSync(`node dist/cli.js investigate 2>&1`, {
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  return result;
 }
 
 async function main() {

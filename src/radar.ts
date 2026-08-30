@@ -175,6 +175,22 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
         });
       }
 
+      // Extract Google Light related searches/questions as adaptive query candidates
+      if (response.envelope?.relatedQuestions?.length) {
+        for (const rq of response.envelope.relatedQuestions) {
+          if (rq.question && rq.question.length > 5) {
+            console.log(`[radar]   Related Question: "${rq.question.slice(0, 60)}"`);
+          }
+        }
+      }
+      if (response.envelope?.relatedSearches?.length) {
+        for (const rs of response.envelope.relatedSearches) {
+          if (rs.query && rs.query.length > 5) {
+            console.log(`[radar]   Related Search: "${rs.query.slice(0, 60)}"`);
+          }
+        }
+      }
+
       // Track budget usage (replay doesn't count)
       if (!isReplay && !response.fromCache) {
         searchesUsed++;
@@ -255,6 +271,17 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
   const totalHits = results.reduce((s, r) => s + r.rawHits, 0);
   const totalNew = results.reduce((s, r) => s + r.newUrls, 0);
   const totalCandidates = results.reduce((s, r) => s + r.candidates, 0);
+
+  // Show quota status (only when live, not replay)
+  if (config.mode !== "replay") {
+    try {
+      const account = await getSerpApiAccount();
+      console.log(`[radar] SerpApi quota: ${account.monthly_searches_left} monthly searches remaining`);
+    } catch {
+      // Quota check is best-effort
+    }
+  }
+
   console.log(
     `\n[radar] Complete: ${results.length} queries, ${totalHits} hits, ${totalNew} new URLs, ${totalCandidates} candidates`
   );
