@@ -19,9 +19,21 @@ npm run demo
 SerpApi Discovery → Candidates → Official Sources → AI Extraction → Facts → Economics
      ↓              ↓              ↓                ↓            ↓          ↓
   Search IDs    Prefilter     Verification    Deterministic   Ledger   Provider Workloads
-                                                     ↑
-                                                Validation
 ```
+
+## HTTP API
+
+```bash
+npm run serve    # Port 3847
+```
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/market` | Compact market snapshot |
+| `GET /v1/models/:model` | Detailed model facts |
+| `POST /v1/economics/route` | Workload-specific route evaluation |
+| `GET /v1/changes` | Recent market changes |
+| `GET /v1/health` | Health check |
 
 ## SerpApi Integration
 
@@ -33,45 +45,46 @@ SerpApi Discovery → Candidates → Official Sources → AI Extraction → Fact
 | Account API | Quota governance |
 | JSON Restrictor | Efficient structured acquisition |
 
-## Demo: GLM-5.3-Flash Promotion
+## Demo: GLM-5.3-Flash
 
 ```
-GLM-5.3-Flash — Two promotions detected:
-
 Z.ai: 50% off ($0.075/$0.25) until Sept 9
 OpenCode Go: 2× usage (3,160 req/5hrs)
 
-Which route is cheaper depends on workload.
+GLM-5.3-Flash economics:
+  Baseline: 1.50×
+  With promo: 3.00×
 ```
+
+## Economics
+
+| Model | Multiple | Reconciliation |
+|-------|----------|----------------|
+| MiMo V2.5 | 6.00× | ✓ |
+| Hy3 | 6.00× | ✓ |
+| GLM-5.3-Flash | 3.00× | ✓ (2× promo) |
+| DeepSeek V4 Flash | 3.00× | ✓ |
+| Kimi K2.7 | 8.15× | ✗ +35.9% |
 
 ## Commands
 
 ```bash
-npm run radar          # Run discovery cycle
-npm run official       # Targeted official-source searches
-npm run economics      # Calculate value metrics
-npm run md             # Generate Markdown for agents
-npm run mcp            # Start MCP server
-npm run dashboard      # Generate Live Radar HTML
+npm run radar          # Discovery cycle
+npm run official       # Official-source searches
+npm run daily          # Full daily cycle
+npm run economics      # Value calculations
+npm run glm-demo       # GLM promotion demo
+npm run serve          # HTTP API server
+npm run mcp            # MCP server (read-only)
+npm run md             # Agent-ready output
 ```
 
 ## Testing
 
 ```bash
-npm test               # 37 tests, zero credits
+npm test               # 76 tests, zero credits
 npm run radar -- --mode replay  # Test against fixtures
 ```
-
-## Economics
-
-Uses provider-specific workloads for accurate calculations:
-
-| Model | Multiple | Reconciliation |
-|-------|----------|----------------|
-| MiMo V2.5 | 1.00× | ✓ |
-| Hy3 | 1.00× | ✓ |
-| GLM-5.3-Flash | 1.00× | ✓ |
-| Kimi K2.7 | 1.36× | ✗ +35.9% |
 
 ## License
 
