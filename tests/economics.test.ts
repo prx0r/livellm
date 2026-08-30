@@ -6,7 +6,7 @@ describe("economics", () => {
     it("returns not_computable when input price missing", () => {
       const result = calculateEconomics(
         "test", "Test", "Model",
-        { kind: "payg", inputPerMillion: 0, outputPerMillion: 0.5 },
+        { kind: "payg", inputPerMillion: undefined as any, outputPerMillion: 0.5 },
         { uncachedInputTokens: 1000, cachedInputTokens: 0, outputTokens: 200 }
       );
       expect(result.status).toBe("not_computable");
@@ -18,7 +18,7 @@ describe("economics", () => {
     it("returns not_computable when subscription price missing", () => {
       const result = calculateEconomics(
         "test", "Test", "Model",
-        { kind: "subscription", monthlyPrice: 0, inputPerMillion: 0.14, outputPerMillion: 0.28 },
+        { kind: "subscription", monthlyPrice: undefined as any, inputPerMillion: 0.14, outputPerMillion: 0.28 },
         { uncachedInputTokens: 830, cachedInputTokens: 71500, outputTokens: 295 }
       );
       expect(result.status).toBe("not_computable");

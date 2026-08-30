@@ -105,30 +105,30 @@ export async function materializeState(dbPath?: string): Promise<{
       limits: undefined,
     };
 
-    // Map fields to structured output
+    // Map fields to structured output — use != null, not truthiness, because 0 is valid
     const inputPrice = fields.get("input_price_usd_per_million");
-    if (inputPrice) {
+    if (inputPrice != null) {
       model.pricing.input_per_1m = inputPrice.value;
     }
 
     const outputPrice = fields.get("output_price_usd_per_million");
-    if (outputPrice) {
+    if (outputPrice != null) {
       model.pricing.output_per_1m = outputPrice.value;
     }
 
     const cachedPrice = fields.get("cached_input_price_usd_per_million");
-    if (cachedPrice) {
+    if (cachedPrice != null) {
       model.pricing.cached_input_per_1m = cachedPrice.value;
     }
 
     const monthlyPrice = fields.get("monthly_price_usd");
-    if (monthlyPrice) {
+    if (monthlyPrice != null) {
       model.pricing.monthly = monthlyPrice.value;
     }
 
     const freeQuota = fields.get("free_tier_quota");
     const freePeriod = fields.get("free_tier_period");
-    if (freeQuota) {
+    if (freeQuota != null) {
       model.free_tier = {
         quota: freeQuota.value,
         period: freePeriod?.value ?? undefined,
@@ -138,7 +138,7 @@ export async function materializeState(dbPath?: string): Promise<{
     const rpd = fields.get("requests_per_day");
     const rpm = fields.get("requests_per_minute");
     const ctx = fields.get("context_tokens");
-    if (rpd || rpm || ctx) {
+    if (rpd != null || rpm != null || ctx != null) {
       model.limits = {
         requests_per_day: rpd?.value ?? undefined,
         requests_per_minute: rpm?.value ?? undefined,

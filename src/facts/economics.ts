@@ -103,17 +103,17 @@ export function calculateEconomics(
 ): EconomicsResult {
   const missing: string[] = [];
 
-  // Check required fields
-  if (!plan.inputPerMillion) missing.push("input_price");
-  if (!plan.outputPerMillion) missing.push("output_price");
+  // Check required fields — use == null, not !value, because 0 is a valid value
+  if (plan.inputPerMillion == null) missing.push("input_price");
+  if (plan.outputPerMillion == null) missing.push("output_price");
   if (workload.uncachedInputTokens === 0 && workload.cachedInputTokens === 0 && workload.outputTokens === 0) {
     missing.push("workload");
   }
 
   // For subscription, check additional fields
   if (plan.kind === "subscription") {
-    if (!plan.monthlyPrice) missing.push("subscription_price");
-    if (!plan.usageValueUsd && !plan.requestsPerMonth) {
+    if (plan.monthlyPrice == null) missing.push("subscription_price");
+    if (plan.usageValueUsd == null && plan.requestsPerMonth == null) {
       missing.push("usage_value_or_requests");
     }
   }

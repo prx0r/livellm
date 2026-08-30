@@ -106,6 +106,7 @@ export async function extractFacts(
   let usedCache = false;
 
   // Try replay first — loads RAW LLM output, not validated facts
+  // FAIL CLOSED: if replayDir is set, never fall through to live LLM
   if (config.replayDir) {
     const replayRaw = tryReplayRaw(
       providerName,
@@ -116,9 +117,9 @@ export async function extractFacts(
       rawOutput = replayRaw;
       usedCache = true;
     } else {
-      rawOutput = await callLlm(
-        buildExtractionPrompt(providerName, productName, pageContent),
-        config
+      throw new Error(
+        `MISSING_REPLAY_FIXTURE: AI extraction for ${providerName}:${productName} not found in ${config.replayDir}. ` +
+        `Cannot fall through to live LLM in replay mode.`
       );
     }
   } else {

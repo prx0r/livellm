@@ -12,64 +12,35 @@
  */
 
 import type { ProposedFact, ValidatedFact, FactField } from "./schema.js";
+import { FIELD_SPEC, NUMERIC_FIELDS, UNIT_GROUPS } from "./schema.js";
 
 type ValidationResult = {
   accepted: boolean;
   reason?: string;
 };
 
-const FIELD_RANGES: Record<string, { min: number; max: number }> = {
-  input_price_usd_per_million: { min: 0, max: 200 },
-  output_price_usd_per_million: { min: 0, max: 500 },
-  cached_input_price_usd_per_million: { min: 0, max: 200 },
-  monthly_price_usd: { min: 0, max: 10000 },
-  included_credit_usd: { min: 0, max: 10000 },
-  requests_per_day: { min: 0, max: 10_000_000 },
-  requests_per_minute: { min: 0, max: 100_000 },
-  context_tokens: { min: 0, max: 10_000_000 },
-  free_tier_quota: { min: 0, max: 100_000_000 },
-};
-
 /**
  * SPEC: Unit-field compatibility.
- * Price fields must have USD-related units.
- * Rate fields must have time-period units.
+ * Derived from FIELD_SPEC — never maintain parallel arrays.
  */
 export function isUnitCompatible(field: string, unit: string | null): boolean {
-  const priceFields = [
-    "input_price_usd_per_million",
-    "output_price_usd_per_million",
-    "cached_input_price_usd_per_million",
-    "monthly_price_usd",
-    "included_credit_usd",
-  ];
+  if (unit == null) return true;
 
-  const rateFields = [
-    "requests_per_day",
-    "requests_per_minute",
-    "free_tier_quota",
-  ];
+  const spec = FIELD_SPEC[field as FactField];
+  if (!spec || !spec.unitGroup || spec.unitGroup === "none") return true;
 
-  const sizeFields = ["context_tokens"];
+  const u = unit.toLowerCase();
 
-  if (priceFields.includes(field)) {
-    // Price fields should have USD-related units or null
-    // Must contain "usd" or "$" or "/1M" or "/million" - not just any "/"
-    return !unit || 
-      unit.toLowerCase().includes("usd") || 
-      unit.includes("$") || 
-      unit.includes("/1M") || 
-      unit.toLowerCase().includes("million");
+  if (spec.unitGroup === "price") {
+    return u.includes("usd") || unit.includes("$") || u.includes("/1m") || u.includes("million") || u.includes("month");
   }
 
-  if (rateFields.includes(field)) {
-    // Rate fields should have time-period units or null
-    return !unit || unit.toLowerCase().includes("day") || unit.toLowerCase().includes("month") || unit.toLowerCase().includes("minute");
+  if (spec.unitGroup === "rate") {
+    return u.includes("day") || u.includes("month") || u.includes("minute") || u.includes("request");
   }
 
-  if (sizeFields.includes(field)) {
-    // Size fields should have token-related units or null
-    return !unit || unit.toLowerCase().includes("token") || unit.toLowerCase().includes("context");
+  if (spec.unitGroup === "size") {
+    return u.includes("token") || u.includes("context");
   }
 
   return true;
@@ -126,31 +97,19 @@ function validateFact(
     return { accepted: false, reason: "evidence_quote_not_present" };
   }
 
-  // 2. Numeric fields must have numeric values
-  const numericFields = [
-    "input_price_usd_per_million",
-    "output_price_usd_per_million",
-    "cached_input_price_usd_per_million",
-    "monthly_price_usd",
-    "included_credit_usd",
-    "requests_per_day",
-    "requests_per_minute",
-    "context_tokens",
-    "free_tier_quota",
-  ];
-
-  if (numericFields.includes(fact.field)) {
+  // 2. Numeric fields must have numeric values — derived from FIELD_SPEC
+  if (NUMERIC_FIELDS.includes(fact.field as any)) {
     if (typeof fact.value !== "number" || isNaN(fact.value)) {
       return { accepted: false, reason: "numeric_field_not_numeric" };
     }
 
-    // 3. Range check
-    const range = FIELD_RANGES[fact.field];
-    if (range) {
-      if (fact.value < range.min || fact.value > range.max) {
+    // 3. Range check — from FIELD_SPEC
+    const spec = FIELD_SPEC[fact.field as FactField];
+    if (spec && spec.min != null && spec.max != null) {
+      if (fact.value < spec.min || fact.value > spec.max) {
         return {
           accepted: false,
-          reason: `value_out_of_range_${range.min}_${range.max}`,
+          reason: `value_out_of_range_${spec.min}_${spec.max}`,
         };
       }
     }
