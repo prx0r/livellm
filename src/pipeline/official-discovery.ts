@@ -6,6 +6,8 @@
 
 import { SerpApiProvider, getSerpApiAccount, allowedPaidBatch } from "../search/serpapi.js";
 import { OFFICIAL_QUERIES } from "../discovery/official-queries.js";
+import { AssetStore } from "../db/assets.js";
+import { requestHash } from "../search/canonical-request.js";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -34,6 +36,7 @@ export async function runOfficialDiscovery(
   }
 
   const provider = new SerpApiProvider();
+  const assetStore = new AssetStore();
   const searches = Math.min(budget, OFFICIAL_QUERIES.length);
 
   console.log(`[official] Running ${searches} official-source queries\n`);
@@ -43,6 +46,16 @@ export async function runOfficialDiscovery(
 
     try {
       const response = await provider.search(query.request);
+
+      // Store as asset (content-addressed)
+      if (response.raw) {
+        await assetStore.storeSerpApiResult({
+          queryId: query.id,
+          searchId: response.searchId,
+          requestHash: requestHash(query.request),
+          response: response.raw,
+        });
+      }
 
       // Save fixture
       const fixturePath = resolve(fixtureDir, `${query.id}.json`);
