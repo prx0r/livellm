@@ -15,6 +15,7 @@ const { values, positionals } = parseArgs({
     query: { type: "string", short: "q" },
     engine: { type: "string", short: "e" },
     format: { type: "string" },
+    port: { type: "string" },
   },
 });
 
@@ -361,6 +362,13 @@ async function run() {
           console.log("");
         }
       }
+      break;
+    }
+
+    case "serve": {
+      const { createServer } = await import("./api/server.js");
+      const port = parseInt(values.port as string ?? "3847");
+      createServer(port);
       break;
     }
 

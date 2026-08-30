@@ -30,6 +30,7 @@
     "promotions": "node dist/cli.js promotions",
     "alerts": "node dist/cli.js alerts",
     "compare": "node dist/cli.js compare",
+    "serve": "node dist/cli.js serve",
     "glm-demo": "node dist/cli.js glm-demo",
     "migrate": "node dist/cli.js migrate",
     "seed": "node dist/cli.js seed",
