@@ -288,6 +288,67 @@ const routes: Route[] = [
     },
   },
 
+  // ─── GET /v1/economics/:model ─────────────────────────────────────
+  // Returns pricing facts for matching models. Agents compute costs.
+  {
+    method: "GET",
+    path: /^\/v1\/economics\/(.+)$/,
+    handler: async (req, res, params, _query) => {
+      const model = decodeURIComponent(params[1]);
+      const factRepo = new FactRepo();
+      const entities = await factRepo.getEntities();
+      const matching = entities.filter((e: string) =>
+        e.toLowerCase().includes(model.toLowerCase())
+      );
+
+      if (matching.length === 0) {
+        sendJson(res, { error: "Model not found" }, 404);
+        return;
+      }
+
+      const routes: any[] = [];
+      for (const entityId of matching) {
+        const facts = await factRepo.getEntityFacts(entityId);
+        const factMap = new Map<string, any>(facts.map((f: any) => [f.field, f]));
+
+        const input: any = factMap.get("input_price_usd_per_million");
+        const output: any = factMap.get("output_price_usd_per_million");
+        const cached: any = factMap.get("cached_input_price_usd_per_million");
+        const subscription: any = factMap.get("subscription_price_usd_month");
+        const usageValue: any = factMap.get("usage_value_usd_month");
+        const requests: any = factMap.get("request_limit_month");
+
+        // Cost per 1K tokens (common agent unit)
+        const costPer1k = input?.value != null && output?.value != null
+          ? {
+              uncached_input: ((input.value / 1_000_000) * 1000),
+              cached_input: cached?.value != null ? (cached.value / 1_000_000) * 1000 : null,
+              output: ((output.value / 1_000_000) * 1000),
+            }
+          : null;
+
+        routes.push({
+          route: entityId,
+          provider: entityId.split(":")[0],
+          input_per_1m: input?.value ?? null,
+          output_per_1m: output?.value ?? null,
+          cached_input_per_1m: cached?.value ?? null,
+          cost_per_1k_tokens: costPer1k,
+          subscription: subscription ? {
+            monthly_usd: subscription.value,
+            usage_value_usd: usageValue?.value ?? null,
+            capacity_requests: requests?.value ?? null,
+          } : null,
+          as_of: facts.length
+            ? facts.sort((a: any, b: any) => (a.validFrom ?? "").localeCompare(b.validFrom ?? ""))[0].validFrom
+            : null,
+        });
+      }
+
+      sendJson(res, { model, routes });
+    },
+  },
+
   // ─── GET /v1/changes ──────────────────────────────────────────────
   // Recent market changes with change_pct and type.
   // Query: ?since=ISO_DATE (optional)
