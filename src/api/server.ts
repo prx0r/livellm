@@ -80,6 +80,11 @@ const routes: Route[] = [
         const output: any = factMap.get("output_price_usd_per_million");
         const cached: any = factMap.get("cached_input_price_usd_per_million");
         const monthly: any = factMap.get("subscription_price_usd_month");
+        const contextTokens: any = factMap.get("context_tokens");
+        const freeQuota: any = factMap.get("free_tier_quota");
+        const freePeriod: any = factMap.get("free_tier_period");
+        const requestsPerDay: any = factMap.get("requests_per_day");
+        const qualityTier: any = factMap.get("quality_tier");
         const promo = promos.find((p: any) => p.entity === entityId);
 
         // Compute age of oldest fact
@@ -97,6 +102,21 @@ const routes: Route[] = [
 
         if (monthly?.value != null) {
           route.monthly = monthly.value;
+        }
+
+        // Capabilities
+        if (contextTokens?.value != null) route.context_tokens = contextTokens.value;
+        if (qualityTier?.value != null) route.quality_tier = qualityTier.value;
+        if (freeQuota?.value != null) {
+          route.free_tier = {
+            quota: freeQuota.value,
+            period: freePeriod?.value ?? "day",
+          };
+        }
+        if (requestsPerDay?.value != null) {
+          route.rate_limit = {
+            requests_per_day: requestsPerDay.value,
+          };
         }
 
         if (promo) {

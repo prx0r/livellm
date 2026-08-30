@@ -44,6 +44,9 @@ export const VALID_FIELDS = [
   "cached_tokens_per_request",
   "output_tokens_per_request",
 
+  // Capabilities
+  "quality_tier",
+
   // Promotions
   "promotion_type",
   "promotion_multiplier",
@@ -104,6 +107,9 @@ export const FIELD_SPEC: Record<FactField, FieldSpec> = {
   input_tokens_per_request:               { kind: "numeric", min: 0, max: 10_000_000, unitGroup: "size" },
   cached_tokens_per_request:              { kind: "numeric", min: 0, max: 10_000_000, unitGroup: "size" },
   output_tokens_per_request:              { kind: "numeric", min: 0, max: 10_000_000, unitGroup: "size" },
+
+  // Capabilities
+  quality_tier:                           { kind: "string" },
 
   // Promotions
   promotion_type:                         { kind: "string" },

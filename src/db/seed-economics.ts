@@ -29,18 +29,24 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       input: 0.14, cached: 0.0028, output: 0.28,
       subscription: 10, usageValue: 60, requests: 150400,
       workload: { input: 830, cached: 71500, output: 295 },
+      contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
+      requestsPerDay: null, qualityTier: "frontier",
     },
     {
       entity: "OpenCode:Hy3",
       input: 0.14, cached: 0.035, output: 0.58,
       subscription: 10, usageValue: 60, requests: 21500,
       workload: { input: 830, cached: 71500, output: 295 },
+      contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
+      requestsPerDay: null, qualityTier: "frontier",
     },
     {
       entity: "OpenCode:Kimi K2.7",
       input: 0.95, cached: 0.19, output: 4,
       subscription: 10, usageValue: 60, requests: 6750,
       workload: { input: 870, cached: 55000, output: 200 },
+      contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
+      requestsPerDay: null, qualityTier: "frontier",
     },
     {
       entity: "OpenCode:GLM-5.3-Flash",
@@ -49,30 +55,40 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 55000, output: 200 },
       // Promo: multiplier=2, expiry UNKNOWN (not Sept 9 — that's Z.ai)
       promoMultiplier: 2,
+      contextTokens: 128_000, freeQuota: 1_000, freePeriod: "day",
+      requestsPerDay: 3_160, qualityTier: "fast",
     },
     {
       entity: "OpenCode:GLM-5.3",
       input: 1.4, cached: 0.26, output: 4.4,
       subscription: 10, usageValue: 15, requests: 1080,
       workload: { input: 700, cached: 52000, output: 150 },
+      contextTokens: 128_000, freeQuota: null, freePeriod: null,
+      requestsPerDay: null, qualityTier: "balanced",
     },
     {
       entity: "OpenCode:GPT 5.6 Luna",
       input: 0.2, cached: 0.02, output: 1.2,
       subscription: 10, usageValue: 15, requests: 10250,
       workload: { input: 1000, cached: 50000, output: 220 },
+      contextTokens: 256_000, freeQuota: null, freePeriod: null,
+      requestsPerDay: null, qualityTier: "frontier",
     },
     {
       entity: "OpenCode:DeepSeek V4 Flash",
       input: 0.22, cached: 0.007, output: 0.66,
       subscription: 10, usageValue: 30, requests: 37800,
       workload: { input: 410, cached: 71300, output: 310 },
+      contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
+      requestsPerDay: null, qualityTier: "fast",
     },
     {
       entity: "OpenCode:Muse Spark 1.2",
       input: 0.1, cached: 0.002, output: 0.2,
       subscription: 10, usageValue: 60, requests: 226600,
       workload: { input: 620, cached: 71400, output: 300 },
+      contextTokens: 128_000, freeQuota: null, freePeriod: null,
+      requestsPerDay: null, qualityTier: "fast",
     },
   ];
 
@@ -88,6 +104,13 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       ["cached_tokens_per_request", m.workload.cached, "tokens"],
       ["output_tokens_per_request", m.workload.output, "tokens"],
     ];
+
+    // Capability fields
+    if (m.contextTokens) fields.push(["context_tokens", m.contextTokens, "tokens"]);
+    if (m.freeQuota) fields.push(["free_tier_quota", m.freeQuota, "requests"]);
+    if (m.freePeriod) fields.push(["free_tier_period", m.freePeriod, "period"]);
+    if (m.requestsPerDay) fields.push(["requests_per_day", m.requestsPerDay, "requests"]);
+    if (m.qualityTier) fields.push(["quality_tier", m.qualityTier, "tier"]);
 
     if (m.promoMultiplier) {
       fields.push(["promotion_type", "usage_multiplier", "type"]);
