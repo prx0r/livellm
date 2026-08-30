@@ -102,11 +102,19 @@ Three agents with different needs receive the same canonical market payload and 
 
 ```bash
 # Replay mode (zero credits, uses recorded fixtures)
-npm run radar --mode replay
+npm run radar -- --mode replay --fixture-dir ./fixtures/serpapi
 
 # Live mode (requires SERPAPI_API_KEY in .env)
-SERPAPI_API_KEY=sk_... npm run radar --mode live
+SERPAPI_API_KEY=sk_... npm run radar -- --mode live
 ```
+
+## MCP Server
+
+```bash
+npm run mcp    # Starts stdio MCP server for agent integration
+```
+
+5 read-only tools: `get_market_snapshot`, `get_model_details`, `get_recent_changes`, `get_candidates`, `compare_models`.
 
 ## Tests
 
