@@ -1,3 +1,4 @@
+import { readFileSync, existsSync } from "node:fs";
 import { validateProposedFacts } from "../src/facts/validate.js";
 import type { ProposedFact } from "../src/facts/schema.js";
 
@@ -40,34 +41,31 @@ describe("provenance", () => {
   });
 
   it("recorded fixtures contain organic results", () => {
-    const fs = require("fs");
     const fixturePath = "fixtures/recorded/serpapi/glm-discovery.json";
-    if (fs.existsSync(fixturePath)) {
-      const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+    if (existsSync(fixturePath)) {
+      const fixture = JSON.parse(readFileSync(fixturePath, "utf8"));
       expect(fixture.organic_results).toBeDefined();
       expect(fixture.organic_results.length).toBeGreaterThan(0);
     }
   });
 
   it("recorded source fixtures have real URLs", () => {
-    const fs = require("fs");
     const sources = [
       "fixtures/recorded/sources/opencode-go.html",
       "fixtures/recorded/sources/zai-pricing.html",
     ];
     for (const src of sources) {
-      if (fs.existsSync(src)) {
-        const content = fs.readFileSync(src, "utf8");
+      if (existsSync(src)) {
+        const content = readFileSync(src, "utf8");
         expect(content.length).toBeGreaterThan(1000);
       }
     }
   });
 
   it("AI extraction fixtures have evidence quotes", () => {
-    const fs = require("fs");
     const fixturePath = "fixtures/recorded/ai/opencode-glm-promo.json";
-    if (fs.existsSync(fixturePath)) {
-      const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+    if (existsSync(fixturePath)) {
+      const fixture = JSON.parse(readFileSync(fixturePath, "utf8"));
       expect(fixture.facts).toBeDefined();
       for (const fact of fixture.facts) {
         expect(fact.evidence.quote.length).toBeGreaterThan(10);
