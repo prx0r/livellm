@@ -298,6 +298,64 @@ async function run() {
       break;
     }
 
+    case "promotions": {
+      const { PromotionDetector } = await import("./pipeline/promotions.js");
+      const detector = new PromotionDetector();
+      const promos = await detector.getActivePromotions();
+      if (promos.length === 0) {
+        console.log("No active promotions detected.");
+      } else {
+        console.log(`Active promotions: ${promos.length}\n`);
+        for (const p of promos) {
+          console.log(`${p.entity}`);
+          console.log(`  Type: ${p.type}`);
+          console.log(`  Value: ${p.value}${p.unit}`);
+          if (p.listPrice) console.log(`  List: $${p.listPrice}`);
+          if (p.currentPrice) console.log(`  Current: $${p.currentPrice}`);
+          if (p.discountPct) console.log(`  Discount: ${p.discountPct.toFixed(0)}%`);
+          if (p.endsAt) console.log(`  Ends: ${p.endsAt}`);
+          console.log("");
+        }
+      }
+      break;
+    }
+
+    case "alerts": {
+      const { AlertGenerator } = await import("./pipeline/alerts.js");
+      const gen = new AlertGenerator();
+      const alerts = await gen.generateAlerts();
+      if (alerts.length === 0) {
+        console.log("No alerts.");
+      } else {
+        console.log(`Alerts: ${alerts.length}\n`);
+        for (const a of alerts) {
+          const icon = a.severity === "critical" ? "🔴" : a.severity === "warning" ? "🟡" : "🔵";
+          console.log(`${icon} ${a.title}`);
+          console.log(`   ${a.entity}: ${a.message}`);
+          console.log("");
+        }
+      }
+      break;
+    }
+
+    case "compare": {
+      const { PriceComparator } = await import("./pipeline/price-compare.js");
+      const comp = new PriceComparator();
+      const changes = await comp.getRecentChanges(30);
+      if (changes.length === 0) {
+        console.log("No price changes in last 30 days.");
+      } else {
+        console.log(`Price changes: ${changes.length}\n`);
+        for (const c of changes) {
+          const icon = c.changePct > 0 ? "📈" : "📉";
+          console.log(`${icon} ${c.entity} ${c.field}`);
+          console.log(`   ${c.previousValue} → ${c.currentValue} (${c.changePct > 0 ? "+" : ""}${c.changePct.toFixed(1)}%)`);
+          console.log("");
+        }
+      }
+      break;
+    }
+
     case "daily": {
       const { runDaily } = await import("./pipeline/daily.js");
       await runDaily({

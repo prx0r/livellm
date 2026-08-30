@@ -218,3 +218,17 @@ CREATE TABLE IF NOT EXISTS asset_store (
 CREATE INDEX IF NOT EXISTS idx_asset_hash ON asset_store(content_hash);
 CREATE INDEX IF NOT EXISTS idx_asset_type ON asset_store(asset_type);
 CREATE INDEX IF NOT EXISTS idx_asset_observed ON asset_store(observed_at);
+
+CREATE TABLE IF NOT EXISTS alerts (
+  alert_id TEXT PRIMARY KEY,
+  alert_type TEXT NOT NULL,
+  entity TEXT NOT NULL,
+  severity TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  data_json TEXT,
+  created_at TEXT NOT NULL,
+  acknowledged INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_alerts_unack ON alerts(acknowledged, created_at DESC);
