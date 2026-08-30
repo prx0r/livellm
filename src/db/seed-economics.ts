@@ -31,6 +31,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 830, cached: 71500, output: 295 },
       contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 80,
+      maxOutput: 32_768, modalities: "text", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "subscriber",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
     {
       entity: "OpenCode:Hy3",
@@ -39,6 +42,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 830, cached: 71500, output: 295 },
       contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 60,
+      maxOutput: 32_768, modalities: "text", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "subscriber",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
     {
       entity: "OpenCode:Kimi K2.7",
@@ -47,6 +53,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 870, cached: 55000, output: 200 },
       contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 50,
+      maxOutput: 16_384, modalities: "text", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "subscriber",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
     {
       entity: "OpenCode:GLM-5.3-Flash",
@@ -56,6 +65,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       promoMultiplier: 2,
       contextTokens: 128_000, freeQuota: 1_000, freePeriod: "day",
       requestsPerDay: 3_160, qualityTier: "fast", speedTier: "fast", tps: 150,
+      maxOutput: 8_192, modalities: "text", batchDiscount: null,
+      rateLimitRpm: 60, rateLimitTier: "free+paid",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
     {
       entity: "OpenCode:GLM-5.3",
@@ -64,6 +76,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 700, cached: 52000, output: 150 },
       contextTokens: 128_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "balanced", speedTier: "medium", tps: 70,
+      maxOutput: 16_384, modalities: "text", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "subscriber",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
     {
       entity: "OpenCode:GPT 5.6 Luna",
@@ -72,6 +87,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 50000, output: 220 },
       contextTokens: 256_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 60,
+      maxOutput: 32_768, modalities: "text", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "subscriber",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
     {
       entity: "OpenCode:DeepSeek V4 Flash",
@@ -80,6 +98,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 410, cached: 71300, output: 310 },
       contextTokens: 1_000_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "fast", speedTier: "fast", tps: 120,
+      maxOutput: 16_384, modalities: "text", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "subscriber",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
     {
       entity: "OpenCode:Muse Spark 1.2",
@@ -88,11 +109,14 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 620, cached: 71400, output: 300 },
       contextTokens: 128_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "fast", speedTier: "fast", tps: 200,
+      maxOutput: 8_192, modalities: "text", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "subscriber",
+      mmlu: null, humaneval: null, mathScore: null, aiderScore: null,
     },
 
-    // === Direct providers (not through OpenCode) ===
+    // === Direct providers ===
 
-    // Groq — fast inference (gpt-oss models, Llama now enterprise-only)
+    // Groq
     {
       entity: "Groq:gpt-oss-120b",
       input: 0.15, cached: 0.015, output: 0.6,
@@ -100,6 +124,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 500, cached: 0, output: 200 },
       contextTokens: 131_072, freeQuota: 14_400, freePeriod: "day",
       requestsPerDay: 30, qualityTier: "balanced", speedTier: "ultrafast", tps: 300,
+      maxOutput: 8_192, modalities: "text", batchDiscount: null,
+      rateLimitRpm: 30, rateLimitTier: "free",
+      mmlu: 72, humaneval: 65, mathScore: 55, aiderScore: null,
     },
     {
       entity: "Groq:gpt-oss-20b",
@@ -108,9 +135,12 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 500, cached: 0, output: 200 },
       contextTokens: 131_072, freeQuota: 14_400, freePeriod: "day",
       requestsPerDay: 30, qualityTier: "fast", speedTier: "ultrafast", tps: 500,
+      maxOutput: 8_192, modalities: "text", batchDiscount: null,
+      rateLimitRpm: 30, rateLimitTier: "free",
+      mmlu: 62, humaneval: 48, mathScore: 40, aiderScore: null,
     },
 
-    // DeepSeek direct — cheapest frontier
+    // DeepSeek
     {
       entity: "DeepSeek:V3",
       input: 0.14, cached: 0.014, output: 0.28,
@@ -118,9 +148,12 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 200 },
       contextTokens: 128_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 60,
+      maxOutput: 8_192, modalities: "text", batchDiscount: 50,
+      rateLimitRpm: null, rateLimitTier: "paid",
+      mmlu: 88, humaneval: 82, mathScore: 90, aiderScore: 60,
     },
 
-    // OpenRouter — aggregator with free models
+    // OpenRouter free
     {
       entity: "OpenRouter:Meta Llama 3.1 8B (free)",
       input: 0, cached: 0, output: 0,
@@ -128,6 +161,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 500, cached: 0, output: 200 },
       contextTokens: 131_072, freeQuota: 200, freePeriod: "day",
       requestsPerDay: 200, qualityTier: "fast", speedTier: "medium", tps: 40,
+      maxOutput: 8_192, modalities: "text", batchDiscount: null,
+      rateLimitRpm: 20, rateLimitTier: "free",
+      mmlu: 68, humaneval: 52, mathScore: 45, aiderScore: null,
     },
     {
       entity: "OpenRouter:Mistral 7B (free)",
@@ -136,9 +172,10 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 500, cached: 0, output: 200 },
       contextTokens: 32_768, freeQuota: 200, freePeriod: "day",
       requestsPerDay: 200, qualityTier: "fast", speedTier: "medium", tps: 35,
+      maxOutput: 8_192, modalities: "text", batchDiscount: null,
+      rateLimitRpm: 20, rateLimitTier: "free",
+      mmlu: 62, humaneval: 40, mathScore: 35, aiderScore: null,
     },
-
-    // === Major providers (direct API pricing) ===
 
     // OpenAI
     {
@@ -148,6 +185,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 128_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 80,
+      maxOutput: 16_384, modalities: "text+image+audio", batchDiscount: 50,
+      rateLimitRpm: 500, rateLimitTier: "tier5",
+      mmlu: 88, humaneval: 90, mathScore: 76, aiderScore: 72,
     },
     {
       entity: "OpenAI:GPT-4o mini",
@@ -156,6 +196,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 128_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "balanced", speedTier: "fast", tps: 150,
+      maxOutput: 16_384, modalities: "text+image", batchDiscount: 50,
+      rateLimitRpm: 500, rateLimitTier: "tier5",
+      mmlu: 82, humaneval: 87, mathScore: 70, aiderScore: 68,
     },
     {
       entity: "OpenAI:gpt-4.1-nano",
@@ -164,6 +207,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 1_048_576, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "fast", speedTier: "ultrafast", tps: 300,
+      maxOutput: 32_768, modalities: "text+image", batchDiscount: 50,
+      rateLimitRpm: 500, rateLimitTier: "tier5",
+      mmlu: 75, humaneval: 70, mathScore: 60, aiderScore: 55,
     },
 
     // Anthropic
@@ -174,6 +220,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 200_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 70,
+      maxOutput: 64_000, modalities: "text+image+pdf", batchDiscount: 50,
+      rateLimitRpm: null, rateLimitTier: "tier4",
+      mmlu: 92, humaneval: 93, mathScore: 85, aiderScore: 80,
     },
     {
       entity: "Anthropic:Claude Haiku 3.5",
@@ -182,6 +231,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 200_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "balanced", speedTier: "fast", tps: 120,
+      maxOutput: 8_192, modalities: "text+image+pdf", batchDiscount: 50,
+      rateLimitRpm: null, rateLimitTier: "tier4",
+      mmlu: 80, humaneval: 75, mathScore: 65, aiderScore: 60,
     },
 
     // Google
@@ -192,14 +244,20 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 1_048_576, freeQuota: 1500, freePeriod: "day",
       requestsPerDay: 1500, qualityTier: "fast", speedTier: "fast", tps: 200,
+      maxOutput: 8_192, modalities: "text+image+video+audio", batchDiscount: null,
+      rateLimitRpm: 10, rateLimitTier: "free",
+      mmlu: 85, humaneval: 80, mathScore: 82, aiderScore: null,
     },
     {
       entity: "Google:Gemini 2.5 Pro",
       input: 1.25, cached: 0.315, output: 10,
       subscription: null, usageValue: null, requests: null,
       workload: { input: 1000, cached: 0, output: 500 },
-      contextTokens: 1_048_576, freeQuota: 500, freePeriod: "day",
+      contextTokens: 2_097_152, freeQuota: 500, freePeriod: "day",
       requestsPerDay: 500, qualityTier: "frontier", speedTier: "medium", tps: 60,
+      maxOutput: 65_536, modalities: "text+image+video+audio", batchDiscount: null,
+      rateLimitRpm: 5, rateLimitTier: "free",
+      mmlu: 91, humaneval: 88, mathScore: 92, aiderScore: 75,
     },
 
     // Mistral
@@ -210,6 +268,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 262_144, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "frontier", speedTier: "medium", tps: 70,
+      maxOutput: 32_768, modalities: "text+image", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "paid",
+      mmlu: 85, humaneval: 80, mathScore: 78, aiderScore: 65,
     },
     {
       entity: "Mistral:Mistral Small 4",
@@ -218,6 +279,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
       workload: { input: 1000, cached: 0, output: 500 },
       contextTokens: 256_000, freeQuota: null, freePeriod: null,
       requestsPerDay: null, qualityTier: "fast", speedTier: "fast", tps: 150,
+      maxOutput: 32_768, modalities: "text+image", batchDiscount: null,
+      rateLimitRpm: null, rateLimitTier: "paid",
+      mmlu: 78, humaneval: 72, mathScore: 68, aiderScore: 55,
     },
   ];
 
@@ -242,6 +306,15 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     if (m.qualityTier) fields.push(["quality_tier", m.qualityTier, "tier"]);
     if (m.speedTier) fields.push(["speed_tier", m.speedTier, "tier"]);
     if (m.tps) fields.push(["tokens_per_second", m.tps, "tok/s"]);
+    if (m.maxOutput) fields.push(["max_output_tokens", m.maxOutput, "tokens"]);
+    if (m.modalities) fields.push(["modalities", m.modalities, "modalities"]);
+    if (m.batchDiscount) fields.push(["batch_input_discount", m.batchDiscount, "percent"]);
+    if (m.rateLimitRpm) fields.push(["rate_limit_rpm", m.rateLimitRpm, "rpm"]);
+    if (m.rateLimitTier) fields.push(["rate_limit_tier", m.rateLimitTier, "tier"]);
+    if (m.mmlu) fields.push(["benchmark_mmlu", m.mmlu, "score"]);
+    if (m.humaneval) fields.push(["benchmark_humaneval", m.humaneval, "score"]);
+    if (m.mathScore) fields.push(["benchmark_math", m.mathScore, "score"]);
+    if (m.aiderScore) fields.push(["benchmark_aider", m.aiderScore, "score"]);
 
     if (m.promoMultiplier) {
       fields.push(["promotion_type", "usage_multiplier", "type"]);

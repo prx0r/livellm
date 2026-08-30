@@ -52,6 +52,17 @@ export const VALID_FIELDS = [
   "requests_per_day",
   "speed_tier",
   "tokens_per_second",
+  "max_output_tokens",
+  "modalities",
+  "batch_input_discount",
+  "rate_limit_rpm",
+  "rate_limit_tier",
+
+  // Benchmarks (public scores, not live-verified)
+  "benchmark_mmlu",
+  "benchmark_humaneval",
+  "benchmark_math",
+  "benchmark_aider",
 
   // Promotions
   "promotion_type",
@@ -118,6 +129,17 @@ export const FIELD_SPEC: Record<FactField, FieldSpec> = {
   quality_tier:                           { kind: "string" },
   speed_tier:                             { kind: "string" },
   tokens_per_second:                      { kind: "numeric", min: 0, max: 10000, unitGroup: "none" },
+  max_output_tokens:                      { kind: "numeric", min: 0, max: 10_000_000, unitGroup: "size" },
+  modalities:                             { kind: "string" },
+  batch_input_discount:                   { kind: "numeric", min: 0, max: 100, unitGroup: "none" },
+  rate_limit_rpm:                         { kind: "numeric", min: 0, max: 1_000_000, unitGroup: "rate" },
+  rate_limit_tier:                        { kind: "string" },
+
+  // Benchmarks
+  benchmark_mmlu:                         { kind: "numeric", min: 0, max: 100, unitGroup: "none" },
+  benchmark_humaneval:                    { kind: "numeric", min: 0, max: 100, unitGroup: "none" },
+  benchmark_math:                         { kind: "numeric", min: 0, max: 100, unitGroup: "none" },
+  benchmark_aider:                        { kind: "numeric", min: 0, max: 100, unitGroup: "none" },
 
   // Promotions
   promotion_type:                         { kind: "string" },

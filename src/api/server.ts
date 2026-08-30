@@ -87,6 +87,15 @@ const routes: Route[] = [
         const qualityTier: any = factMap.get("quality_tier");
         const speedTier: any = factMap.get("speed_tier");
         const tps: any = factMap.get("tokens_per_second");
+        const maxOutput: any = factMap.get("max_output_tokens");
+        const modalities: any = factMap.get("modalities");
+        const batchDiscount: any = factMap.get("batch_input_discount");
+        const rateLimitRpm: any = factMap.get("rate_limit_rpm");
+        const rateLimitTier: any = factMap.get("rate_limit_tier");
+        const mmlu: any = factMap.get("benchmark_mmlu");
+        const humaneval: any = factMap.get("benchmark_humaneval");
+        const mathScore: any = factMap.get("benchmark_math");
+        const aiderScore: any = factMap.get("benchmark_aider");
         const promo = promos.find((p: any) => p.entity === entityId);
 
         // Compute age of oldest fact
@@ -111,6 +120,23 @@ const routes: Route[] = [
         if (qualityTier?.value != null) route.quality_tier = qualityTier.value;
         if (speedTier?.value != null) route.speed_tier = speedTier.value;
         if (tps?.value != null) route.tokens_per_second = tps.value;
+        if (maxOutput?.value != null) route.max_output_tokens = maxOutput.value;
+        if (modalities?.value != null) route.modalities = modalities.value;
+        if (batchDiscount?.value != null) route.batch_input_discount = batchDiscount.value;
+        if (rateLimitRpm?.value != null || rateLimitTier?.value != null) {
+          route.rate_limit = {
+            ...(rateLimitRpm?.value != null ? { requests_per_minute: rateLimitRpm.value } : {}),
+            ...(rateLimitTier?.value != null ? { tier: rateLimitTier.value } : {}),
+          };
+        }
+        if (mmlu?.value != null || humaneval?.value != null || mathScore?.value != null || aiderScore?.value != null) {
+          route.benchmarks = {
+            ...(mmlu?.value != null ? { mmlu: mmlu.value } : {}),
+            ...(humaneval?.value != null ? { humaneval: humaneval.value } : {}),
+            ...(mathScore?.value != null ? { math: mathScore.value } : {}),
+            ...(aiderScore?.value != null ? { aider: aiderScore.value } : {}),
+          };
+        }
         if (freeQuota?.value != null) {
           route.free_tier = {
             quota: freeQuota.value,
