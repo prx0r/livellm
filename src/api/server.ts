@@ -85,6 +85,8 @@ const routes: Route[] = [
         const freePeriod: any = factMap.get("free_tier_period");
         const requestsPerDay: any = factMap.get("requests_per_day");
         const qualityTier: any = factMap.get("quality_tier");
+        const speedTier: any = factMap.get("speed_tier");
+        const tps: any = factMap.get("tokens_per_second");
         const promo = promos.find((p: any) => p.entity === entityId);
 
         // Compute age of oldest fact
@@ -107,6 +109,8 @@ const routes: Route[] = [
         // Capabilities
         if (contextTokens?.value != null) route.context_tokens = contextTokens.value;
         if (qualityTier?.value != null) route.quality_tier = qualityTier.value;
+        if (speedTier?.value != null) route.speed_tier = speedTier.value;
+        if (tps?.value != null) route.tokens_per_second = tps.value;
         if (freeQuota?.value != null) {
           route.free_tier = {
             quota: freeQuota.value,

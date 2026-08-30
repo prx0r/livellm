@@ -46,6 +46,12 @@ export const VALID_FIELDS = [
 
   // Capabilities
   "quality_tier",
+  "context_tokens",
+  "free_tier_quota",
+  "free_tier_period",
+  "requests_per_day",
+  "speed_tier",
+  "tokens_per_second",
 
   // Promotions
   "promotion_type",
@@ -110,6 +116,8 @@ export const FIELD_SPEC: Record<FactField, FieldSpec> = {
 
   // Capabilities
   quality_tier:                           { kind: "string" },
+  speed_tier:                             { kind: "string" },
+  tokens_per_second:                      { kind: "numeric", min: 0, max: 10000, unitGroup: "none" },
 
   // Promotions
   promotion_type:                         { kind: "string" },

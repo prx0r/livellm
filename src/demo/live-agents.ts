@@ -66,9 +66,9 @@ REASON: <one sentence>`,
     name: "Batch Classifier",
     icon: " ",
     color: "#f59e0b",
-    description: "10,000 document classifications/day. Near-zero budget. Short inputs.",
+    description: "500 document classifications/day. Near-zero budget. Short inputs.",
     budget: "near $0",
-    persona: `You are a high-volume batch classification agent. You classify 10,000 documents per day into categories. Each request is tiny: 200 input tokens, 50 output tokens.
+    persona: `You are a high-volume batch classification agent. You classify 500 documents per day into categories. Each request is tiny: 200 input tokens, 50 output tokens.
 
 Your requirements:
 - LOWEST possible cost (ideally free)
