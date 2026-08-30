@@ -20,45 +20,45 @@
     },
     {
       "position": 4,
-      "title": "Business Pricing - OpenAI",
-      "link": "https://openai.com/api/pricing/?client_id=1330166706.1784246402&session_id=1784246402",
-      "snippet": "Discover OpenAI pricing for ChatGPT Business and APIs, with GPT token costs, enterprise features, developer plans, and AI tools."
-    },
-    {
-      "position": 5,
       "title": "Confusion Between Per-Minute Audio Pricing vs. Token-Based ...",
       "link": "https://community.openai.com/t/confusion-between-per-minute-audio-pricing-vs-token-based-audio-pricing/1073222",
       "snippet": "Realtime API (as any OpenAI API) was/is always priced based on tokens used. The only difference to the “old” pricing is that openAI mentioned an ..."
     },
     {
-      "position": 6,
-      "title": "Difference between prepaid and pay as you go API Pricing",
-      "link": "https://community.openai.com/t/difference-between-prepaid-and-pay-as-you-go-api-pricing/778566",
-      "snippet": "When you use the API, all payment methods are pay-as-you-go and prepaid. the cost is $30 per 1M tokens. prepaid credits stay valid for one year ..."
-    },
-    {
-      "position": 7,
-      "title": "Can someone explain me the pricing model - API",
-      "link": "https://community.openai.com/t/can-someone-explain-me-the-pricing-model/29491",
-      "snippet": "Completions requests are billed based on the number of tokens sent in your prompt plus the number of tokens in the completion(s) returned by the ..."
-    },
-    {
-      "position": 8,
+      "position": 5,
       "title": "Pricing - ChatGPT Learn",
       "link": "https://developers.openai.com/codex/pricing",
       "snippet": "$20/ user / month* Get Business for all applicable models, API pricing applies to image generation instead of included ChatGPT usage limits."
     },
     {
-      "position": 9,
+      "position": 6,
       "title": "Advancing the price-performance frontier with GPT-5.6 - OpenAI",
       "link": "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/",
       "snippet": "Starting July 30, API pricing is $2 per million input tokens and $12 ... View complete API pricing details.⁠ · 2026. Author. OpenAI. Keep ..."
     },
     {
-      "position": 10,
+      "position": 7,
       "title": "Pricing - ChatGPT",
       "link": "https://openai.com/chatgpt/pricing/",
       "snippet": "Paid plans (Plus, Pro, Business, and Enterprise) are priced per user per month. We offer monthly plans for Plus, Pro, and Business and annual plans for ..."
+    },
+    {
+      "position": 8,
+      "title": "Business Pricing - OpenAI",
+      "link": "https://openai.com/api/pricing/?client_id=1330166706.1784246402&session_id=1784246402",
+      "snippet": "Discover OpenAI pricing for ChatGPT Business and APIs, with GPT token costs, enterprise features, developer plans, and AI tools."
+    },
+    {
+      "position": 9,
+      "title": "Difference between prepaid and pay as you go API Pricing",
+      "link": "https://community.openai.com/t/difference-between-prepaid-and-pay-as-you-go-api-pricing/778566",
+      "snippet": "When you use the API, all payment methods are pay-as-you-go and prepaid. the cost is $30 per 1M tokens. prepaid credits stay valid for one year ..."
+    },
+    {
+      "position": 10,
+      "title": "Can someone explain me the pricing model - API",
+      "link": "https://community.openai.com/t/can-someone-explain-me-the-pricing-model/29491",
+      "snippet": "Completions requests are billed based on the number of tokens sent in your prompt plus the number of tokens in the completion(s) returned by the ..."
     }
   ]
 }

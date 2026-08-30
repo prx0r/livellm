@@ -298,6 +298,14 @@ async function run() {
       break;
     }
 
+    case "evaluate": {
+      const { EvaluationTracker } = await import("./pipeline/evaluation.js");
+      const tracker = new EvaluationTracker();
+      const metrics = await tracker.getMetrics();
+      console.log(tracker.formatMetrics(metrics));
+      break;
+    }
+
     case "promotions": {
       const { PromotionDetector } = await import("./pipeline/promotions.js");
       const detector = new PromotionDetector();

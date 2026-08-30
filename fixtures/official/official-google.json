@@ -10,55 +10,55 @@
       "position": 2,
       "title": "Agent Platform Pricing | Google Cloud",
       "link": "https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing",
-      "snippet": "Gemini 3.6 Flash, and CodeMender models are offered with introductory pricing of $0.75 / $3.75 per 1M tokens input / output through December 31, 2026. standard ..."
+      "snippet": "Gemini 3.6 Flash, and CodeMender using these models are offered with introductory pricing of $0.75 / $3.75 per 1M tokens input / output through December 31, ..."
     },
     {
       "position": 3,
       "title": "Billing | Gemini API | Google AI for Developers",
       "link": "https://ai.google.dev/gemini-api/docs/billing",
-      "snippet": "$250 Tier 2 $2,000 Tier 3 $20,000 - $100,000. Gemini API pricing is based on the following: Input token count Output token count Cached token ..."
+      "snippet": "Billing for the Gemini API is … an active billing account $250 Tier 2 Paid $100 + 3 days from first successful payment $2,000 Tier 3 Paid $1, ..."
     },
     {
       "position": 4,
+      "title": "Models | Gemini API - Google AI for Developers",
+      "link": "https://ai.google.dev/gemini-api/docs/models",
+      "snippet": "Our best price-performance model for low-latency, high-volume tasks that require reasoning."
+    },
+    {
+      "position": 5,
+      "title": "Rate limits | Gemini API - Google AI for Developers",
+      "link": "https://ai.google.dev/gemini-api/docs/rate-limits",
+      "snippet": "Rate limits regulate the number of requests you can make to the Gemini API within a given timeframe. Default rate limits are: 0.3x"
+    },
+    {
+      "position": 6,
       "title": "Gemini Enterprise Agent Platform pricing | Google Cloud",
       "link": "https://cloud.google.com/products/gemini-enterprise-agent-platform/pricing",
       "snippet": "Gemini 2.0 Flash Computation-based metrics are charged at $0.00003 per 1k characters for input and $0.00009 per 1k characters for output."
     },
     {
-      "position": 5,
+      "position": 7,
       "title": "How Do I Accurately Calculate Gemini 2.5 Pro API Pricing?",
       "link": "https://discuss.ai.google.dev/t/how-do-i-accurately-calculate-gemini-2-5-pro-api-pricing/81969",
       "snippet": "Based on current preview-stage rates, input tokens cost $4 per million and output tokens cost $20 per million. #1 should always estimate tokens."
     },
     {
-      "position": 6,
+      "position": 8,
       "title": "Pricing of Speech to Speech live model - Gemini API",
       "link": "https://discuss.ai.google.dev/t/pricing-of-speech-to-speech-live-model/140340",
       "snippet": "There is no flat per-minute price for the Live API. Gemini bills strictly by the token. You are billed for both audio tokens and transcription ..."
     },
     {
-      "position": 7,
-      "title": "Pricing | Cloud Vision API",
-      "link": "https://cloud.google.com/vision/pricing",
-      "snippet": "Prices ; Crop Hints, Free, Free with Image Properties, or $1.50, Free with Image Properties, or $0.60."
-    },
-    {
-      "position": 8,
-      "title": "Models | Gemini API - Google AI for Developers",
-      "link": "https://ai.google.dev/gemini-api/docs/models",
-      "snippet": "Learn about all of Google&#39;s. Pricing Coding agent setup … fastest and most budget-friendly multimodal model in the 2.5 family."
-    },
-    {
       "position": 9,
-      "title": "Rate limits | Gemini API - Google AI for Developers",
-      "link": "https://ai.google.dev/gemini-api/docs/rate-limits",
-      "snippet": "Free, Active project or free trial, N/A ; Tier 1, Set up and link an active billing account, $250 ; Tier 2, Paid $100 + 3 days from first ..."
+      "title": "Gemini 3 developer guide - Interactions API | Google AI for Developers",
+      "link": "https://ai.google.dev/gemini-api/docs/gemini-3",
+      "snippet": "Meet the Gemini 3 series ; gemini-3.1-flash-lite, 1M / 64k, Jan 2025, $0.25 (text, image, video), $0.50 (audio) / $1.50 ; gemini-3.1-flash-image- ..."
     },
     {
       "position": 10,
-      "title": "Gemini 3 developer guide - Interactions API | Google AI for Developers",
-      "link": "https://ai.google.dev/gemini-api/docs/gemini-3",
-      "snippet": "Meet the Gemini 3 series ; gemini-3.1-pro-preview, 1M / 64k, Jan 2025, $2 / $12 (<200k tokens) $4 / $18 (>200k tokens) ; gemini-3-flash-preview ..."
+      "title": "Pricing | Cloud Vision API",
+      "link": "https://cloud.google.com/vision/pricing",
+      "snippet": "Prices ; Crop Hints, Free, Free with Image Properties, or $1.50, Free with Image Properties, or $0.60."
     }
   ]
 }

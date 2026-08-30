@@ -7,6 +7,7 @@
 import { SerpApiProvider, getSerpApiAccount, allowedPaidBatch } from "../search/serpapi.js";
 import { OFFICIAL_QUERIES } from "../discovery/official-queries.js";
 import { AssetStore } from "../db/assets.js";
+import { SearchRunRepo } from "../db/search-runs.js";
 import { requestHash } from "../search/canonical-request.js";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
@@ -37,6 +38,7 @@ export async function runOfficialDiscovery(
 
   const provider = new SerpApiProvider();
   const assetStore = new AssetStore();
+  const runRepo = new SearchRunRepo();
   const searches = Math.min(budget, OFFICIAL_QUERIES.length);
 
   console.log(`[official] Running ${searches} official-source queries\n`);
@@ -60,6 +62,18 @@ export async function runOfficialDiscovery(
       // Save fixture
       const fixturePath = resolve(fixtureDir, `${query.id}.json`);
       writeFileSync(fixturePath, JSON.stringify(response.raw, null, 2));
+
+      // Record search run
+      await runRepo.create({
+        queryId: query.id,
+        request: query.request,
+        searchId: response.searchId,
+        fromLocalCache: response.fromCache,
+        resultCount: response.hits.length,
+        newUrlCount: 0,
+        candidateCount: 0,
+        verifiedChangeCount: 0,
+      });
 
       // Find official URL
       const officialHits = response.hits.filter((h) => {

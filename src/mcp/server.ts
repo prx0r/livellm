@@ -1,14 +1,12 @@
 /**
  * SPEC: MCP Server — exposes LiveLLM as tools for AI agents.
  *
- * Tools:
+ * Read-only tools (no credit spend):
  * 1. get_market_snapshot — current prices/quotas for all tracked models
  * 2. get_model_details — specific model pricing and facts
  * 3. get_recent_changes — recent price/quota changes
- * 4. run_radar — trigger a live radar cycle
- * 5. get_candidates — unverified discoveries
- * 6. compare_models — side-by-side pricing comparison
- * 7. get_ai_freshness — compare AI answers to verified facts
+ * 4. get_candidates — unverified discoveries
+ * 5. compare_models — side-by-side pricing comparison
  */
 
 import { materializeState } from "../facts/materialize.js";

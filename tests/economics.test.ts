@@ -68,7 +68,8 @@ describe("economics", () => {
       );
       expect(result.status).toBe("computed");
       if (result.status === "computed") {
-        expect(result.effectiveMultiple).toBeCloseTo(1.0, 1);
+        // Multiple = simulatedMonthly / monthlyPrice = $60 / $10 = 6.0
+        expect(result.effectiveMultiple).toBeCloseTo(6.0, 1);
         expect(result.reconciliationStatus).toBe("consistent");
       }
     });

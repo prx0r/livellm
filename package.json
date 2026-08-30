@@ -26,6 +26,7 @@
     "replay": "node dist/cli.js replay",
     "demo": "node dist/cli.js demo",
     "daily": "node dist/cli.js daily",
+    "evaluate": "node dist/cli.js evaluate",
     "promotions": "node dist/cli.js promotions",
     "alerts": "node dist/cli.js alerts",
     "compare": "node dist/cli.js compare",
