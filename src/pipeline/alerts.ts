@@ -12,6 +12,7 @@
 import { openDb, saveDb } from "../db/open.js";
 import { PromotionDetector, type Promotion } from "./promotions.js";
 import { PriceComparator, type PriceComparison } from "./price-compare.js";
+import crypto from "node:crypto";
 
 export type Alert = {
   alert_id: string;
