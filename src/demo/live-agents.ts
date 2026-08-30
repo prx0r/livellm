@@ -121,6 +121,8 @@ ${marketJson}`;
 function generateReport(
   agents: Array<{ agent: typeof AGENTS[0]; output: string }>,
   market: any,
+  radarOutput: string,
+  investigateOutput: string,
 ) {
   const now = new Date().toISOString();
 
@@ -203,20 +205,49 @@ function generateReport(
 </head>
 <body>
 <h1>LiveLLM — 3-Agent Live Demo</h1>
-<p class="subtitle">One canonical market payload. Three autonomous agents. Three different decisions.</p>
+<p class="subtitle">SerpApi discovers. LiveLLM verifies. Agents decide.</p>
 
 <div class="section">
-  <div class="section-title">How it works</div>
-  <p style="font-size:0.85em; color:#888; max-width:700px;">
-    Each agent receives the same <code>GET /v1/market</code> payload from LiveLLM.
-    Pricing, promotions, context windows, free tiers, modalities — all in one reference sheet.
-    Each agent independently computes costs and reasons about the data based on its own workload.
-    <strong>LiveLLM is infrastructure, not an opinion.</strong>
-  </p>
+  <div class="section-title">Step 1: SerpApi Discovery → Fact Ledger</div>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:16px;">
+    <p style="font-size:0.85em; color:#aaa; margin-bottom:12px;">
+      SerpApi searches detect market changes. LiveLLM verifies them against official sources,
+      extracts structured facts with AI, and stores them in a provenance-backed fact ledger.
+      Every fact traces back to a specific SerpApi search ID and official source URL.
+    </p>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:16px;">
+      <div style="background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:12px; text-align:center;">
+        <div style="color:#4ade80; font-size:1.5em; font-weight:bold;">SerpApi</div>
+        <div style="font-size:0.75em; color:#666; margin-top:4px;">Google News Light<br>Search Index Deep</div>
+      </div>
+      <div style="background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:12px; text-align:center;">
+        <div style="color:#818cf8; font-size:1.5em; font-weight:bold;">Verify</div>
+        <div style="font-size:0.75em; color:#666; margin-top:4px;">Official Sources<br>AI Extraction</div>
+      </div>
+      <div style="background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:12px; text-align:center;">
+        <div style="color:#f59e0b; font-size:1.5em; font-weight:bold;">Validate</div>
+        <div style="font-size:0.75em; color:#666; margin-top:4px;">Evidence Check<br>Range + Unit</div>
+      </div>
+      <div style="background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:12px; text-align:center;">
+        <div style="color:#ef4444; font-size:1.5em; font-weight:bold;">Ledger</div>
+        <div style="font-size:0.75em; color:#666; margin-top:4px;">Temporal Facts<br>Provenance Chain</div>
+      </div>
+    </div>
+  </div>
+
+  <details>
+    <summary style="font-size:0.8em; color:#888; cursor:pointer; margin-bottom:8px;">Show radar pipeline output (from replay fixtures)</summary>
+    <div style="background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:14px; font-size:0.75em; color:#999; white-space:pre-wrap; max-height:200px; overflow-y:auto;">${escapeHtml(radarOutput)}</div>
+  </details>
+
+  <details>
+    <summary style="font-size:0.8em; color:#888; cursor:pointer; margin-top:8px;">Show investigation pipeline output</summary>
+    <div style="background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:14px; font-size:0.75em; color:#999; white-space:pre-wrap; max-height:200px; overflow-y:auto;">${escapeHtml(investigateOutput)}</div>
+  </details>
 </div>
 
 <div class="section">
-  <div class="section-title">Canonical Market Payload (from LiveLLM)</div>
+  <div class="section-title">Step 2: Canonical Market Payload</div>
   <table>
     <thead>
       <tr>
@@ -229,7 +260,7 @@ function generateReport(
 </div>
 
 <div class="section">
-  <div class="section-title">Agent Decisions (from mimo-v2.5)</div>
+  <div class="section-title">Step 3: Agent Decisions</div>
   <div class="agents">
     ${decisions.map((d) => `
     <div class="agent-card ${d.id}">
@@ -254,17 +285,17 @@ function generateReport(
   <div class="section-title">The Point</div>
   <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:24px; max-width:700px;">
     <p style="font-size:0.95em; margin-bottom:12px;">
-      <strong>LiveLLM is infrastructure, not an opinion.</strong>
+      <strong>LiveLLM amortizes SerpApi discovery into reusable economic intelligence.</strong>
     </p>
     <p style="font-size:0.85em; color:#aaa; margin-bottom:12px;">
-      The same market payload served three agents with completely different needs.
-      Each agent computed its own costs, extracted what mattered to it — context window,
-      free tier, price per token — and made its own decision.
+      A SerpApi search isn't thrown away. Its results and discovered sources feed a provenance
+      ledger. Once verified, that intelligence answers thousands of cheap agent queries until
+      freshness policy says it needs reacquisition.
     </p>
     <p style="font-size:0.85em; color:#aaa;">
-      Agents shouldn't spend tokens searching five pricing pages every time they need
-      to route a task, nor trust stale model knowledge. LiveLLM amortizes SerpApi
-      discovery into a compact, provenance-backed economic payload they can query immediately.
+      The same market payload served three agents with completely different needs.
+      Each agent computed its own costs and made its own decision.
+      LiveLLM is infrastructure, not an opinion.
     </p>
   </div>
 </div>
@@ -285,10 +316,52 @@ function escapeHtml(s: string): string {
 
 // ─── Main ──────────────────────────────────────────────────────────
 
+function runRadar(): string {
+  try {
+    return execSync(`node dist/cli.js radar --mode replay --fixture-dir ./fixtures/serpapi 2>&1`, {
+      encoding: "utf8",
+      timeout: 30_000,
+    });
+  } catch (err: any) {
+    return err.stdout ?? err.message;
+  }
+}
+
+function runInvestigate(): string {
+  try {
+    return execSync(`node dist/cli.js investigate 2>&1`, {
+      encoding: "utf8",
+      timeout: 30_000,
+    });
+  } catch (err: any) {
+    return err.stdout ?? err.message;
+  }
+}
+
 async function main() {
   console.log("═".repeat(60));
   console.log("  LiveLLM — 3-Agent Live Demo");
   console.log("═".repeat(60));
+  console.log();
+
+  // 0. Run SerpApi radar pipeline (replay mode — real responses, zero credits)
+  console.log("0. Running SerpApi radar pipeline (replay mode)...");
+  console.log("   Processing real SerpApi search responses through the full pipeline...");
+  console.log();
+
+  const radarOutput = runRadar();
+  console.log("   Radar output:");
+  for (const line of radarOutput.split("\n").filter(Boolean).slice(0, 15)) {
+    console.log(`   ${line}`);
+  }
+  console.log();
+
+  console.log("   Running investigation pipeline...");
+  const investigateOutput = runInvestigate();
+  console.log("   Investigation output:");
+  for (const line of investigateOutput.split("\n").filter(Boolean).slice(0, 10)) {
+    console.log(`   ${line}`);
+  }
   console.log();
 
   // 1. Fetch market data
@@ -316,7 +389,7 @@ async function main() {
 
   // 3. Generate report
   console.log("3. Generating visual report...");
-  const html = generateReport(results, market);
+  const html = generateReport(results, market, radarOutput, investigateOutput);
   const reportPath = resolve(process.cwd(), "demo-report.html");
   writeFileSync(reportPath, html);
   console.log(`   → ${reportPath}`);
