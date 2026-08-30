@@ -1,0 +1,45 @@
+{
+  "facts": [
+    {
+      "entity": "OpenAI:GPT-4o",
+      "field": "input_price_usd_per_million",
+      "value": 2.5,
+      "unit": "USD/1M tokens",
+      "evidence": {
+        "quote": "GPT-4o $2.50 / 1M tokens"
+      },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenAI:GPT-4o",
+      "field": "output_price_usd_per_million",
+      "value": 10,
+      "unit": "USD/1M tokens",
+      "evidence": {
+        "quote": "GPT-4o $10.00 / 1M tokens"
+      },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenAI:GPT-4o mini",
+      "field": "input_price_usd_per_million",
+      "value": 0.15,
+      "unit": "USD/1M tokens",
+      "evidence": {
+        "quote": "GPT-4o mini $0.15 / 1M tokens"
+      },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenAI:GPT-4o mini",
+      "field": "output_price_usd_per_million",
+      "value": 0.6,
+      "unit": "USD/1M tokens",
+      "evidence": {
+        "quote": "GPT-4o mini $0.60 / 1M tokens"
+      },
+      "confidence": 0.98
+    }
+  ],
+  "ambiguities": []
+}

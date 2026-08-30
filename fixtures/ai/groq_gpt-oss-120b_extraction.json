@@ -1,0 +1,25 @@
+{
+  "facts": [
+    {
+      "entity": "Groq:GPT-OSS-120B",
+      "field": "requests_per_minute",
+      "value": 30,
+      "unit": "requests/minute",
+      "evidence": {
+        "quote": "GPT-OSS-120B: 30 RPM, 1,000 RPD, 8,000 TPM, 200,000 TPD"
+      },
+      "confidence": 0.95
+    },
+    {
+      "entity": "Groq:GPT-OSS-120B",
+      "field": "requests_per_day",
+      "value": 1000,
+      "unit": "requests/day",
+      "evidence": {
+        "quote": "GPT-OSS-120B: 30 RPM, 1,000 RPD, 8,000 TPM, 200,000 TPD"
+      },
+      "confidence": 0.95
+    }
+  ],
+  "ambiguities": []
+}
