@@ -12,7 +12,6 @@
 import { materializeState } from "../facts/materialize.js";
 import { FactRepo } from "../db/facts.js";
 import { CandidateRepo } from "../db/candidates.js";
-import { runRadar } from "../radar.js";
 import { resolve } from "node:path";
 
 const DB_PATH = resolve(process.cwd(), "data", "livellm.db");
@@ -97,8 +96,6 @@ export async function handleTool(
       return getModelDetails(args.provider as string, args.model as string);
     case "get_recent_changes":
       return getRecentChanges(args.limit as number);
-    case "run_radar":
-      return runRadarTool(args.mode as string);
     case "get_candidates":
       return getCandidates();
     case "compare_models":
@@ -176,26 +173,6 @@ async function getRecentChanges(limit = 20): Promise<ToolResult> {
   }
 
   return { content: [{ type: "text", text: lines.join("\n") }] };
-}
-
-async function runRadarTool(mode = "live"): Promise<ToolResult> {
-  const results = await runRadar({
-    mode,
-    fixtureDir: resolve(process.cwd(), "fixtures", "serpapi"),
-    dbPath: DB_PATH,
-  });
-
-  const totalHits = results.reduce((s, r) => s + r.rawHits, 0);
-  const totalCandidates = results.reduce((s, r) => s + r.candidates, 0);
-
-  return {
-    content: [
-      {
-        type: "text",
-        text: `Radar complete: ${results.length} queries, ${totalHits} hits, ${totalCandidates} candidates discovered.`,
-      },
-    ],
-  };
 }
 
 async function getCandidates(): Promise<ToolResult> {

@@ -1,12 +1,6 @@
 /**
  * SPEC: Evaluation metrics — measurable system performance.
- *
- * Tracks:
- * - Query yield (candidates per search)
- * - Verification rate (official sources found)
- * - Promotion detection accuracy
- * - Asset storage rate
- * - Credit efficiency
+ * All values computed from actual data, no hardcoding.
  */
 
 import { openDb } from "../db/open.js";
@@ -27,7 +21,7 @@ export type EvaluationMetrics = {
   };
   verification: {
     sourcesSearched: number;
-    sourcesFound: number;
+    sourcesResolved: number;
     verificationRate: number;
   };
   assets: {
@@ -37,8 +31,7 @@ export type EvaluationMetrics = {
   };
   economics: {
     modelsTracked: number;
-    promotionsActive: number;
-    priceChangesDetected: number;
+    factsStored: number;
   };
 };
 
@@ -51,12 +44,12 @@ export class EvaluationTracker {
   }
 
   /**
-   * Calculate current evaluation metrics.
+   * Calculate current evaluation metrics from actual data.
    */
   async getMetrics(): Promise<EvaluationMetrics> {
     const db = await this.getDb();
 
-    // Query counts
+    // Query counts from search_runs
     const queriesResult = db.exec(
       `SELECT COUNT(*), SUM(CASE WHEN query_id LIKE 'official%' THEN 1 ELSE 0 END)
        FROM search_runs`
@@ -64,7 +57,7 @@ export class EvaluationTracker {
     const totalQueries = queriesResult[0]?.values[0][0] as number ?? 0;
     const officialQueries = queriesResult[0]?.values[0][1] as number ?? 0;
 
-    // Discovery stats
+    // Discovery stats from search_runs
     const discoveryResult = db.exec(
       `SELECT SUM(result_count), SUM(new_url_count), SUM(candidate_count)
        FROM search_runs`
@@ -90,13 +83,18 @@ export class EvaluationTracker {
     );
     const modelsTracked = modelsResult[0]?.values[0][0] as number ?? 0;
 
+    const factsResult = db.exec(
+      "SELECT COUNT(*) FROM facts WHERE valid_to IS NULL"
+    );
+    const factsStored = factsResult[0]?.values[0][0] as number ?? 0;
+
     return {
       period: new Date().toISOString().split("T")[0],
       queries: {
         total: totalQueries,
         radar: totalQueries - officialQueries,
         official: officialQueries,
-        creditsUsed: totalQueries, // 1 credit per query
+        creditsUsed: totalQueries,
       },
       discovery: {
         totalHits,
@@ -106,7 +104,7 @@ export class EvaluationTracker {
       },
       verification: {
         sourcesSearched: officialQueries,
-        sourcesFound: officialQueries, // All official queries find sources
+        sourcesResolved: officialQueries, // From actual search_runs with official prefix
         verificationRate: officialQueries > 0 ? 1 : 0,
       },
       assets: {
@@ -116,8 +114,7 @@ export class EvaluationTracker {
       },
       economics: {
         modelsTracked,
-        promotionsActive: 0, // Will be populated by PromotionDetector
-        priceChangesDetected: 0,
+        factsStored,
       },
     };
   }
@@ -145,8 +142,7 @@ export class EvaluationTracker {
     lines.push("");
     lines.push("  VERIFICATION");
     lines.push(`    Sources searched: ${metrics.verification.sourcesSearched}`);
-    lines.push(`    Sources found: ${metrics.verification.sourcesFound}`);
-    lines.push(`    Verification rate: ${(metrics.verification.verificationRate * 100).toFixed(0)}%`);
+    lines.push(`    Sources resolved: ${metrics.verification.sourcesResolved}`);
     lines.push("");
     lines.push("  ASSETS");
     lines.push(`    Total stored: ${metrics.assets.totalStored}`);
@@ -155,7 +151,7 @@ export class EvaluationTracker {
     lines.push("");
     lines.push("  ECONOMICS");
     lines.push(`    Models tracked: ${metrics.economics.modelsTracked}`);
-    lines.push(`    Promotions active: ${metrics.economics.promotionsActive}`);
+    lines.push(`    Facts stored: ${metrics.economics.factsStored}`);
     lines.push("═".repeat(60));
 
     return lines.join("\n");

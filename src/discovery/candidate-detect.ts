@@ -84,33 +84,10 @@ export function detectCandidateHints(hit: SearchHit): CandidateHints {
 
 /**
  * SPEC: Extract official source URL from search results.
- * Looks for known official domains.
+ * Uses official-domains allowlist for authority check.
  */
+import { findOfficialUrl as findOfficialFromAllowlist } from "./official-domains.js";
+
 export function findOfficialUrl(hits: SearchHit[], providerHint?: string): string | undefined {
-  const officialDomains: Record<string, string[]> = {
-    OpenAI: ["openai.com", "platform.openai.com"],
-    Anthropic: ["anthropic.com", "console.anthropic.com"],
-    Google: ["ai.google.dev", "cloud.google.com"],
-    DeepSeek: ["deepseek.com", "platform.deepseek.com"],
-    Mistral: ["mistral.ai", "console.mistral.ai"],
-    Meta: ["llama.meta.com", "ai.meta.com"],
-    Groq: ["groq.com"],
-    Fireworks: ["fireworks.ai"],
-    Together: ["together.ai"],
-    Cursor: ["cursor.sh"],
-    GitHub: ["github.com", "github.blog"],
-    Windsurf: ["windsurf.com"],
-  };
-
-  const domains = providerHint ? officialDomains[providerHint] ?? [] : [];
-
-  for (const hit of hits) {
-    for (const domain of domains) {
-      if (hit.url.includes(domain)) {
-        return hit.url;
-      }
-    }
-  }
-
-  return undefined;
+  return findOfficialFromAllowlist(hits, providerHint);
 }

@@ -5,11 +5,9 @@
  * 1. Check if we've seen this URL before
  * 2. If yes: compare content hash → detect change
  * 3. If no: mark as new discovery
- *
- * This is how LiveLLM detects price changes automatically.
  */
 
-import { openDb, saveDb } from "../db/open.js";
+import { openDb } from "../db/open.js";
 
 export type ChangeDetection = {
   url: string;
@@ -30,24 +28,24 @@ export class ChangeDetector {
 
   /**
    * Detect changes for a set of URLs.
-   * Compares current content hash against historical.
+   * Compares latest two observations for each URL.
    */
   async detectChanges(urls: string[]): Promise<ChangeDetection[]> {
     const db = await this.getDb();
     const results: ChangeDetection[] = [];
 
     for (const url of urls) {
-      // Get the most recent asset for this URL
-      const recent = db.exec(
+      // Get the two most recent assets for this URL
+      const rows = db.exec(
         `SELECT content_hash, observed_at
          FROM asset_store
          WHERE source_url = ?
          ORDER BY observed_at DESC
-         LIMIT 1`,
+         LIMIT 2`,
         [url]
       );
 
-      if (!recent.length || !recent[0].values.length) {
+      if (!rows.length || !rows[0].values.length) {
         results.push({
           url,
           status: "new",
@@ -57,29 +55,20 @@ export class ChangeDetector {
         continue;
       }
 
-      const [previousHash, previousObservedAt] = recent[0].values[0] as [string, string];
+      const [currentHash, currentObservedAt] = rows[0].values[0] as [string, string];
 
-      // Get the current asset for this URL
-      const current = db.exec(
-        `SELECT content_hash, observed_at
-         FROM asset_store
-         WHERE source_url = ?
-         ORDER BY observed_at DESC
-         LIMIT 1`,
-        [url]
-      );
-
-      if (!current.length || !current[0].values.length) {
+      if (rows[0].values.length < 2) {
+        // Only one observation — can't compare
         results.push({
           url,
           status: "new",
-          currentHash: "",
-          currentObservedAt: new Date().toISOString(),
+          currentHash,
+          currentObservedAt,
         });
         continue;
       }
 
-      const [currentHash, currentObservedAt] = current[0].values[0] as [string, string];
+      const [previousHash, previousObservedAt] = rows[0].values[1] as [string, string];
 
       results.push({
         url,
@@ -120,18 +109,18 @@ export class ChangeDetector {
   }
 
   /**
-   * Get URLs that haven't been checked recently.
+   * Get URLs whose most recent observation is older than threshold.
    */
   async getStaleUrls(olderThanHours = 24): Promise<string[]> {
     const db = await this.getDb();
     const cutoff = new Date(Date.now() - olderThanHours * 60 * 60 * 1000).toISOString();
 
     const rows = db.exec(
-      `SELECT DISTINCT source_url
+      `SELECT source_url
        FROM asset_store
        WHERE source_url IS NOT NULL
-       AND observed_at < ?
-       ORDER BY observed_at ASC`,
+       GROUP BY source_url
+       HAVING MAX(observed_at) < ?`,
       [cutoff]
     );
 

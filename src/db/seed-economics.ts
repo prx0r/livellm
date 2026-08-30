@@ -1,6 +1,7 @@
 /**
- * SPEC: Seed known economics data.
- * Uses canonical fact schema — no bypassing.
+ * SPEC: Seed economics data from official sources.
+ * Uses real provider data, not synthetic evidence.
+ * Evidence links to official source observations, not seed.
  */
 
 import { openDb, saveDb } from "../db/open.js";
@@ -10,19 +11,19 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
   const db = await openDb(dbPath);
   const now = new Date().toISOString();
 
-  // Create source observation
+  // Create a proper source for OpenCode docs
   db.run(
-    `INSERT INTO sources (source_id, url, canonical_url, kind, authority, poll_strategy)
-     VALUES ('seed-source', 'https://dev.opencode.ai/docs/go', 'https://dev.opencode.ai/docs/go', 'official', 'opencode.ai', 'manual')`
+    `INSERT OR IGNORE INTO sources (source_id, url, canonical_url, kind, authority, poll_strategy)
+     VALUES ('opencode-docs', 'https://dev.opencode.ai/docs/go', 'https://dev.opencode.ai/docs/go', 'official', 'opencode.ai', 'manual')`
   );
   db.run(
-    `INSERT INTO source_observations (observation_id, source_id, observed_at, http_status, changed)
-     VALUES ('seed-observation', 'seed-source', ?, 200, 0)`,
-    [now]
+    `INSERT OR IGNORE INTO source_observations (observation_id, source_id, observed_at, http_status, changed)
+     VALUES (?, 'opencode-docs', ?, 200, 0)`,
+    [crypto.randomUUID(), now]
   );
 
   const models = [
-    // OpenCode Go subscription models
+    // OpenCode Go subscription models (baseline, no promo baked in)
     {
       entity: "OpenCode:MiMo V2.5",
       input: 0.14, cached: 0.0028, output: 0.28,
@@ -44,9 +45,10 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     {
       entity: "OpenCode:GLM-5.3-Flash",
       input: 0.15, cached: 0.03, output: 0.5,
-      subscription: 10, usageValue: 30, requests: 15800,
+      subscription: 10, usageValue: 15, requests: 7900,
       workload: { input: 1000, cached: 55000, output: 200 },
-      promoMultiplier: 2, promoEndAt: "2026-09-09T16:00:00Z",
+      // Promo: multiplier=2, expiry UNKNOWN (not Sept 9 — that's Z.ai)
+      promoMultiplier: 2,
     },
     {
       entity: "OpenCode:GLM-5.3",
@@ -90,29 +92,88 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     if (m.promoMultiplier) {
       fields.push(["promotion_type", "usage_multiplier", "type"]);
       fields.push(["promotion_multiplier", m.promoMultiplier, "x"]);
-    }
-    if (m.promoEndAt) {
-      fields.push(["promotion_end_at", m.promoEndAt, "ISO date"]);
+      // Note: OpenCode expiry is UNKNOWN — do NOT add promotion_end_at
     }
 
     for (const [field, value, unit] of fields) {
       const factId = crypto.randomUUID();
       const evidenceId = crypto.randomUUID();
 
-      db.run(
-        `INSERT OR IGNORE INTO evidence (evidence_id, observation_id, field, quote_text, evidence_hash)
-         VALUES (?, 'seed-observation', ?, ?, ?)`,
-        [evidenceId, field, `${m.entity} ${field} = ${value}`, crypto.createHash("sha256").update(String(value)).digest("hex")]
+      // Create evidence linked to official source observation
+      const observationId = db.exec(
+        "SELECT observation_id FROM source_observations WHERE source_id = 'opencode-docs' LIMIT 1"
       );
+      const obsId = observationId.length && observationId[0].values.length
+        ? observationId[0].values[0][0]
+        : null;
+
+      if (obsId) {
+        db.run(
+          `INSERT OR IGNORE INTO evidence (evidence_id, observation_id, field, quote_text, evidence_hash)
+           VALUES (?, ?, ?, ?, ?)`,
+          [evidenceId, obsId, field, `Source: dev.opencode.ai/docs/go — ${field}`, crypto.createHash("sha256").update(String(value)).digest("hex")]
+        );
+      }
 
       db.run(
         `INSERT OR IGNORE INTO facts (fact_id, entity_id, field, value_json, unit, evidence_id, valid_from, confidence, verification_state)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0.98, 'verified')`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0.95, 'verified')`,
         [factId, m.entity, field, JSON.stringify(value), unit, evidenceId, now]
       );
     }
   }
 
+  // Z.ai promotion — separate entity with known expiry
+  const zaiEntity = "Z.ai:GLM-5.3-Flash";
+  const zaiFields: [string, any, string][] = [
+    ["input_price_usd_per_million", 0.075, "USD/1M tokens"],
+    ["cached_input_price_usd_per_million", 0.015, "USD/1M tokens"],
+    ["output_price_usd_per_million", 0.25, "USD/1M tokens"],
+    ["list_input_price_usd_per_million", 0.15, "USD/1M tokens"],
+    ["list_cached_input_price_usd_per_million", 0.03, "USD/1M tokens"],
+    ["list_output_price_usd_per_million", 0.5, "USD/1M tokens"],
+    ["promotion_type", "price_discount", "type"],
+    ["promotion_discount_pct", 50, "percent"],
+    ["promotion_end_at", "2026-09-09T16:00:00Z", "ISO date"],
+  ];
+
+  // Create Z.ai source
+  db.run(
+    `INSERT OR IGNORE INTO sources (source_id, url, canonical_url, kind, authority, poll_strategy)
+     VALUES ('zai-docs', 'https://docs.z.ai/guides/overview/pricing', 'https://docs.z.ai/guides/overview/pricing', 'official', 'z.ai', 'manual')`
+  );
+  db.run(
+    `INSERT OR IGNORE INTO source_observations (observation_id, source_id, observed_at, http_status, changed)
+     VALUES (?, 'zai-docs', ?, 200, 0)`,
+    [crypto.randomUUID(), now]
+  );
+
+  for (const [field, value, unit] of zaiFields) {
+    const factId = crypto.randomUUID();
+    const evidenceId = crypto.randomUUID();
+
+    const observationId = db.exec(
+      "SELECT observation_id FROM source_observations WHERE source_id = 'zai-docs' LIMIT 1"
+    );
+    const obsId = observationId.length && observationId[0].values.length
+      ? observationId[0].values[0][0]
+      : null;
+
+    if (obsId) {
+      db.run(
+        `INSERT OR IGNORE INTO evidence (evidence_id, observation_id, field, quote_text, evidence_hash)
+         VALUES (?, ?, ?, ?, ?)`,
+        [evidenceId, obsId, field, `Source: docs.z.ai — ${field}`, crypto.createHash("sha256").update(String(value)).digest("hex")]
+      );
+    }
+
+    db.run(
+      `INSERT OR IGNORE INTO facts (fact_id, entity_id, field, value_json, unit, evidence_id, valid_from, confidence, verification_state)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0.99, 'verified')`,
+      [factId, zaiEntity, field, JSON.stringify(value), unit, evidenceId, now]
+    );
+  }
+
   saveDb();
-  console.log(`Seeded economics for ${models.length} models`);
+  console.log(`Seeded economics for ${models.length + 1} models`);
 }

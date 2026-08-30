@@ -147,26 +147,35 @@ export function calculateEconomics(
   }
 
   // Subscription economics
-  const requestsPerMonth = plan.requestsPerMonth ?? 30_000;
-  const simulatedMonthly = costPerRequest * requestsPerMonth;
+  const baselineRequests = plan.requestsPerMonth;
+  if (baselineRequests == null) {
+    return {
+      status: "not_computable",
+      missing: ["requests_per_month"],
+    };
+  }
 
   // Apply promotion multiplier if present
-  let effectiveRequests = requestsPerMonth;
+  let effectiveRequests = baselineRequests;
   if (plan.promotionMultiplier && plan.promotionMultiplier > 1) {
-    effectiveRequests = requestsPerMonth * plan.promotionMultiplier;
-    notes.push(`${plan.promotionMultiplier}× usage promotion`);
+    effectiveRequests = baselineRequests * plan.promotionMultiplier;
+    notes.push(`${plan.promotionMultiplier}× usage promotion: ${baselineRequests} → ${effectiveRequests} requests/month`);
   }
+
+  // Simulate with effective requests (post-promo)
+  const simulatedMonthly = costPerRequest * effectiveRequests;
 
   // Multiple = how much value you get vs what you pay
   const effectiveMultiple = simulatedMonthly / plan.monthlyPrice;
 
-  // Reconciliation
+  // Reconciliation (compare baseline simulation to provider's usage value)
   let reconciliationResidual: number | undefined;
   let reconciliationStatus: "consistent" | "warning" | "major_disagreement" | undefined;
 
   if (plan.usageValueUsd) {
+    const baselineSimulated = costPerRequest * baselineRequests;
     reconciliationResidual =
-      ((simulatedMonthly - plan.usageValueUsd) / plan.usageValueUsd) * 100;
+      ((baselineSimulated - plan.usageValueUsd) / plan.usageValueUsd) * 100;
 
     if (Math.abs(reconciliationResidual) < 10) {
       reconciliationStatus = "consistent";
@@ -174,7 +183,7 @@ export function calculateEconomics(
       reconciliationStatus = "warning";
     } else {
       reconciliationStatus = "major_disagreement";
-      notes.push(`Simulation $${simulatedMonthly.toFixed(2)} vs provider $${plan.usageValueUsd} (${reconciliationResidual.toFixed(1)}% residual)`);
+      notes.push(`Baseline simulation $${baselineSimulated.toFixed(2)} vs provider $${plan.usageValueUsd} (${reconciliationResidual.toFixed(1)}% residual)`);
     }
   }
 

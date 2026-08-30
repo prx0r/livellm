@@ -111,7 +111,11 @@ describe("economics", () => {
       );
       expect(result.status).toBe("computed");
       if (result.status === "computed") {
-        expect(result.notes).toContain("2× usage promotion");
+        // Should have 2× note
+        expect(result.notes.some(n => n.includes("2×"))).toBe(true);
+        // Effective multiple should be ~3.0 (15800 × $0.0019 / $10)
+        expect(result.effectiveMultiple).toBeGreaterThan(2.5);
+        expect(result.effectiveMultiple).toBeLessThan(3.5);
       }
     });
 
