@@ -227,13 +227,6 @@ async function getReplayContent(
     return readFileSync(fixturePath, "utf8");
   }
 
-  // Return a minimal synthetic page for testing
-  return `<html><body>
-    <h1>API Pricing</h1>
-    <table>
-      <tr><td>Input tokens</td><td>$0.25 per million</td></tr>
-      <tr><td>Output tokens</td><td>$1.25 per million</td></tr>
-      <tr><td>Free tier</td><td>1,000 requests/day</td></tr>
-    </table>
-  </body></html>`;
+  // FAIL CLOSED — never fabricate a pricing page
+  throw new Error(`MISSING_REPLAY_FIXTURE: ${url}`);
 }

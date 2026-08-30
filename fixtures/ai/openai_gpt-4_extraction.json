@@ -3,7 +3,7 @@
     {
       "entity": "OpenAI:GPT-4",
       "field": "input_price_usd_per_million",
-      "value": 0.01,
+      "value": 10,
       "unit": "USD/1M tokens",
       "evidence": {
         "quote": "50% reduction in GPT-4 API pricing, bringing the cost down to $0.01 per 1K tokens for input"

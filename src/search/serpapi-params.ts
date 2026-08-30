@@ -27,14 +27,19 @@ export function buildSerpApiParams(
     q: request.q,
   };
 
-  // Apply freshness policy
+  // Merge caller params FIRST
+  for (const [k, v] of Object.entries(request.params ?? {})) {
+    params[k] = String(v);
+  }
+
+  // Enforce freshness policy AFTER (can't be overridden by caller)
   if (freshness === "force_fresh") {
     params.no_cache = "true";
   }
 
-  // Merge caller params (caller can override)
-  for (const [k, v] of Object.entries(request.params ?? {})) {
-    params[k] = String(v);
+  // Reject async + no_cache (SerpApi constraint)
+  if (params.async === "true" && params.no_cache === "true") {
+    throw new Error("SerpApi does not allow async=true with no_cache=true");
   }
 
   return params;

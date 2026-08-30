@@ -15,19 +15,22 @@
  * Only validated facts enter the ledger.
  */
 
-export type FactField =
-  | "input_price_usd_per_million"
-  | "output_price_usd_per_million"
-  | "cached_input_price_usd_per_million"
-  | "monthly_price_usd"
-  | "included_credit_usd"
-  | "requests_per_day"
-  | "requests_per_minute"
-  | "context_tokens"
-  | "promotion_end_at"
-  | "availability"
-  | "free_tier_quota"
-  | "free_tier_period";
+export const VALID_FIELDS = [
+  "input_price_usd_per_million",
+  "output_price_usd_per_million",
+  "cached_input_price_usd_per_million",
+  "monthly_price_usd",
+  "included_credit_usd",
+  "requests_per_day",
+  "requests_per_minute",
+  "context_tokens",
+  "promotion_end_at",
+  "availability",
+  "free_tier_quota",
+  "free_tier_period",
+] as const;
+
+export type FactField = (typeof VALID_FIELDS)[number];
 
 export type ProposedFact = {
   entity: string;

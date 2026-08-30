@@ -56,7 +56,8 @@ export type SearchResponse = {
   request: SearchRequest;
   searchId?: string;
   fromCache: boolean;
-  cacheSource?: "serpapi_cache" | "local_cache" | "replay" | "live";
+  cacheSource?: "local_cache" | "replay" | "live";
+  serpApiCacheAllowed?: boolean;
   hits: SearchHit[];
   envelope?: SearchEnvelope;
   raw?: unknown;

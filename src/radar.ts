@@ -2,7 +2,7 @@ import { openDb } from "./db/open.js";
 import { SearchRunRepo } from "./db/search-runs.js";
 import { CandidateRepo } from "./db/candidates.js";
 import { SqliteCacheStore } from "./db/cache.js";
-import { SerpApiProvider } from "./search/serpapi.js";
+import { SerpApiProvider, getSerpApiAccount, allowedPaidBatch } from "./search/serpapi.js";
 import { CachedSearchProvider } from "./search/local-cache.js";
 import { ReplaySearchProvider } from "./search/replay.js";
 import { shouldInvestigate } from "./discovery/prefilter.js";
@@ -72,10 +72,25 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
 
   // Build provider
   let provider: SearchProvider;
+  let budget = 10; // Default for replay mode
   if (config.mode === "replay") {
     if (!config.fixtureDir) throw new Error("--fixture-dir required in replay mode");
     provider = new ReplaySearchProvider(config.fixtureDir);
   } else {
+    // Check quota governor before making live SerpApi calls
+    const account = await getSerpApiAccount();
+    budget = allowedPaidBatch(
+      account.total_searches_left,
+      parseInt(process.env.LLMDEALS_SERPAPI_DAILY_BUDGET ?? "4"),
+      parseInt(process.env.LLMDEALS_SERPAPI_MONTHLY_RESERVE ?? "20")
+    );
+    console.log(`[radar] Quota: ${account.total_searches_left} left, budget: ${budget} searches`);
+
+    if (budget === 0) {
+      console.log("[radar] Quota guard — not enough searches remaining");
+      return [];
+    }
+
     const live = new SerpApiProvider();
     const cache = new SqliteCacheStore();
     provider = new CachedSearchProvider(live, cache, 60 * 60 * 1000);
@@ -104,6 +119,7 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
 
   const now = Date.now();
   const results: RadarResult[] = [];
+  let searchesUsed = 0;
 
   // Track known URLs across queries for cross-query dedup
   const knownUrls = new Set<string>();
@@ -118,6 +134,12 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
   const isReplay = config.mode === "replay";
 
   for (const row of rows) {
+    // Budget cap — stop if we've used all allowed searches
+    if (!isReplay && searchesUsed >= budget) {
+      console.log(`[radar] Budget cap reached (${budget} searches used)`);
+      break;
+    }
+
     // In replay mode, skip interval check (no API credits spent)
     if (!isReplay) {
       const lastRun = row.last_run_at ? new Date(row.last_run_at).getTime() : 0;
@@ -139,6 +161,11 @@ export async function runRadar(config: RadarConfig): Promise<RadarResult[]> {
       const response = await provider.search(request);
       const searchId = response.searchId;
       const rawHits = response.hits.length;
+
+      // Track budget usage (replay doesn't count)
+      if (!isReplay && !response.fromCache) {
+        searchesUsed++;
+      }
 
       // Canonicalize and dedupe
       const canonicals = response.hits.map((h) => ({

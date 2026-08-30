@@ -66,8 +66,9 @@ export class SerpApiProvider implements SearchProvider {
     return {
       request,
       searchId: envelope.metadata.searchId,
-      fromCache: freshness === "cache_ok",
-      cacheSource: freshness === "cache_ok" ? "serpapi_cache" : "live",
+      fromCache: false, // We don't know if SerpApi used its cache
+      cacheSource: "live",
+      serpApiCacheAllowed: freshness === "cache_ok",
       hits: envelope.results,
       envelope,
       raw,

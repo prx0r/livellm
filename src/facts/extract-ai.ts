@@ -1,20 +1,22 @@
 /**
  * SPEC: AI structured fact extraction.
  *
- * This module calls the LLM to extract pricing/quota facts from official pages.
- * In replay mode, it uses recorded LLM responses.
+ * Both live and replay paths go through the SAME validation pipeline.
+ * Replay loads the external LLM response, not a pre-validated fact list.
  *
  * Pipeline:
  * 1. Build extraction prompt with provider/product/page content
- * 2. Call LLM (or load replay fixture)
- * 3. Parse output into ProposedFact[]
- * 4. Validate deterministically
- * 5. Return only accepted facts
+ * 2. Call LLM (or load replay fixture — the raw LLM output, not validated facts)
+ * 3. Parse raw JSON into ProposedFact[]
+ * 4. Runtime schema validation (field enum check)
+ * 5. Unit normalization and compatibility
+ * 6. Deterministic fact validation (evidence, ranges, confidence)
+ * 7. Return only accepted facts
  */
 
 import type { ProposedFact, FactExtraction } from "./schema.js";
-import { buildExtractionPrompt, parseExtractionOutput } from "./schema.js";
-import { validateProposedFacts, acceptedFacts } from "./validate.js";
+import { buildExtractionPrompt, parseExtractionOutput, VALID_FIELDS } from "./schema.js";
+import { validateProposedFacts, acceptedFacts, normalizePrice, isUnitCompatible } from "./validate.js";
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -25,10 +27,6 @@ export type AiExtractorConfig = {
   replayDir?: string;
 };
 
-/**
- * SPEC: Expected LLM response format.
- * The model must return valid JSON matching FactExtraction.
- */
 export type ExtractionResult = {
   facts: ProposedFact[];
   rawOutput: string;
@@ -36,16 +34,67 @@ export type ExtractionResult = {
 };
 
 /**
+ * SPEC: Process raw LLM output through the full validation pipeline.
+ * This is the SINGLE entry point for both live and replay.
+ */
+function processExtractionOutput(
+  rawOutput: string,
+  sourceText: string
+): { facts: ProposedFact[]; rejected: Array<{ fact: ProposedFact; reason: string }> } {
+  // 1. Parse JSON
+  const extraction = parseExtractionOutput(rawOutput);
+
+  // 2. Runtime schema validation — reject unknown fields
+  const schemaValid = extraction.facts.filter((f) => {
+    if (!VALID_FIELDS.includes(f.field as any)) {
+      return false; // Unknown field — silently drop
+    }
+    if (!f.entity || f.entity.length < 3) {
+      return false; // Invalid entity
+    }
+    if (typeof f.confidence !== "number" || f.confidence < 0 || f.confidence > 1) {
+      return false; // Invalid confidence
+    }
+    return true;
+  });
+
+  // 3. Unit normalization and compatibility
+  const unitNormalized = schemaValid.map((f) => {
+    if (typeof f.value === "number" && f.field.includes("price")) {
+      const normalized = normalizePrice(f.value, f.unit);
+      return { ...f, value: normalized.value, unit: normalized.unit };
+    }
+    return f;
+  });
+
+  // 4. Check unit/field compatibility
+  const compatible = unitNormalized.filter((f) => {
+    if (typeof f.value === "number") {
+      return isUnitCompatible(f.field, f.unit);
+    }
+    return true;
+  });
+
+  // 5. Deterministic validation (evidence, ranges, confidence)
+  const validated = validateProposedFacts(compatible, sourceText);
+  const facts = acceptedFacts(validated);
+
+  // Track rejected facts for debugging
+  const rejected: Array<{ fact: ProposedFact; reason: string }> = [];
+  for (const v of validated) {
+    if (!v.validated) {
+      rejected.push({ fact: v, reason: v.rejectionReason ?? "unknown" });
+    }
+  }
+
+  return { facts, rejected };
+}
+
+/**
  * SPEC: Extract facts from official page content.
  *
- * In production:
- * - Sends page content to LLM with extraction prompt
- * - LLM returns structured JSON
- * - Deterministic validator filters
- *
- * In replay mode:
- * - Loads pre-recorded LLM response from fixture
- * - Zero API cost
+ * Both live and replay use processExtractionOutput.
+ * Replay loads the raw LLM output fixture, not pre-validated facts.
  */
 export async function extractFacts(
   providerName: string,
@@ -53,45 +102,67 @@ export async function extractFacts(
   pageContent: string,
   config: AiExtractorConfig = {}
 ): Promise<ExtractionResult> {
-  // Try replay first
+  let rawOutput: string;
+  let usedCache = false;
+
+  // Try replay first — loads RAW LLM output, not validated facts
   if (config.replayDir) {
-    const replayResult = tryReplay(
+    const replayRaw = tryReplayRaw(
       providerName,
       productName,
       config.replayDir
     );
-    if (replayResult) return replayResult;
+    if (replayRaw !== null) {
+      rawOutput = replayRaw;
+      usedCache = true;
+    } else {
+      rawOutput = await callLlm(
+        buildExtractionPrompt(providerName, productName, pageContent),
+        config
+      );
+    }
+  } else {
+    rawOutput = await callLlm(
+      buildExtractionPrompt(providerName, productName, pageContent),
+      config
+    );
   }
 
-  // Live extraction
-  const prompt = buildExtractionPrompt(providerName, productName, pageContent);
-  const rawOutput = await callLlm(prompt, config);
+  // BOTH paths go through the same validation
+  const { facts } = processExtractionOutput(rawOutput, pageContent);
 
-  // Parse
-  const extraction = parseExtractionOutput(rawOutput);
+  return { facts, rawOutput, usedCache };
+}
 
-  // Validate against source text
-  const validated = validateProposedFacts(extraction.facts, pageContent);
-  const facts = acceptedFacts(validated);
+/**
+ * SPEC: Load raw LLM output from fixture (NOT pre-validated facts).
+ */
+function tryReplayRaw(
+  providerName: string,
+  productName: string,
+  replayDir: string
+): string | null {
+  const fixtureName = `${providerName.toLowerCase()}_${productName.toLowerCase()}_extraction.json`;
+  const fixturePath = resolve(replayDir, fixtureName);
 
-  return {
-    facts,
-    rawOutput,
-    usedCache: false,
-  };
+  if (!existsSync(fixturePath)) return null;
+
+  try {
+    return readFileSync(fixturePath, "utf8");
+  } catch {
+    return null;
+  }
 }
 
 /**
  * SPEC: Call the LLM for extraction.
- * Uses OpenAI-compatible API.
  */
 async function callLlm(
   prompt: string,
   config: AiExtractorConfig
 ): Promise<string> {
   const apiKey = config.apiKey ?? process.env.OPENCODE_GO_API_KEY;
-  const baseUrl =
-    config.baseUrl ?? "https://opencode.ai/zen/go/v1";
+  const baseUrl = config.baseUrl ?? "https://opencode.ai/zen/go/v1";
   const model = config.model ?? "mimo-v2.5";
 
   if (!apiKey) {
@@ -112,45 +183,11 @@ async function callLlm(
     }),
   });
 
-  if (!res.ok) {
-    throw new Error(`LLM API HTTP ${res.status}`);
-  }
-
+  if (!res.ok) throw new Error(`LLM API HTTP ${res.status}`);
   const json = (await res.json()) as any;
   return json.choices?.[0]?.message?.content ?? "";
 }
 
-/**
- * SPEC: Try loading a replay fixture for AI extraction.
- * This lets us test the full pipeline without LLM calls.
- */
-function tryReplay(
-  providerName: string,
-  productName: string,
-  replayDir: string
-): ExtractionResult | null {
-  const fixtureName = `${providerName.toLowerCase()}_${productName.toLowerCase()}_extraction.json`;
-  const fixturePath = resolve(replayDir, fixtureName);
-
-  if (!existsSync(fixturePath)) return null;
-
-  try {
-    const raw = readFileSync(fixturePath, "utf8");
-    const extraction = parseExtractionOutput(raw);
-
-    return {
-      facts: extraction.facts,
-      rawOutput: raw,
-      usedCache: true,
-    };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * SPEC: Record an AI extraction for future replay.
- */
 export function recordExtraction(
   providerName: string,
   productName: string,
