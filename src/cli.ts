@@ -298,6 +298,27 @@ async function run() {
       break;
     }
 
+    case "daily": {
+      const { runDaily } = await import("./pipeline/daily.js");
+      await runDaily({
+        dbPath: resolve(cwd, "data", "livellm.db"),
+        fixtureDir: resolve(cwd, "fixtures"),
+        mode: (values.mode as string) ?? "live",
+      });
+      break;
+    }
+
+    case "changes-detect": {
+      const { ChangeDetector } = await import("./pipeline/change-detector.js");
+      const detector = new ChangeDetector();
+      const stale = await detector.getStaleUrls(24);
+      console.log(`URLs older than 24h: ${stale.length}`);
+      for (const url of stale.slice(0, 10)) {
+        console.log(`  ${url}`);
+      }
+      break;
+    }
+
     case "assets": {
       const { AssetStore } = await import("./db/assets.js");
       const store = new AssetStore();
