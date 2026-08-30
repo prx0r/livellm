@@ -1,0 +1,37 @@
+{
+  "facts": [
+    {
+      "entity": "OpenCode:Hy3",
+      "field": "input_price_usd_per_million",
+      "value": 0.14,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Hy3 input $0.14 per million tokens" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode:Hy3",
+      "field": "cached_input_price_usd_per_million",
+      "value": 0.035,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "cached input $0.035 per million tokens" },
+      "confidence": 0.95
+    },
+    {
+      "entity": "OpenCode:Hy3",
+      "field": "output_price_usd_per_million",
+      "value": 0.58,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Hy3 output $0.58 per million tokens" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode:Hy3",
+      "field": "monthly_price_usd",
+      "value": 10,
+      "unit": "USD/month",
+      "evidence": { "quote": "$10/month subscription" },
+      "confidence": 0.98
+    }
+  ],
+  "ambiguities": []
+}

@@ -31,6 +31,7 @@ Commands:
   radar       Run one radar cycle (discover → candidates → verify)
   official    Run official-source discovery (targeted site: queries)
   investigate Investigate candidates with AI extraction
+  economics   Calculate LLM economics (MiMo 6×, Kimi 10.5×, etc.)
   facts       Show current facts in the ledger
   changes     Show recent change events
   materialize Materialize current state from fact ledger
@@ -119,6 +120,12 @@ async function run() {
       break;
     }
 
+    case "seed-economics": {
+      const { seedEconomics } = await import("./db/seed-economics.js");
+      await seedEconomics(resolve(cwd, "data", "livellm.db"));
+      break;
+    }
+
     case "official": {
       const { runOfficialDiscovery } = await import("./pipeline/official-discovery.js");
       await runOfficialDiscovery({
@@ -134,6 +141,39 @@ async function run() {
         dbPath: resolve(cwd, "data", "livellm.db"),
         replayDir: values["fixture-dir"] ?? resolve(cwd, "fixtures", "ai"),
       });
+      break;
+    }
+
+    case "economics": {
+      const { calculateEconomics, formatEconomics } = await import("./facts/economics.js");
+      const { FactRepo } = await import("./db/facts.js");
+      const repo = new FactRepo();
+      const entities = await repo.getEntities();
+
+      for (const entity of entities) {
+        const [provider, ...nameParts] = entity.split(":");
+        const name = nameParts.join(":") || provider;
+        const facts = await repo.getEntityFacts(entity);
+
+        const input = facts.find((f: any) => f.field === "input_price_usd_per_million");
+        const output = facts.find((f: any) => f.field === "output_price_usd_per_million");
+        const cached = facts.find((f: any) => f.field === "cached_input_price_usd_per_million");
+        const monthly = facts.find((f: any) => f.field === "monthly_price_usd");
+        const requests = facts.find((f: any) => f.field === "requests_per_month");
+
+        if (input && monthly) {
+          const result = calculateEconomics(entity, provider, name, {
+            input_per_1m: input.value,
+            output_per_1m: output?.value ?? input.value * 3,
+            cached_input_per_1m: cached?.value,
+            monthly_price: monthly.value,
+            requests_per_month: requests?.value ?? 30000,
+            provider_usage_usd: 60,
+          });
+          console.log(formatEconomics(result));
+          console.log("");
+        }
+      }
       break;
     }
 

@@ -1,0 +1,37 @@
+{
+  "facts": [
+    {
+      "entity": "OpenCode:Kimi K2.7",
+      "field": "input_price_usd_per_million",
+      "value": 0.95,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Kimi K2.7 input $0.95 per million tokens" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode:Kimi K2.7",
+      "field": "cached_input_price_usd_per_million",
+      "value": 0.19,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "cached input $0.19 per million tokens" },
+      "confidence": 0.95
+    },
+    {
+      "entity": "OpenCode:Kimi K2.7",
+      "field": "output_price_usd_per_million",
+      "value": 4,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Kimi K2.7 output $4 per million tokens" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode:Kimi K2.7",
+      "field": "monthly_price_usd",
+      "value": 10,
+      "unit": "USD/month",
+      "evidence": { "quote": "$10/month subscription" },
+      "confidence": 0.98
+    }
+  ],
+  "ambiguities": []
+}

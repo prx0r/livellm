@@ -1,0 +1,37 @@
+{
+  "facts": [
+    {
+      "entity": "OpenCode:MiMo V2.5",
+      "field": "input_price_usd_per_million",
+      "value": 0.14,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "MiMo V2.5 input $0.14 per million tokens" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode:MiMo V2.5",
+      "field": "cached_input_price_usd_per_million",
+      "value": 0.0028,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "cached input $0.0028 per million tokens" },
+      "confidence": 0.95
+    },
+    {
+      "entity": "OpenCode:MiMo V2.5",
+      "field": "output_price_usd_per_million",
+      "value": 0.28,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "MiMo V2.5 output $0.28 per million tokens" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode:MiMo V2.5",
+      "field": "monthly_price_usd",
+      "value": 10,
+      "unit": "USD/month",
+      "evidence": { "quote": "$10/month subscription" },
+      "confidence": 0.98
+    }
+  ],
+  "ambiguities": []
+}
