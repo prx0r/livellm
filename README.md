@@ -1,89 +1,77 @@
 # LiveLLM
 
-**The live truth and market-intelligence layer for AI.**
+**Verified live market intelligence for AI agents.**
 
-LiveLLM discovers LLM pricing changes through SerpApi, verifies them against official sources, calculates economic impact, and measures when AI answers have gone stale.
+> AI model prices, quotas and promotions change faster than static datasets and model knowledge can keep up. LiveLLM uses SerpApi to discover market changes, verifies them against authoritative sources, converts them into versioned facts, and calculates how those changes affect real workloads.
 
 ## Quick Start
 
 ```bash
-npm install
+npm ci
 npm run build
-
-# Run full pipeline
-npm run radar        # Discover pricing changes
-npm run economics    # Calculate value metrics
-npm run md           # Generate agent-ready output
-
-# Or run the demo
-npm run replay       # Test against fixtures
+npm test
+npm run demo
 ```
 
 ## Architecture
 
 ```
-SerpApi Radar → Candidates → Official Sources → AI Extraction → Facts → Economics
+SerpApi Discovery → Candidates → Official Sources → AI Extraction → Facts → Economics
      ↓              ↓              ↓                ↓            ↓          ↓
-  Search IDs    Prefilter     Verification    Deterministic   Ledger   MiMo 6×
-                                                     ↑                  Kimi 10.5×
+  Search IDs    Prefilter     Verification    Deterministic   Ledger   Provider Workloads
+                                                     ↑
                                                 Validation
+```
+
+## SerpApi Integration
+
+| API | Role |
+|-----|------|
+| Google News Light | Emerging announcements |
+| Google Light | Official-source discovery |
+| Search Index Deep | Unknown providers/offers |
+| Account API | Quota governance |
+| JSON Restrictor | Efficient structured acquisition |
+
+## Demo: GLM-5.3-Flash Promotion
+
+```
+GLM-5.3-Flash — Two promotions detected:
+
+Z.ai: 50% off ($0.075/$0.25) until Sept 9
+OpenCode Go: 2× usage (3,160 req/5hrs)
+
+Which route is cheaper depends on workload.
 ```
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `radar` | Run discovery cycle (News Light, Google Light, Search Index) |
-| `official` | Targeted official-source searches (`site:openai.com`) |
-| `investigate` | AI extraction with deterministic validation |
-| `economics` | Calculate LLMDeals workload simulation |
-| `facts` | Show current fact ledger |
-| `changes` | Show recent price/quota changes |
-| `md` | Generate Markdown payload for agents |
-| `mcp` | Start MCP server for AI agents |
-| `dashboard` | Generate Live Radar HTML dashboard |
-
-## SerpApi Integration
-
-- **Google News Light**: Fresh pricing announcements
-- **Google Light**: Broad discovery + related questions/searches
-- **Search Index**: Deep exploration with `mode=deep`
-- **JSON Restrictor**: 60% smaller payloads
-- **Account API**: Quota governor with reserve
-- **Search Archive**: Provenance for every fact
-
-## Economics Engine
-
-Calculates value using the LLMDeals workload simulation:
-
-| Model | Simulated | Provider | Reconciliation |
-|-------|-----------|----------|----------------|
-| MiMo V2.5 | $60.01 | $60 | ✓ +0.02% |
-| Hy3 | $59.98 | $60 | ✓ -0.03% |
-| Kimi K2.7 | $104.99 | $60 | ✗ +75% |
-| DeepSeek V4 Flash | $33.18 | $30 | ✓ +10.6% |
-
-## MCP Tools
-
-```json
-{
-  "tools": [
-    "get_market_snapshot",
-    "get_model_details",
-    "get_recent_changes",
-    "run_radar",
-    "get_candidates",
-    "compare_models"
-  ]
-}
+```bash
+npm run radar          # Run discovery cycle
+npm run official       # Targeted official-source searches
+npm run economics      # Calculate value metrics
+npm run md             # Generate Markdown for agents
+npm run mcp            # Start MCP server
+npm run dashboard      # Generate Live Radar HTML
 ```
 
 ## Testing
 
 ```bash
-npm test              # 37 tests, zero credits
+npm test               # 37 tests, zero credits
 npm run radar -- --mode replay  # Test against fixtures
 ```
+
+## Economics
+
+Uses provider-specific workloads for accurate calculations:
+
+| Model | Multiple | Reconciliation |
+|-------|----------|----------------|
+| MiMo V2.5 | 1.00× | ✓ |
+| Hy3 | 1.00× | ✓ |
+| GLM-5.3-Flash | 1.00× | ✓ |
+| Kimi K2.7 | 1.36× | ✗ +35.9% |
 
 ## License
 

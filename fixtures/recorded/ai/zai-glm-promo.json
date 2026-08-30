@@ -1,0 +1,77 @@
+{
+  "facts": [
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "list_input_price_usd_per_million",
+      "value": 0.15,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "GLM-5.3-Flash | ~~$0.15~~ $0.075" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "input_price_usd_per_million",
+      "value": 0.075,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "GLM-5.3-Flash | ~~$0.15~~ $0.075" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "list_output_price_usd_per_million",
+      "value": 0.5,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Output | ~~$0.50~~ $0.25" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "output_price_usd_per_million",
+      "value": 0.25,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Output | ~~$0.50~~ $0.25" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "list_cached_input_price_usd_per_million",
+      "value": 0.03,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Cached Input | ~~$0.03~~ $0.015" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "cached_input_price_usd_per_million",
+      "value": 0.015,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "Cached Input | ~~$0.03~~ $0.015" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "promotion_type",
+      "value": "price_discount",
+      "unit": null,
+      "evidence": { "quote": "GLM-5.3-Flash is available at a 50% discount" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "promotion_discount_pct",
+      "value": 50,
+      "unit": "percent",
+      "evidence": { "quote": "GLM-5.3-Flash is available at a 50% discount" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "Z.ai:GLM-5.3-Flash",
+      "field": "promotion_end_at",
+      "value": "2026-09-09T16:00:00Z",
+      "unit": "ISO date",
+      "evidence": { "quote": "The promotion ends at 24:00 on September 9, 2026 (UTC+8)" },
+      "confidence": 0.99
+    }
+  ],
+  "ambiguities": []
+}

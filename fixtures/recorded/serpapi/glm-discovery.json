@@ -1,0 +1,40 @@
+{
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "OpenCode Data - AI Model Usage Rankings",
+      "link": "https://dev.opencode.ai/data/",
+      "snippet": "glm-5.3-flash0B. Price per 1M tokens. $0.20laguna-s-2.1 $0.20nemotron-3.5-lightning $0.25glm-5.3-flash $0.28deepseek-v4-flash $0.28mimo-v2.5 $0 ..."
+    },
+    {
+      "position": 2,
+      "title": "GLM-5.1 Usage, Cost & Rank | OpenCode Data",
+      "link": "https://dev.opencode.ai/data/zhipu/glm-5-1",
+      "snippet": "View glm-5-1 OpenCode usage data, including token volume, weekly rank, token mix, costs, cache ratio, sessions, geo breakdowns, and peer models."
+    },
+    {
+      "position": 3,
+      "title": "Hy3 preview Usage, Cost & Rank | OpenCode Data",
+      "link": "https://stats.dev.opencode.ai/data/tencent/hy3-preview",
+      "snippet": "View hy3-preview OpenCode usage data, including token volume, weekly rank, token mix, costs, cache ratio, sessions, geo breakdowns, and peer models."
+    },
+    {
+      "position": 4,
+      "title": "Go | OpenCode",
+      "link": "https://dev.opencode.ai/docs/pl/go/",
+      "snippet": "OpenCode Go to niskokosztowa subskrypcja za 10 $/miesiąc, która zapewnia niezawodny dostęp do popularnych otwartych modeli do kodowania."
+    },
+    {
+      "position": 5,
+      "title": "Zen | OpenCode",
+      "link": "https://dev.opencode.ai/docs/nb/zen/",
+      "snippet": "OpenCode Zen er en liste over testede og verifiserte modeller levert av OpenCode-teamet. Zen fungerer som enhver annen leverandør i OpenCode."
+    },
+    {
+      "position": 6,
+      "title": "OpenCode Console",
+      "link": "https://console.dev.opencode.ai/guides",
+      "snippet": "Call OpenAI, Anthropic, and Gemini-compatible models through OpenCode inference with one authentication header. Authentication. Replace <token> with a service ..."
+    }
+  ]
+}

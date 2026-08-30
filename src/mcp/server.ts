@@ -58,16 +58,8 @@ export const TOOLS = [
       },
     },
   },
-  {
-    name: "run_radar",
-    description: "Trigger a live radar cycle to discover new pricing changes. Uses SerpApi credits.",
-    inputSchema: {
-      type: "object" as const,
-      properties: {
-        mode: { type: "string", enum: ["live", "replay"], description: "Search mode" },
-      },
-    },
-  },
+  // run_radar removed from default MCP — credits should not be spent by agents
+  // Use CLI: livellm radar --mode live
   {
     name: "get_candidates",
     description: "Get unverified pricing discoveries from the radar.",

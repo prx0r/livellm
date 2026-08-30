@@ -1,5 +1,7 @@
 # LiveLLM Vision
 
+> **NOT PART OF HACKATHON IMPLEMENTATION** — These are future product directions.
+
 ## Current State (Hackathon MVP)
 
 ```
@@ -9,8 +11,8 @@ SerpApi Discovery → Candidates → Official Sources → AI Extraction → Fact
 **What it does now:**
 - Discovers LLM pricing changes via SerpApi
 - Verifies against official sources
-- Calculates economic value (MiMo 6×, Kimi 10.5×)
-- Detects promotions (GLM-5.3-Flash 2× usage)
+- Calculates economic value with provider-specific workloads
+- Detects promotions (GLM-5.3-Flash 2× usage, Z.ai 50% off)
 - Outputs MD/MCP for agents
 
 ---

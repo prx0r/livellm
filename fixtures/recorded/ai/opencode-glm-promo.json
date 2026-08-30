@@ -1,0 +1,61 @@
+{
+  "facts": [
+    {
+      "entity": "OpenCode Go:GLM-5.3-Flash",
+      "field": "input_price_usd_per_million",
+      "value": 0.15,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "GLM-5.3-Flash$0.15$0.50$0.03-$15" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode Go:GLM-5.3-Flash",
+      "field": "output_price_usd_per_million",
+      "value": 0.5,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "GLM-5.3-Flash$0.15$0.50$0.03-$15" },
+      "confidence": 0.98
+    },
+    {
+      "entity": "OpenCode Go:GLM-5.3-Flash",
+      "field": "cached_input_price_usd_per_million",
+      "value": 0.03,
+      "unit": "USD/1M tokens",
+      "evidence": { "quote": "GLM-5.3-Flash$0.15$0.50$0.03-$15" },
+      "confidence": 0.95
+    },
+    {
+      "entity": "OpenCode Go:GLM-5.3-Flash",
+      "field": "subscription_price_usd_month",
+      "value": 10,
+      "unit": "USD/month",
+      "evidence": { "quote": "OpenCode Go is a low cost $10/month subscription" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "OpenCode Go:GLM-5.3-Flash",
+      "field": "usage_value_usd_month",
+      "value": 30,
+      "unit": "USD/month",
+      "evidence": { "quote": "GLM-5.3-Flash gets 2× usage limits for a limited time" },
+      "confidence": 0.95
+    },
+    {
+      "entity": "OpenCode Go:GLM-5.3-Flash",
+      "field": "promotion_type",
+      "value": "usage_multiplier",
+      "unit": null,
+      "evidence": { "quote": "GLM-5.3-Flash gets 2× usage limits for a limited time" },
+      "confidence": 0.99
+    },
+    {
+      "entity": "OpenCode Go:GLM-5.3-Flash",
+      "field": "promotion_multiplier",
+      "value": 2,
+      "unit": "x",
+      "evidence": { "quote": "GLM-5.3-Flash gets 2× usage limits for a limited time" },
+      "confidence": 0.99
+    }
+  ],
+  "ambiguities": ["Promotion end date not published on OpenCode Go page"]
+}

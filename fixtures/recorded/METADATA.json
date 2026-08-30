@@ -1,0 +1,43 @@
+{
+  "recorded_at": "2026-08-30T01:30:00Z",
+  "description": "GLM-5.3-Flash promotion discovery fixtures",
+  "fixtures": {
+    "serpapi": {
+      "glm-discovery.json": {
+        "query": "site:dev.opencode.ai GLM-5.3-Flash pricing",
+        "engine": "google_light",
+        "hits": 6
+      },
+      "glm-zai-promo.json": {
+        "query": "z.ai GLM-5.3-Flash pricing promotion 50%",
+        "engine": "google_light",
+        "hits": 10
+      }
+    },
+    "sources": {
+      "opencode-go.html": {
+        "url": "https://dev.opencode.ai/docs/go",
+        "size_bytes": 79990
+      },
+      "zai-pricing.html": {
+        "url": "https://docs.z.ai/guides/overview/pricing",
+        "size_bytes": 268172
+      }
+    },
+    "ai": {
+      "opencode-glm-promo.json": {
+        "source": "OpenCode Go page",
+        "facts_extracted": 7
+      },
+      "zai-glm-promo.json": {
+        "source": "Z.ai pricing page",
+        "facts_extracted": 9
+      }
+    }
+  },
+  "verification": {
+    "opencode_2x_usage": "https://opencode.ai/go shows '2× usage limits for a limited time'",
+    "zai_50_percent_off": "https://docs.z.ai/guides/overview/pricing shows strikethrough prices",
+    "zai_promo_end": "2026-09-09T16:00:00Z (24:00 UTC+8)"
+  }
+}
