@@ -79,7 +79,7 @@ export class FactRepo {
   async getEntityFacts(entityId: string) {
     const db = await this.getDb();
     const rows = db.exec(
-      `SELECT fact_id, field, value_json, unit, confidence, valid_from
+      `SELECT fact_id, field, value_json, unit, confidence, valid_from, evidence_id
        FROM facts
        WHERE entity_id = ? AND valid_to IS NULL`,
       [entityId]
@@ -94,6 +94,7 @@ export class FactRepo {
       unit: row[3],
       confidence: row[4],
       validFrom: row[5],
+      evidenceId: row[6],
     }));
   }
 
