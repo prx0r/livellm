@@ -123,11 +123,18 @@ export function calculateEconomics(
   }
 
   // Calculate cost per request
-  const cachedRate = plan.cachedInputPerMillion ?? plan.inputPerMillion * 0.2;
+  if (workload.cachedInputTokens > 0 && plan.cachedInputPerMillion == null) {
+    missing.push("cached_input_price");
+  }
+  if (missing.length > 0) {
+    return { status: "not_computable", missing };
+  }
+
+  const cachedRate = plan.cachedInputPerMillion ?? 0;
   const costPerRequest =
-    (plan.inputPerMillion * workload.uncachedInputTokens +
+    (plan.inputPerMillion! * workload.uncachedInputTokens +
       cachedRate * workload.cachedInputTokens +
-      plan.outputPerMillion * workload.outputTokens) /
+      plan.outputPerMillion! * workload.outputTokens) /
     1_000_000;
 
   const notes: string[] = [];

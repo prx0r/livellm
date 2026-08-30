@@ -137,6 +137,7 @@ describe("economics", () => {
           monthlyPrice: 10,
           inputPerMillion: 0.14,
           outputPerMillion: 0.28,
+          cachedInputPerMillion: 0.0028,
           usageValueUsd: 60,
           requestsPerMonth: 150400,
         },

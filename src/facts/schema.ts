@@ -71,15 +71,9 @@ export const VALID_FIELDS = [
   "promotion_start_at",
   "promotion_end_at",
 
-  // Legacy (for backwards compatibility)
+  // Legacy (backwards compat)
   "monthly_price_usd",
   "included_credit_usd",
-  "requests_per_day",
-  "requests_per_minute",
-  "context_tokens",
-  "availability",
-  "free_tier_quota",
-  "free_tier_period",
 ] as const;
 
 export type FactField = (typeof VALID_FIELDS)[number];
@@ -152,9 +146,7 @@ export const FIELD_SPEC: Record<FactField, FieldSpec> = {
   monthly_price_usd:                      { kind: "numeric", min: 0, max: 10000, unitGroup: "price" },
   included_credit_usd:                    { kind: "numeric", min: 0, max: 10000, unitGroup: "price" },
   requests_per_day:                       { kind: "numeric", min: 0, max: 10_000_000, unitGroup: "rate" },
-  requests_per_minute:                    { kind: "numeric", min: 0, max: 100_000, unitGroup: "rate" },
   context_tokens:                         { kind: "numeric", min: 0, max: 10_000_000, unitGroup: "size" },
-  availability:                           { kind: "string" },
   free_tier_quota:                        { kind: "numeric", min: 0, max: 100_000_000, unitGroup: "rate" },
   free_tier_period:                       { kind: "string" },
 };

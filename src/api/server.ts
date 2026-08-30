@@ -1,11 +1,10 @@
 /**
  * SPEC: LiveLLM HTTP API Server
  *
- * Five endpoints. Every response includes freshness, confidence, provenance.
+ * Four endpoints. Every response includes freshness, confidence, provenance.
  *
  * GET  /v1/market              — compact market snapshot, grouped by model
  * GET  /v1/models/:model       — detailed model facts with routes + promotions
- * POST /v1/economics/route     — workload-specific route evaluation
  * GET  /v1/changes             — recent market changes (filterable by since)
  * GET  /v1/evidence/:id        — full provenance bundle for a fact
  * GET  /v1/health              — health check
@@ -14,7 +13,6 @@
 import http from "node:http";
 import { openDb, saveDb } from "../db/open.js";
 import { FactRepo } from "../db/facts.js";
-import { calculateEconomics, PROVIDER_WORKLOADS } from "../facts/economics.js";
 import { PromotionDetector } from "../pipeline/promotions.js";
 import { resolve } from "node:path";
 
@@ -290,178 +288,6 @@ const routes: Route[] = [
     },
   },
 
-  // ─── POST /v1/economics/route ─────────────────────────────────────
-  // Workload-specific route evaluation with confidence + provenance.
-  {
-    method: "POST",
-    path: /^\/v1\/economics\/route$/,
-    handler: async (req, res, _params, _query) => {
-      const body = await readBody(req);
-      const parsed = JSON.parse(body);
-      const { model, workload: rawWorkload, routes: routeFilter } = parsed;
-
-      if (!model || !rawWorkload) {
-        sendJson(res, { error: "model and workload required" }, 400);
-        return;
-      }
-
-      // Normalize workload: accept both flat and per-request formats
-      const workload = normalizeWorkload(rawWorkload);
-
-      const factRepo = new FactRepo();
-      const detector = new PromotionDetector();
-      const allPromos = await detector.getActivePromotions();
-      const entities = await factRepo.getEntities();
-      const matching = entities.filter((e: string) =>
-        e.toLowerCase().includes(model.toLowerCase())
-      );
-
-      // Filter by specific routes if provided
-      const filtered = routeFilter
-        ? matching.filter((e) => routeFilter.some((r: string) => e.toLowerCase().includes(r.toLowerCase())))
-        : matching;
-
-      const evaluations: any[] = [];
-      const uncomputable: any[] = [];
-
-      for (const entityId of filtered) {
-        const facts = await factRepo.getEntityFacts(entityId);
-        const factMap = new Map<string, any>(facts.map((f: any) => [f.field, f]));
-
-        const input: any = factMap.get("input_price_usd_per_million");
-        const output: any = factMap.get("output_price_usd_per_million");
-        const cached: any = factMap.get("cached_input_price_usd_per_million");
-        const subscription: any = factMap.get("subscription_price_usd_month");
-        const usageValue: any = factMap.get("usage_value_usd_month");
-        const requests: any = factMap.get("request_limit_month");
-        const promoMult: any = factMap.get("promotion_multiplier");
-        const promoEnd: any = factMap.get("promotion_end_at");
-        const promoType: any = factMap.get("promotion_type");
-        const promoDiscount: any = factMap.get("promotion_discount_pct");
-        const listInput: any = factMap.get("list_input_price_usd_per_million");
-
-        const plan = subscription
-          ? {
-              kind: "subscription" as const,
-              monthlyPrice: subscription.value,
-              inputPerMillion: input?.value ?? 0,
-              outputPerMillion: output?.value ?? 0,
-              cachedInputPerMillion: cached?.value,
-              usageValueUsd: usageValue?.value,
-              requestsPerMonth: requests?.value,
-              promotionMultiplier: promoMult?.value,
-              promotionEndAt: promoEnd?.value,
-            }
-          : {
-              kind: "payg" as const,
-              inputPerMillion: input?.value ?? 0,
-              outputPerMillion: output?.value ?? 0,
-              cachedInputPerMillion: cached?.value,
-            };
-
-        const result = calculateEconomics(
-          entityId,
-          entityId.split(":")[0],
-          entityId.split(":").slice(1).join(":"),
-          plan,
-          workload
-        );
-
-        if (result.status === "computed") {
-          // Confidence from facts
-          const confidences = facts.map((f: any) => f.confidence).filter(Boolean);
-          const avgConfidence = confidences.length
-            ? confidences.reduce((a: number, b: number) => a + b, 0) / confidences.length
-            : null;
-
-          // Look up promotion from detector (covers both usage_multiplier and price_discount)
-          const detectedPromo = allPromos.find((p: any) => p.entity === entityId);
-
-          // Build promotion object from either fact-based or detected promo
-          let promotion: any = null;
-          if (promoMult) {
-            promotion = {
-              type: "usage_multiplier",
-              multiplier: promoMult.value,
-              expires_at: promoEnd?.value ?? null,
-            };
-          } else if (detectedPromo) {
-            promotion = {
-              type: detectedPromo.type,
-              ...(detectedPromo.type === "price_discount"
-                ? { discount_pct: detectedPromo.discountPct, list_price: detectedPromo.listPrice }
-                : { multiplier: detectedPromo.value }),
-              expires_at: detectedPromo.endsAt ?? null,
-            };
-          } else if (promoType) {
-            promotion = {
-              type: promoType.value,
-              ...(promoDiscount ? { discount_pct: promoDiscount.value } : {}),
-              expires_at: promoEnd?.value ?? null,
-            };
-          }
-
-          // For PAYG, estimate cost from workload.requests if available
-          const totalReqs = workload.requests ?? 0;
-          const estimatedCost = plan.kind === "payg" && totalReqs > 0
-            ? result.costPerRequest * totalReqs
-            : result.simulatedMonthlyUsd;
-
-          evaluations.push({
-            entity: entityId,
-            provider: entityId.split(":")[0],
-            plan_type: plan.kind,
-            cost_per_request: result.costPerRequest,
-            estimated_cost_usd: estimatedCost,
-            simulated_monthly_usd: result.simulatedMonthlyUsd,
-            effective_multiple: result.effectiveMultiple ?? null,
-            reconciliation: result.reconciliationStatus ?? null,
-            promotion,
-            confidence: avgConfidence,
-            evidence_ids: facts.map((f: any) => f.evidenceId).filter(Boolean),
-            as_of: facts.length
-              ? facts.sort((a: any, b: any) => (a.validFrom ?? "").localeCompare(b.validFrom ?? ""))[0].validFrom
-              : null,
-            notes: result.notes,
-          });
-        } else {
-          uncomputable.push({
-            entity: entityId,
-            missing: result.missing,
-          });
-        }
-      }
-
-      // Sort by estimated cost for readability (agent decides, not us)
-      evaluations.sort((a, b) => (a.estimated_cost_usd ?? Infinity) - (b.estimated_cost_usd ?? Infinity));
-
-      // Provenance: collect all evidence IDs
-      const allEvidenceIds = evaluations.flatMap((e) => e.evidence_ids ?? []);
-
-      sendJson(res, {
-        as_of: new Date().toISOString(),
-        model,
-        workload,
-        routes: evaluations.map((e) => ({
-          route: e.entity,
-          plan_type: e.plan_type,
-          cost_per_request: e.cost_per_request,
-          estimated_cost_usd: e.estimated_cost_usd,
-          simulated_monthly_usd: e.simulated_monthly_usd,
-          effective_multiple: e.effective_multiple,
-          promotion: e.promotion,
-          confidence: e.confidence,
-          as_of: e.as_of,
-        })),
-        uncomputable_routes: uncomputable,
-        provenance: {
-          facts_verified: evaluations.length,
-          evidence_ids: allEvidenceIds,
-        },
-      });
-    },
-  },
-
   // ─── GET /v1/changes ──────────────────────────────────────────────
   // Recent market changes with change_pct and type.
   // Query: ?since=ISO_DATE (optional)
@@ -566,7 +392,7 @@ const routes: Route[] = [
 
       const [evId, obsId, field, quote, selector, evHash] = evRows[0].values[0] as any[];
 
-      // Get observation → source → search run chain
+      // Get observation → source chain (explicit FK only)
       const obsRows = db.exec(
         `SELECT observation_id, source_id, observed_at, http_status, raw_hash, normalized_hash, changed
          FROM source_observations WHERE observation_id = ?`,
@@ -574,7 +400,6 @@ const routes: Route[] = [
       );
 
       let source: any = null;
-      let searchRun: any = null;
 
       if (obsRows.length && obsRows[0].values.length) {
         const [obsId2, sourceId, observedAt, httpStatus, rawHash, normHash, changed] =
@@ -621,31 +446,12 @@ const routes: Route[] = [
           changed: changed === 1,
         };
 
-        // Try to find associated search run via asset_store
-        const assetRows = db.exec(
-          `SELECT search_id, observed_at FROM asset_store
-           WHERE source_url = ? OR search_id IS NOT NULL
-           ORDER BY observed_at DESC LIMIT 1`,
-          [source?.url ?? ""]
-        );
-
-        if (assetRows.length && assetRows[0].values.length) {
-          const [searchId, assetObservedAt] = assetRows[0].values[0] as any[];
-          if (searchId) {
-            searchRun = { search_id: searchId, observed_at: assetObservedAt };
-          }
-        }
-
         sendJson(res, {
           evidence_id: evId,
           fact,
-          discovered_by: {
-            provider: "serpapi",
-            search_id: searchRun?.search_id ?? null,
-          },
           verified_against: source,
           evidence: {
-            quote: quote,
+            quote,
             selector_or_path: selector,
             evidence_hash: evHash,
           },
@@ -675,29 +481,6 @@ const routes: Route[] = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────
-
-function normalizeWorkload(raw: any): {
-  uncachedInputTokens: number;
-  cachedInputTokens: number;
-  outputTokens: number;
-  requests?: number;
-} {
-  // Accept per-request format or flat format
-  if (raw.uncached_input_tokens_per_request != null) {
-    return {
-      uncachedInputTokens: raw.uncached_input_tokens_per_request,
-      cachedInputTokens: raw.cached_input_tokens_per_request ?? 0,
-      outputTokens: raw.output_tokens_per_request ?? 0,
-      requests: raw.requests,
-    };
-  }
-  return {
-    uncachedInputTokens: raw.uncached_input_tokens ?? raw.uncachedInputTokens ?? 1000,
-    cachedInputTokens: raw.cached_input_tokens ?? raw.cachedInputTokens ?? 0,
-    outputTokens: raw.output_tokens ?? raw.outputTokens ?? 200,
-    requests: raw.requests,
-  };
-}
 
 function sendJson(res: http.ServerResponse, data: any, status = 200) {
   res.writeHead(status, {
@@ -746,7 +529,6 @@ export function createServer(port = 3847): http.Server {
     console.log("Endpoints:");
     console.log("  GET  /v1/market");
     console.log("  GET  /v1/models/:model");
-    console.log("  POST /v1/economics/route");
     console.log("  GET  /v1/changes");
     console.log("  GET  /v1/evidence/:id");
     console.log("  GET  /v1/health");
