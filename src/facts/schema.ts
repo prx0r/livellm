@@ -2,7 +2,7 @@
  * SPEC: Fact schema — the canonical representation of an economic truth.
  *
  * Every fact has:
- * - entity_id: "provider:model" or "provider:product"
+ * - entity_id: "provider:model" or "provider:model:route"
  * - field: what attribute (price, quota, context, etc.)
  * - value_json: the actual value (number, string, boolean)
  * - unit: optional unit clarification
@@ -16,15 +16,47 @@
  */
 
 export const VALID_FIELDS = [
+  // Pricing
   "input_price_usd_per_million",
   "output_price_usd_per_million",
   "cached_input_price_usd_per_million",
+
+  // List prices (before any promo)
+  "list_input_price_usd_per_million",
+  "list_cached_input_price_usd_per_million",
+  "list_output_price_usd_per_million",
+
+  // Subscription
+  "subscription_price_usd_month",
+
+  // Request limits
+  "request_limit_5h",
+  "request_limit_week",
+  "request_limit_month",
+
+  // Usage value
+  "usage_value_usd_5h",
+  "usage_value_usd_week",
+  "usage_value_usd_month",
+
+  // Workload
+  "input_tokens_per_request",
+  "cached_tokens_per_request",
+  "output_tokens_per_request",
+
+  // Promotions
+  "promotion_type",
+  "promotion_multiplier",
+  "promotion_discount_pct",
+  "promotion_start_at",
+  "promotion_end_at",
+
+  // Legacy (for backwards compatibility)
   "monthly_price_usd",
   "included_credit_usd",
   "requests_per_day",
   "requests_per_minute",
   "context_tokens",
-  "promotion_end_at",
   "availability",
   "free_tier_quota",
   "free_tier_period",
@@ -88,7 +120,7 @@ export function buildExtractionPrompt(
   productName: string,
   pageContent: string
 ): string {
-  return `You are a precise financial data extractor. Extract ONLY factual pricing/quota/limit data from this official provider page.
+  return `You are a precise financial data extractor. Extract ONLY factual pricing/quota/limit/promotion data from this official provider page.
 
 Provider: ${providerName}
 Product: ${productName}
@@ -98,7 +130,7 @@ ${pageContent.slice(0, 8000)}
 
 Extract facts as JSON array. Each fact must have:
 - entity: "${providerName}:${productName}"
-- field: one of [input_price_usd_per_million, output_price_usd_per_million, cached_input_price_usd_per_million, monthly_price_usd, included_credit_usd, requests_per_day, requests_per_minute, context_tokens, free_tier_quota, free_tier_period, availability]
+- field: one of [input_price_usd_per_million, output_price_usd_per_million, cached_input_price_usd_per_million, subscription_price_usd_month, request_limit_5h, request_limit_week, request_limit_month, usage_value_usd_month, input_tokens_per_request, cached_tokens_per_request, output_tokens_per_request, promotion_type, promotion_multiplier, promotion_discount_pct, promotion_start_at, promotion_end_at]
 - value: the numeric value (not a string)
 - unit: the unit string or null
 - evidence.quote: the exact text from the page that supports this value (max 200 chars)
@@ -109,6 +141,7 @@ RULES:
 - Never guess or infer prices
 - If the page mentions "per million tokens", use input_price_usd_per_million
 - If the page mentions "per 1K tokens", multiply by 1000
+- For promotions: use promotion_type="usage_multiplier" or "price_discount"
 - Include ambiguities as a separate array
 - Return ONLY valid JSON, no markdown
 

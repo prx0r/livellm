@@ -158,19 +158,51 @@ async function run() {
         const input = facts.find((f: any) => f.field === "input_price_usd_per_million");
         const output = facts.find((f: any) => f.field === "output_price_usd_per_million");
         const cached = facts.find((f: any) => f.field === "cached_input_price_usd_per_million");
-        const monthly = facts.find((f: any) => f.field === "monthly_price_usd");
-        const requests = facts.find((f: any) => f.field === "requests_per_month");
-        const providerUsage = facts.find((f: any) => f.field === "provider_usage_usd");
+        const subscription = facts.find((f: any) => f.field === "subscription_price_usd_month");
+        const usageValue = facts.find((f: any) => f.field === "usage_value_usd_month");
+        const requests = facts.find((f: any) => f.field === "request_limit_month");
+        const inputTokens = facts.find((f: any) => f.field === "input_tokens_per_request");
+        const cachedTokens = facts.find((f: any) => f.field === "cached_tokens_per_request");
+        const outputTokens = facts.find((f: any) => f.field === "output_tokens_per_request");
+        const promoMultiplier = facts.find((f: any) => f.field === "promotion_multiplier");
+        const promoEndAt = facts.find((f: any) => f.field === "promotion_end_at");
 
-        if (input && monthly) {
-          const result = calculateEconomics(entity, provider, name, {
-            input_per_1m: input.value,
-            output_per_1m: output?.value ?? input.value * 3,
-            cached_input_per_1m: cached?.value,
-            monthly_price: monthly.value,
-            requests_per_month: requests?.value ?? 30000,
-            provider_usage_usd: providerUsage?.value ?? 60,
-          });
+        if (input && subscription) {
+          const result = calculateEconomics(entity, provider, name,
+            {
+              kind: "subscription",
+              monthlyPrice: subscription.value,
+              inputPerMillion: input.value,
+              outputPerMillion: output?.value ?? 0,
+              cachedInputPerMillion: cached?.value,
+              usageValueUsd: usageValue?.value,
+              requestsPerMonth: requests?.value,
+              promotionMultiplier: promoMultiplier?.value,
+              promotionEndAt: promoEndAt?.value,
+            },
+            {
+              uncachedInputTokens: inputTokens?.value ?? 0,
+              cachedInputTokens: cachedTokens?.value ?? 0,
+              outputTokens: outputTokens?.value ?? 0,
+            }
+          );
+          console.log(formatEconomics(result));
+          console.log("");
+        } else if (input) {
+          // PAYG
+          const result = calculateEconomics(entity, provider, name,
+            {
+              kind: "payg",
+              inputPerMillion: input.value,
+              outputPerMillion: output?.value ?? 0,
+              cachedInputPerMillion: cached?.value,
+            },
+            {
+              uncachedInputTokens: inputTokens?.value ?? 1000,
+              cachedInputTokens: cachedTokens?.value ?? 0,
+              outputTokens: outputTokens?.value ?? 200,
+            }
+          );
           console.log(formatEconomics(result));
           console.log("");
         }
