@@ -1,0 +1,106 @@
+{
+  "search_metadata": {
+    "id": "6a937ba069819d6909ced0c6",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/Cp_WZOFALZOr-v3j8F3dhK6sqsskQDncsaHYW7-GFrQ/6a937ba069819d6909ced0c6.json",
+    "markdown_endpoint": "https://serpapi.com/searches/Cp_WZOFALZOr-v3j8F3dhK6sqsskQDncsaHYW7-GFrQ/6a937ba069819d6909ced0c6.md",
+    "created_at": "2026-08-30 00:38:56 UTC",
+    "processed_at": "2026-08-30 00:38:56 UTC",
+    "google_light_url": "https://www.google.com/search?q=site%3Aopenai.com+API+pricing&oq=site%3Aopenai.com+API+pricing&hl=en&gl=us&sourceid=chrome&ie=UTF-8&gbv=1",
+    "raw_html_file": "https://serpapi.com/searches/Cp_WZOFALZOr-v3j8F3dhK6sqsskQDncsaHYW7-GFrQ/6a937ba069819d6909ced0c6.html",
+    "total_time_taken": 8.2
+  },
+  "search_parameters": {
+    "engine": "google_light",
+    "q": "site:openai.com API pricing",
+    "google_domain": "google.com",
+    "hl": "en",
+    "gl": "us",
+    "device": "desktop"
+  },
+  "search_information": {
+    "query_displayed": "site:openai.com API pricing",
+    "organic_results_state": "Results for exact spelling"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Pricing | OpenAI API",
+      "link": "https://developers.openai.com/api/docs/pricing",
+      "displayed_link": "developers.openai.com › api › docs › pricing",
+      "snippet": "Prices per 1M tokens. As new 1 GB $0.03, 4 GB $0.12, 16 GB $0.48, 64 GB $1.92 per 20-minute session per container. File search Storage $0.10 / GB per day"
+    },
+    {
+      "position": 2,
+      "title": "Business Pricing | OpenAI",
+      "link": "https://openai.com/business/pricing/",
+      "displayed_link": "openai.com › business › pricing",
+      "snippet": "Standard seat $20/ month Best for everyday work $20/month if billed annually. $25/month if billed monthly. Premium seat $100/ month 5x more usage than standard ..."
+    },
+    {
+      "position": 3,
+      "title": "Are API calls free of charge? - OpenAI Developer Community",
+      "link": "https://community.openai.com/t/are-api-calls-free-of-charge/1252305",
+      "displayed_link": "community.openai.com › are-api-calls-free-of-charge",
+      "snippet": "So answering to the original raw question, there is no additional cost for making the API request. There are some new per-call charges",
+      "date": "May 5, 2025"
+    },
+    {
+      "position": 4,
+      "title": "Business Pricing - OpenAI",
+      "link": "https://openai.com/api/pricing/?client_id=1330166706.1784246402&session_id=1784246402",
+      "displayed_link": "openai.com › api › pricing",
+      "snippet": "Discover OpenAI pricing for ChatGPT Business and APIs, with GPT token costs, enterprise features, developer plans, and AI tools."
+    },
+    {
+      "position": 5,
+      "title": "Confusion Between Per-Minute Audio Pricing vs. Token-Based ...",
+      "link": "https://community.openai.com/t/confusion-between-per-minute-audio-pricing-vs-token-based-audio-pricing/1073222",
+      "displayed_link": "community.openai.com › confusion-between-per-minute-audio-pricing-vs-...",
+      "snippet": "$0.06 per minute for audio input $0.24 per minute for audio output. Input cost: 30 minutes × $0.06/min = $1.80 Output cost: 30 minutes × $0.24/ ...",
+      "date": "Dec 27, 2024"
+    },
+    {
+      "position": 6,
+      "title": "Difference between prepaid and pay as you go API Pricing",
+      "link": "https://community.openai.com/t/difference-between-prepaid-and-pay-as-you-go-api-pricing/778566",
+      "displayed_link": "community.openai.com › difference-between-prepaid-and-pay-as-you-go-...",
+      "snippet": "When you use the API, all payment methods are pay-as-you-go and prepaid. the cost is $30 per 1M tokens. prepaid credits stay valid for one year ...",
+      "date": "May 25, 2024"
+    },
+    {
+      "position": 7,
+      "title": "Can someone explain me the pricing model - API",
+      "link": "https://community.openai.com/t/can-someone-explain-me-the-pricing-model/29491",
+      "displayed_link": "community.openai.com › can-someone-explain-me-the-pricing-model",
+      "snippet": "Completions requests are billed based on the number of tokens sent in your prompt plus the number of tokens in the completion(s) returned by the ...",
+      "date": "Jan 3, 2023"
+    },
+    {
+      "position": 8,
+      "title": "Pricing - ChatGPT Learn",
+      "link": "https://developers.openai.com/codex/pricing",
+      "displayed_link": "developers.openai.com › codex › pricing",
+      "snippet": "$20/ user / month* Get Business for all applicable models, API pricing applies to image generation instead of included ChatGPT usage limits."
+    },
+    {
+      "position": 9,
+      "title": "Advancing the price-performance frontier with GPT-5.6 - OpenAI",
+      "link": "https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/",
+      "displayed_link": "openai.com › index › advancing-the-price-performance-frontier-with-gpt-...",
+      "snippet": "Starting July 30, API pricing is $2 per million input tokens and $12 ... View complete API pricing details.⁠ · 2026. Author. OpenAI. Keep ...",
+      "date": "Jul 30, 2026"
+    },
+    {
+      "position": 10,
+      "title": "Pricing - ChatGPT",
+      "link": "https://openai.com/chatgpt/pricing/",
+      "displayed_link": "openai.com › chatgpt › pricing",
+      "snippet": "Paid plans (Plus, Pro, Business, and Enterprise) are priced per user per month. We offer monthly plans for Plus, Pro, and Business and annual plans for ..."
+    }
+  ],
+  "serpapi_pagination": {
+    "current": 1,
+    "next": "https://serpapi.com/search.json?device=desktop&engine=google_light&gl=us&google_domain=google.com&hl=en&q=site%3Aopenai.com+API+pricing&start=10&location=Austin%2C+TX%2C+Texas%2C+United+States"
+  }
+}

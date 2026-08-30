@@ -1,0 +1,103 @@
+{
+  "search_metadata": {
+    "id": "6a937baccbcccf37dbf01d2c",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/9MBKWOCACE_L2Pjo7xugp_fe3nGI8uMidVqzmSseKKU/6a937baccbcccf37dbf01d2c.json",
+    "markdown_endpoint": "https://serpapi.com/searches/9MBKWOCACE_L2Pjo7xugp_fe3nGI8uMidVqzmSseKKU/6a937baccbcccf37dbf01d2c.md",
+    "created_at": "2026-08-30 00:39:08 UTC",
+    "processed_at": "2026-08-30 00:39:08 UTC",
+    "google_light_url": "https://www.google.com/search?q=site%3Aplatform.deepseek.com+OR+site%3Adeepseek.com+API+pricing&oq=site%3Aplatform.deepseek.com+OR+site%3Adeepseek.com+API+pricing&hl=en&gl=us&sourceid=chrome&ie=UTF-8&gbv=1",
+    "raw_html_file": "https://serpapi.com/searches/9MBKWOCACE_L2Pjo7xugp_fe3nGI8uMidVqzmSseKKU/6a937baccbcccf37dbf01d2c.html",
+    "total_time_taken": 1.74
+  },
+  "search_parameters": {
+    "engine": "google_light",
+    "q": "site:platform.deepseek.com OR site:deepseek.com API pricing",
+    "google_domain": "google.com",
+    "hl": "en",
+    "gl": "us",
+    "device": "desktop"
+  },
+  "search_information": {
+    "query_displayed": "site:platform.deepseek.com OR site:deepseek.com API pricing",
+    "organic_results_state": "Results for exact spelling"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Models & Pricing - DeepSeek API Docs",
+      "link": "https://api-docs.deepseek.com/quick_start/pricing",
+      "displayed_link": "api-docs.deepseek.com › quick_start › pricing",
+      "snippet": "The prices listed below are in units of per 1M tokens. OFF-PEAK $0.007 $0.022 $0.007 PEAK $0.014 $0.044. OFF-PEAK $0.22 $0.66 … are half of the peak rates. ..."
+    },
+    {
+      "position": 2,
+      "title": "DeepSeek-V4-Pro GA Release",
+      "link": "https://api-docs.deepseek.com/news/news260813/",
+      "displayed_link": "api-docs.deepseek.com › news › news260813",
+      "snippet": "With the V4 lineup release, we're updating our API pricing and introducing peak and off-peak rates. Off-peak rates are 50% lower than peak, ...",
+      "date": "Aug 13, 2026"
+    },
+    {
+      "position": 3,
+      "title": "DeepSeek API Docs: Your First API Call",
+      "link": "https://api-docs.deepseek.com/",
+      "displayed_link": "api-docs.deepseek.com",
+      "snippet": "Your First API Call · Models & Pricing · Token & Token Usage · Rate Limit & Isolation · Error Codes. Agent Integrations. API Guides."
+    },
+    {
+      "position": 4,
+      "title": "DeepSeek | Into the Unknown",
+      "link": "https://www.deepseek.com/",
+      "displayed_link": "www.deepseek.com",
+      "snippet": "DeepSeek is an AI research company focused on building world-leading general artificial intelligence. Responses API and Codex integration. It is now fully ..."
+    },
+    {
+      "position": 5,
+      "title": "DeepSeek Platform",
+      "link": "https://platform.deepseek.com/",
+      "displayed_link": "platform.deepseek.com",
+      "snippet": "Join DeepSeek API platform to access our AI models, developer resources and API documentation."
+    },
+    {
+      "position": 6,
+      "title": "模型& 价格 - DeepSeek API Docs",
+      "link": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+      "displayed_link": "api-docs.deepseek.com › zh-cn › quick_start › pricing",
+      "snippet": "DeepSeek API Docs ・ 表所列模型价格以“百万tokens”为单位。Token 是模型用来表示自然语言文本的的最小单位,可以是一个词、一个数字或一个标点符号等。我们将根据模型输 ..."
+    },
+    {
+      "position": 7,
+      "title": "Token & Token Usage - DeepSeek API Docs",
+      "link": "https://api-docs.deepseek.com/quick_start/token_usage/",
+      "displayed_link": "api-docs.deepseek.com › quick_start › token_usage",
+      "snippet": "Token & Token Usage. Tokens are the basic units used by models to represent natural language text, and also the units we use for billing."
+    },
+    {
+      "position": 8,
+      "title": "Introducing DeepSeek-V3",
+      "link": "https://api-docs.deepseek.com/news/news1226/",
+      "displayed_link": "api-docs.deepseek.com › news › news1226",
+      "snippet": "API Call Models & Pricing. API Pricing Update 🎉 Until. Output $0.27/M tokens $0.07/M tokens $1.10/M tokens Still the best value in the market!",
+      "date": "Dec 26, 2024"
+    },
+    {
+      "position": 9,
+      "title": "Lists Models - DeepSeek API Docs",
+      "link": "https://api-docs.deepseek.com/api/list-models/",
+      "displayed_link": "api-docs.deepseek.com › api › list-models",
+      "snippet": "Lists the currently available models, and provides basic information about each one such as the owner and availability. Check Models & Pricing for our ..."
+    },
+    {
+      "position": 10,
+      "title": "Change Log | DeepSeek API Docs",
+      "link": "https://api-docs.deepseek.com/updates/",
+      "displayed_link": "api-docs.deepseek.com › updates",
+      "snippet": "To allocate resources more reasonably, we will adopt peak/off-peak pricing, with off-peak prices set at half of the peak-hour prices, encouraging users to ..."
+    }
+  ],
+  "serpapi_pagination": {
+    "current": 1,
+    "next": "https://serpapi.com/search.json?device=desktop&engine=google_light&gl=us&google_domain=google.com&hl=en&q=site%3Aplatform.deepseek.com+OR+site%3Adeepseek.com+API+pricing&start=10&location=Austin%2C+TX%2C+Texas%2C+United+States"
+  }
+}

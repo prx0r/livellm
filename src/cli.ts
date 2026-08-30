@@ -14,6 +14,7 @@ const { values, positionals } = parseArgs({
     "fixture-dir": { type: "string" },
     query: { type: "string", short: "q" },
     engine: { type: "string", short: "e" },
+    format: { type: "string" },
   },
 });
 
@@ -28,10 +29,15 @@ Commands:
   migrate     Run database migrations
   account     Show SerpApi account/quota status
   radar       Run one radar cycle (discover → candidates → verify)
+  official    Run official-source discovery (targeted site: queries)
   investigate Investigate candidates with AI extraction
   facts       Show current facts in the ledger
   changes     Show recent change events
   materialize Materialize current state from fact ledger
+  md          Generate Markdown payload for agents
+  summary     Ultra-compact market summary
+  tool        Generate structured tool output
+  mcp         Start MCP server (stdio)
   dashboard   Generate Live Radar dashboard HTML
   record      Record live SerpApi responses as fixtures
   replay      Test against recorded fixtures
@@ -113,6 +119,15 @@ async function run() {
       break;
     }
 
+    case "official": {
+      const { runOfficialDiscovery } = await import("./pipeline/official-discovery.js");
+      await runOfficialDiscovery({
+        fixtureDir: resolve(cwd, "fixtures", "official"),
+        maxSearches: parseInt(values.mode ?? "8"),
+      });
+      break;
+    }
+
     case "investigate": {
       const { investigateCandidates } = await import("./pipeline/run-investigate.js");
       await investigateCandidates({
@@ -156,6 +171,57 @@ async function run() {
       const { materializeState } = await import("./facts/materialize.js");
       const state = await materializeState(resolve(cwd, "data", "livellm.db"));
       console.log(JSON.stringify(state, null, 2));
+      break;
+    }
+
+    case "md": {
+      const { generateMdPayload } = await import("./agents/md-payload.js");
+      const md = await generateMdPayload(resolve(cwd, "data", "livellm.db"), {
+        includeEvidence: false,
+        includeChanges: true,
+        format: (values.format as "compact" | "full" | "json") ?? "compact",
+      });
+      console.log(md);
+      break;
+    }
+
+    case "summary": {
+      const { generateCompactSummary } = await import("./agents/md-payload.js");
+      const summary = await generateCompactSummary(resolve(cwd, "data", "livellm.db"));
+      console.log(summary);
+      break;
+    }
+
+    case "tool": {
+      const { generateToolOutput } = await import("./agents/md-payload.js");
+      const output = await generateToolOutput(resolve(cwd, "data", "livellm.db"));
+      console.log(JSON.stringify(output, null, 2));
+      break;
+    }
+
+    case "mcp": {
+      const { TOOLS, handleTool } = await import("./mcp/server.js");
+      const readline = await import("node:readline");
+
+      // Simple stdio MCP server
+      process.stderr.write("LiveLLM MCP server started (stdio)\n");
+
+      const rl = readline.createInterface({ input: process.stdin });
+      rl.on("line", async (line) => {
+        try {
+          const msg = JSON.parse(line);
+          if (msg.method === "tools/list") {
+            process.stdout.write(JSON.stringify({ tools: TOOLS }) + "\n");
+          } else if (msg.method === "tools/call") {
+            const result = await handleTool(msg.params.name, msg.params.arguments ?? {});
+            process.stdout.write(JSON.stringify(result) + "\n");
+          } else if (msg.method === "ping") {
+            process.stdout.write(JSON.stringify({ pong: true }) + "\n");
+          }
+        } catch (err: any) {
+          process.stdout.write(JSON.stringify({ error: err.message }) + "\n");
+        }
+      });
       break;
     }
 

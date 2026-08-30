@@ -1,0 +1,102 @@
+{
+  "search_metadata": {
+    "id": "6a937ba85729485ddbaa6fff",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/PL_yJU54WwoENeDX3MHTbQvUXjJVwAVIYJyC7tMhmu0/6a937ba85729485ddbaa6fff.json",
+    "markdown_endpoint": "https://serpapi.com/searches/PL_yJU54WwoENeDX3MHTbQvUXjJVwAVIYJyC7tMhmu0/6a937ba85729485ddbaa6fff.md",
+    "created_at": "2026-08-30 00:39:04 UTC",
+    "processed_at": "2026-08-30 00:39:05 UTC",
+    "google_light_url": "https://www.google.com/search?q=site%3Aanthropic.com+OR+site%3Aconsole.anthropic.com+pricing&oq=site%3Aanthropic.com+OR+site%3Aconsole.anthropic.com+pricing&hl=en&gl=us&sourceid=chrome&ie=UTF-8&gbv=1",
+    "raw_html_file": "https://serpapi.com/searches/PL_yJU54WwoENeDX3MHTbQvUXjJVwAVIYJyC7tMhmu0/6a937ba85729485ddbaa6fff.html",
+    "total_time_taken": 0.68
+  },
+  "search_parameters": {
+    "engine": "google_light",
+    "q": "site:anthropic.com OR site:console.anthropic.com pricing",
+    "google_domain": "google.com",
+    "hl": "en",
+    "gl": "us",
+    "device": "desktop"
+  },
+  "search_information": {
+    "query_displayed": "site:anthropic.com OR site:console.anthropic.com pricing",
+    "organic_results_state": "Results for exact spelling"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Pricing - Claude Platform Docs",
+      "link": "https://docs.anthropic.com/en/docs/about-claude/pricing",
+      "displayed_link": "docs.anthropic.com › docs › about-claude › pricing",
+      "snippet": "Web search is available on the Claude API for $10 per 1,000 searches, plus standard token costs for search-generated content. Web search results retrieved ..."
+    },
+    {
+      "position": 2,
+      "title": "Introducing Claude Sonnet 5 - Anthropic",
+      "link": "https://www.anthropic.com/news/claude-sonnet-5",
+      "displayed_link": "www.anthropic.com › news › claude-sonnet-5",
+      "snippet": "The charts show Sonnet 5 priced at $3 per million input tokens and $15 per million output tokens (existing standard pricing). Sonnet 5's ...",
+      "date": "Jun 30, 2026"
+    },
+    {
+      "position": 3,
+      "title": "Claude Fable - Anthropic",
+      "link": "https://www.anthropic.com/claude/fable",
+      "displayed_link": "www.anthropic.com › claude › fable",
+      "snippet": "Claude Fable 5 is priced at $10 per million input tokens and $50 per million output tokens, with the existing 90% input token discount for prompt caching."
+    },
+    {
+      "position": 4,
+      "title": "Models overview - Claude Platform Docs",
+      "link": "https://docs.anthropic.com/en/docs/about-claude/models/overview",
+      "displayed_link": "docs.anthropic.com › docs › about-claude › models › overview",
+      "snippet": "Pricing  $10 / input MTok$50 / output MTok $5 / input MTok$25 / output MTok $2 / input. Complete pricing, including batch discounts and prompt caching rates."
+    },
+    {
+      "position": 5,
+      "title": "Home \\ Anthropic",
+      "link": "https://www.anthropic.com/",
+      "displayed_link": "www.anthropic.com",
+      "snippet": "Anthropic is an AI safety and research company. Download app Pricing Log in to Claude Models"
+    },
+    {
+      "position": 6,
+      "title": "Claude Opus \\ Anthropic",
+      "link": "https://www.anthropic.com/claude/opus",
+      "displayed_link": "www.anthropic.com › claude › opus",
+      "snippet": "Pricing for Opus 5 starts at $5 per million input tokens and $25 per million output tokens, with up to 90% cost savings with prompt caching and 50% savings ..."
+    },
+    {
+      "position": 7,
+      "title": "Prompt caching - Claude Platform Docs",
+      "link": "https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching",
+      "displayed_link": "docs.anthropic.com › docs › build-with-claude › prompt-caching",
+      "snippet": "Prompt caching introduces a new pricing structure. Claude Fable 5 $10 / MTok $12.50 / MTok $20 / MTok $1 / MTok $50 / MTok Claude $10 / MTok $12.50 / MTok. ..."
+    },
+    {
+      "position": 8,
+      "title": "Claude Platform: Sign In",
+      "link": "https://console.anthropic.com/",
+      "displayed_link": "console.anthropic.com",
+      "snippet": "Create agents and applications with frontier Claude models and managed agent infrastructure. Download app Pricing Log in Features Claude"
+    },
+    {
+      "position": 9,
+      "title": "Claude Sonnet - Anthropic",
+      "link": "https://www.anthropic.com/claude/sonnet",
+      "displayed_link": "www.anthropic.com › claude › sonnet",
+      "snippet": "Sonnet 5 is available today at $2 per million input tokens and $10 per million output tokens, with up to 90% cost savings with prompt caching and 50% cost ..."
+    },
+    {
+      "position": 10,
+      "title": "Rate limits - Claude Platform Docs",
+      "link": "https://docs.anthropic.com/en/api/rate-limits",
+      "displayed_link": "docs.anthropic.com › api › rate-limits",
+      "snippet": "There are two types of limits: Spend limits set a maximum monthly cost an organization can incur for API usage. Rate limits set the maximum number of API ..."
+    }
+  ],
+  "serpapi_pagination": {
+    "current": 1,
+    "next": "https://serpapi.com/search.json?device=desktop&engine=google_light&gl=us&google_domain=google.com&hl=en&q=site%3Aanthropic.com+OR+site%3Aconsole.anthropic.com+pricing&start=10&location=Austin%2C+TX%2C+Texas%2C+United+States"
+  }
+}

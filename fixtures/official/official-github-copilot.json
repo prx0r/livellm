@@ -1,0 +1,103 @@
+{
+  "search_metadata": {
+    "id": "6a937bb3ff596e4e65831d8f",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/evsy-1D9B9mb9iF99zyAWkrWuPXBqypUkV6EB9j8A6E/6a937bb3ff596e4e65831d8f.json",
+    "markdown_endpoint": "https://serpapi.com/searches/evsy-1D9B9mb9iF99zyAWkrWuPXBqypUkV6EB9j8A6E/6a937bb3ff596e4e65831d8f.md",
+    "created_at": "2026-08-30 00:39:15 UTC",
+    "processed_at": "2026-08-30 00:39:15 UTC",
+    "google_light_url": "https://www.google.com/search?q=site%3Agithub.com+copilot+pricing+plan&oq=site%3Agithub.com+copilot+pricing+plan&hl=en&gl=us&sourceid=chrome&ie=UTF-8&gbv=1",
+    "raw_html_file": "https://serpapi.com/searches/evsy-1D9B9mb9iF99zyAWkrWuPXBqypUkV6EB9j8A6E/6a937bb3ff596e4e65831d8f.html",
+    "total_time_taken": 1.62
+  },
+  "search_parameters": {
+    "engine": "google_light",
+    "q": "site:github.com copilot pricing plan",
+    "google_domain": "google.com",
+    "hl": "en",
+    "gl": "us",
+    "device": "desktop"
+  },
+  "search_information": {
+    "query_displayed": "site:github.com copilot pricing plan",
+    "organic_results_state": "Results for exact spelling"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "GitHub Copilot · Plans & pricing",
+      "link": "https://github.com/features/copilot/plans",
+      "displayed_link": "github.com › features › copilot › plans",
+      "snippet": "Base credits Free plan Limited chat and agent usage Pro plan $10 per month Flex allotment Variable additional usage on top of your base. Free plan Not included ..."
+    },
+    {
+      "position": 2,
+      "title": "Plans for GitHub Copilot",
+      "link": "https://docs.github.com/en/copilot/get-started/plans",
+      "displayed_link": "docs.github.com › copilot › get-started › plans",
+      "snippet": "Copilot Pro $10 USD per month (free for some users) Base: 1,000 A selection of models Copilot Pro+ $39 USD per month. Base: 3,900 Access to premium models ..."
+    },
+    {
+      "position": 3,
+      "title": "Models and pricing for GitHub Copilot",
+      "link": "https://docs.github.com/copilot/reference/copilot-billing/models-and-pricing",
+      "displayed_link": "docs.github.com › copilot › reference › copilot-billing › models-and-pricing",
+      "snippet": "Each token is priced based on the model used, and the total is converted into AI credits, where 1 AI credit = $0.01 USD. All prices are per 1 million tokens."
+    },
+    {
+      "position": 4,
+      "title": "All GitHub Copilot plans are now on usage-based billing [FAQ ...",
+      "link": "https://github.com/orgs/community/discussions/197089",
+      "displayed_link": "github.com › orgs › community › discussions",
+      "snippet": "For example, upgrading from Pro to Pro+ costs $29 and gives you access to the Pro+ tier's $70 in included AI credits, minus your prior ...",
+      "date": "15 hours ago"
+    },
+    {
+      "position": 5,
+      "title": "Announcement & FAQ: Changes to GitHub Copilot Individual Plans",
+      "link": "https://github.com/orgs/community/discussions/192963",
+      "displayed_link": "github.com › orgs › community › discussions",
+      "snippet": "Usage-based billing for GitHub Copilot is now live for all users ・ subscription would cost about $4,000 per month ・ that is cost $100, far more than copilot ..."
+    },
+    {
+      "position": 6,
+      "title": "GitHub Copilot is moving to usage-based billing #192948",
+      "link": "https://github.com/orgs/community/discussions/192948",
+      "displayed_link": "github.com › orgs › community › discussions",
+      "snippet": "We're retiring annual plans. After it expires, you'll be moved to a Copilot Free plan unless you sign up for a new monthly paid subscription. 1:1 ratio of plan ..."
+    },
+    {
+      "position": 7,
+      "title": "GitHub Copilot AI Credits Are Unfair, Expensive, and Killing Real ...",
+      "link": "https://github.com/orgs/community/discussions/198015",
+      "displayed_link": "github.com › orgs › community › discussions",
+      "snippet": "Since the June 1 update, Copilot has become unpredictable and much more expensive. Credits are consumed too quickly, especially when using ...",
+      "date": "17 hours ago"
+    },
+    {
+      "position": 8,
+      "title": "GitHub Copilot · Your AI pair programmer",
+      "link": "https://github.com/features/copilot",
+      "displayed_link": "github.com › features › copilot",
+      "snippet": "Every plan includes a monthly allowance: 1 AI credit = $0.01 USD. You use credits when you chat with Copilot, work with agents, or use Copilot CLI, and Spaces."
+    },
+    {
+      "position": 9,
+      "title": "GitHub Copilot licenses",
+      "link": "https://docs.github.com/en/billing/concepts/product-billing/github-copilot-licenses",
+      "displayed_link": "docs.github.com › billing › concepts › product-billing › github-copilot-lice...",
+      "snippet": "Copilot Pro: $10 USD per calendar month. Copilot Pro+: $39 USD per calendar month. Copilot Max: $100 USD per calendar month. Copilot Student: access to Copilot ..."
+    },
+    {
+      "position": 10,
+      "title": "Pricing · Plans for every developer - GitHub",
+      "link": "https://github.com/pricing",
+      "displayed_link": "github.com › pricing",
+      "snippet": "$5 per month for 50 GB bandwidth and 50 GB of storage. Learn more. Create a custom estimate with the pricing calculator. Compare all features."
+    }
+  ],
+  "serpapi_pagination": {
+    "current": 1,
+    "next": "https://serpapi.com/search.json?device=desktop&engine=google_light&gl=us&google_domain=google.com&hl=en&q=site%3Agithub.com+copilot+pricing+plan&start=10&location=Austin%2C+TX%2C+Texas%2C+United+States"
+  }
+}
