@@ -160,6 +160,7 @@ async function run() {
         const cached = facts.find((f: any) => f.field === "cached_input_price_usd_per_million");
         const monthly = facts.find((f: any) => f.field === "monthly_price_usd");
         const requests = facts.find((f: any) => f.field === "requests_per_month");
+        const providerUsage = facts.find((f: any) => f.field === "provider_usage_usd");
 
         if (input && monthly) {
           const result = calculateEconomics(entity, provider, name, {
@@ -168,7 +169,7 @@ async function run() {
             cached_input_per_1m: cached?.value,
             monthly_price: monthly.value,
             requests_per_month: requests?.value ?? 30000,
-            provider_usage_usd: 60,
+            provider_usage_usd: providerUsage?.value ?? 60,
           });
           console.log(formatEconomics(result));
           console.log("");
