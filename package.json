@@ -32,6 +32,7 @@
     "compare": "node dist/cli.js compare",
     "serve": "node dist/cli.js serve",
     "glm-demo": "node dist/cli.js glm-demo",
+    "live-demo": "node dist/demo/live-agents.js",
     "migrate": "node dist/cli.js migrate",
     "seed": "node dist/cli.js seed",
     "seed-economics": "node dist/cli.js seed-economics",
