@@ -54,7 +54,12 @@ export function isUnitCompatible(field: string, unit: string | null): boolean {
 
   if (priceFields.includes(field)) {
     // Price fields should have USD-related units or null
-    return !unit || unit.toLowerCase().includes("usd") || unit.toLowerCase().includes("$") || unit.includes("/");
+    // Must contain "usd" or "$" or "/1M" or "/million" - not just any "/"
+    return !unit || 
+      unit.toLowerCase().includes("usd") || 
+      unit.includes("$") || 
+      unit.includes("/1M") || 
+      unit.toLowerCase().includes("million");
   }
 
   if (rateFields.includes(field)) {

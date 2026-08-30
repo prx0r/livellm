@@ -298,6 +298,12 @@ async function run() {
       break;
     }
 
+    case "glm-demo": {
+      const { runGlmDemo } = await import("./demo/glm-promo.js");
+      await runGlmDemo();
+      break;
+    }
+
     case "dashboard": {
       const { generateDashboard } = await import("./dashboard.js");
       const { writeFileSync } = await import("node:fs");

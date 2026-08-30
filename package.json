@@ -25,6 +25,7 @@
     "record": "node dist/cli.js record",
     "replay": "node dist/cli.js replay",
     "demo": "node dist/cli.js demo",
+    "glm-demo": "node dist/cli.js glm-demo",
     "migrate": "node dist/cli.js migrate",
     "seed": "node dist/cli.js seed",
     "seed-economics": "node dist/cli.js seed-economics",
