@@ -23,7 +23,7 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     { entity: "OpenCode:MiMo V2.5", input: 0.14, cached: 0.0028, output: 0.28, monthly: 10, requests: 150400, providerUsage: 60 },
     { entity: "OpenCode:Hy3", input: 0.14, cached: 0.035, output: 0.58, monthly: 10, requests: 21500, providerUsage: 60 },
     { entity: "OpenCode:Kimi K2.7", input: 0.95, cached: 0.19, output: 4, monthly: 10, requests: 6750, providerUsage: 60 },
-    { entity: "OpenCode:GLM-5.3-Flash", input: 0.15, cached: 0.03, output: 0.5, monthly: 10, requests: 7900, providerUsage: 15 },
+    { entity: "OpenCode:GLM-5.3-Flash", input: 0.15, cached: 0.03, output: 0.5, monthly: 10, requests: 15800, providerUsage: 30 },
     { entity: "OpenCode:GLM-5.3", input: 1.4, cached: 0.26, output: 4.4, monthly: 10, requests: 1080, providerUsage: 15 },
     { entity: "OpenCode:GPT 5.6 Luna", input: 0.2, cached: 0.02, output: 1.2, monthly: 10, requests: 10250, providerUsage: 15 },
     { entity: "OpenCode:DeepSeek V4 Flash", input: 0.22, cached: 0.007, output: 0.66, monthly: 10, requests: 37800, providerUsage: 30 },
