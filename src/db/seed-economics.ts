@@ -28,9 +28,9 @@ export async function seedEconomics(dbPath?: string): Promise<void> {
     { entity: "OpenCode:GPT 5.6 Luna", input: 0.2, cached: 0.02, output: 1.2, monthly: 10, requests: 10250, providerUsage: 15 },
     { entity: "OpenCode:DeepSeek V4 Flash", input: 0.22, cached: 0.007, output: 0.66, monthly: 10, requests: 37800, providerUsage: 30 },
     { entity: "OpenCode:Muse Spark 1.2", input: 0.1, cached: 0.002, output: 0.2, monthly: 10, requests: 226600, providerUsage: 60 },
-    // Z.ai direct (same as OpenCode Go for GLM models)
-    { entity: "Z.ai:GLM-5.3-Flash", input: 0.15, cached: 0.03, output: 0.5, monthly: 0, requests: 0, providerUsage: 0 },
-    // OpenRouter (50% cheaper)
+    // Z.ai direct — 50% OFF until Sept 9, 2026
+    { entity: "Z.ai:GLM-5.3-Flash", input: 0.075, cached: 0.015, output: 0.25, monthly: 0, requests: 0, providerUsage: 0 },
+    // OpenRouter — matches z.ai promo price
     { entity: "OpenRouter:GLM-5.3-Flash", input: 0.075, cached: 0.015, output: 0.25, monthly: 0, requests: 0, providerUsage: 0 },
   ];
 
