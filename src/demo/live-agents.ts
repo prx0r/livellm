@@ -376,7 +376,7 @@ async function main() {
     output_tokens_per_request: 200,
     requests: 240,
   });
-  console.log(`   → recommendation: ${economics.recommendation?.route ?? "none"}`);
+  console.log(`   → ${economics.routes?.length ?? 0} routes evaluated`);
 
   const marketJson = JSON.stringify(market, null, 2);
   const economicsJson = JSON.stringify(economics, null, 2);

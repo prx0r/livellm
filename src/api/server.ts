@@ -432,28 +432,17 @@ const routes: Route[] = [
         }
       }
 
-      // Sort by estimated cost (PAYG: cost*requests, subscription: simulated monthly)
+      // Sort by estimated cost for readability (agent decides, not us)
       evaluations.sort((a, b) => (a.estimated_cost_usd ?? Infinity) - (b.estimated_cost_usd ?? Infinity));
 
-      const cheapest = evaluations[0] ?? null;
-
-      // Provenance: collect all evidence IDs and search IDs
+      // Provenance: collect all evidence IDs
       const allEvidenceIds = evaluations.flatMap((e) => e.evidence_ids ?? []);
 
       sendJson(res, {
         as_of: new Date().toISOString(),
         model,
         workload,
-        recommendation: cheapest
-          ? {
-              route: cheapest.entity,
-              estimated_cost_usd: cheapest.estimated_cost_usd,
-              reason: cheapest.promotion
-                ? `Active ${cheapest.promotion.type} promotion`
-                : `Lowest cost among ${evaluations.length} routes`,
-            }
-          : null,
-        alternatives: evaluations.map((e) => ({
+        routes: evaluations.map((e) => ({
           route: e.entity,
           plan_type: e.plan_type,
           cost_per_request: e.cost_per_request,
@@ -465,7 +454,6 @@ const routes: Route[] = [
           as_of: e.as_of,
         })),
         uncomputable_routes: uncomputable,
-        confidence: cheapest?.confidence ?? null,
         provenance: {
           facts_verified: evaluations.length,
           evidence_ids: allEvidenceIds,
