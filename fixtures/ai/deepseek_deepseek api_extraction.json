@@ -1,0 +1,15 @@
+{
+  "facts": [
+    {
+      "entity": "DeepSeek:DeepSeek API",
+      "field": "input_price_usd_per_million",
+      "value": 0.14,
+      "unit": "USD/1M tokens",
+      "evidence": {
+        "quote": "DeepSeek API pricing at $0.14 per million tokens for their latest model"
+      },
+      "confidence": 0.95
+    }
+  ],
+  "ambiguities": []
+}

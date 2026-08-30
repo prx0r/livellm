@@ -1,0 +1,15 @@
+{
+  "facts": [
+    {
+      "entity": "Cursor:Cursor",
+      "field": "monthly_price_usd",
+      "value": 20,
+      "unit": "USD/month",
+      "evidence": {
+        "quote": "Cursor launches Pro plan with unlimited completions and priority access for $20/month subscription"
+      },
+      "confidence": 0.95
+    }
+  ],
+  "ambiguities": []
+}

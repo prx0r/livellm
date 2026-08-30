@@ -1,0 +1,25 @@
+{
+  "facts": [
+    {
+      "entity": "Together AI:Llama",
+      "field": "input_price_usd_per_million",
+      "value": 0.1,
+      "unit": "USD/1M tokens",
+      "evidence": {
+        "quote": "Together AI offers competitive pricing for open source Llama, Mistral, and Qwen models"
+      },
+      "confidence": 0.85
+    },
+    {
+      "entity": "Together AI:Llama",
+      "field": "free_tier_quota",
+      "value": 1000000,
+      "unit": "tokens/month",
+      "evidence": {
+        "quote": "Together AI offers competitive pricing for open source Llama, Mistral, and Qwen models"
+      },
+      "confidence": 0.8
+    }
+  ],
+  "ambiguities": ["Exact free tier amount not specified in search result"]
+}

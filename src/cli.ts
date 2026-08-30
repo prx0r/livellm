@@ -28,6 +28,11 @@ Commands:
   migrate     Run database migrations
   account     Show SerpApi account/quota status
   radar       Run one radar cycle (discover → candidates → verify)
+  investigate Investigate candidates with AI extraction
+  facts       Show current facts in the ledger
+  changes     Show recent change events
+  materialize Materialize current state from fact ledger
+  dashboard   Generate Live Radar dashboard HTML
   record      Record live SerpApi responses as fixtures
   replay      Test against recorded fixtures
   demo        Full demo cycle with output
@@ -105,6 +110,62 @@ async function run() {
       const { seedQueries } = await import("./db/seed.js");
       await seedQueries(resolve(cwd, "data", "livellm.db"));
       console.log("Discovery queries seeded.");
+      break;
+    }
+
+    case "investigate": {
+      const { investigateCandidates } = await import("./pipeline/run-investigate.js");
+      await investigateCandidates({
+        dbPath: resolve(cwd, "data", "livellm.db"),
+        replayDir: values["fixture-dir"] ?? resolve(cwd, "fixtures", "ai"),
+      });
+      break;
+    }
+
+    case "facts": {
+      const { FactRepo } = await import("./db/facts.js");
+      const repo = new FactRepo();
+      const entities = await repo.getEntities();
+      if (entities.length === 0) {
+        console.log("No facts in ledger.");
+      }
+      for (const entity of entities) {
+        const facts = await repo.getEntityFacts(entity);
+        console.log(`\n${entity}:`);
+        for (const f of facts) {
+          console.log(`  ${f.field}: ${JSON.stringify(f.value)} ${f.unit ?? ""}`);
+        }
+      }
+      break;
+    }
+
+    case "changes": {
+      const { FactRepo } = await import("./db/facts.js");
+      const repo = new FactRepo();
+      const changes = await repo.getRecentChanges(20);
+      if (changes.length === 0) {
+        console.log("No change events yet.");
+      }
+      for (const c of changes) {
+        console.log(`[${c.detected_at}] ${c.entity_id} ${c.field}: ${c.before_json} → ${c.after_json}`);
+      }
+      break;
+    }
+
+    case "materialize": {
+      const { materializeState } = await import("./facts/materialize.js");
+      const state = await materializeState(resolve(cwd, "data", "livellm.db"));
+      console.log(JSON.stringify(state, null, 2));
+      break;
+    }
+
+    case "dashboard": {
+      const { generateDashboard } = await import("./dashboard.js");
+      const { writeFileSync } = await import("node:fs");
+      const html = await generateDashboard(resolve(cwd, "data", "livellm.db"));
+      const outPath = resolve(cwd, "dist", "dashboard.html");
+      writeFileSync(outPath, html);
+      console.log(`Dashboard generated: ${outPath}`);
       break;
     }
 

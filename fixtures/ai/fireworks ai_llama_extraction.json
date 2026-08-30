@@ -1,0 +1,15 @@
+{
+  "facts": [
+    {
+      "entity": "Fireworks AI:Llama",
+      "field": "free_tier_quota",
+      "value": 1000000,
+      "unit": "tokens/month",
+      "evidence": {
+        "quote": "Fireworks AI provides 1M free tokens monthly for their serverless inference API"
+      },
+      "confidence": 0.95
+    }
+  ],
+  "ambiguities": []
+}

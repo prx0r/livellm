@@ -1,0 +1,15 @@
+{
+  "facts": [
+    {
+      "entity": "Anthropic:Claude API",
+      "field": "free_tier_quota",
+      "value": 100000,
+      "unit": "tokens/day",
+      "evidence": {
+        "quote": "free tier for Claude API with 100K tokens per day quota for developers"
+      },
+      "confidence": 0.9
+    }
+  ],
+  "ambiguities": []
+}

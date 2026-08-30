@@ -1,0 +1,15 @@
+{
+  "facts": [
+    {
+      "entity": "Groq:Llama 3",
+      "field": "free_tier_quota",
+      "value": 10000,
+      "unit": "tokens/day",
+      "evidence": {
+        "quote": "Groq offers free inference with 10K tokens per day on Llama 3 models"
+      },
+      "confidence": 0.9
+    }
+  ],
+  "ambiguities": []
+}

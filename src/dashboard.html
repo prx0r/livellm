@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiveLLM — Live Radar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; background: #0a0a0a; color: #e0e0e0; padding: 20px; }
+    h1 { color: #00ff88; font-size: 24px; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px; }
+    .card h2 { color: #00ccff; font-size: 16px; margin-bottom: 15px; }
+    .stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; }
+    .stat:last-child { border-bottom: none; }
+    .stat-label { color: #888; }
+    .stat-value { color: #fff; font-weight: bold; }
+    .stat-value.green { color: #00ff88; }
+    .stat-value.yellow { color: #ffcc00; }
+    .stat-value.red { color: #ff4444; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #333; }
+    th { color: #00ccff; font-weight: normal; font-size: 12px; text-transform: uppercase; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+    .badge-verified { background: #00ff8822; color: #00ff88; }
+    .badge-pending { background: #ffcc0022; color: #ffcc00; }
+    .badge-rejected { background: #ff444422; color: #ff4444; }
+    .timestamp { color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>◉ LIVE LLM RADAR</h1>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Pipeline Stats</h2>
+      <div class="stat"><span class="stat-label">Queries Run</span><span class="stat-value" id="queries">—</span></div>
+      <div class="stat"><span class="stat-label">Raw Results</span><span class="stat-value" id="hits">—</span></div>
+      <div class="stat"><span class="stat-label">New URLs</span><span class="stat-value green" id="newUrls">—</span></div>
+      <div class="stat"><span class="stat-label">Candidates</span><span class="stat-value yellow" id="candidates">—</span></div>
+      <div class="stat"><span class="stat-label">Verified Changes</span><span class="stat-value green" id="changes">—</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Fact Ledger</h2>
+      <div class="stat"><span class="stat-label">Total Entities</span><span class="stat-value" id="entities">—</span></div>
+      <div class="stat"><span class="stat-label">Total Facts</span><span class="stat-value" id="facts">—</span></div>
+      <div class="stat"><span class="stat-label">Change Events</span><span class="stat-value" id="changeEvents">—</span></div>
+      <div class="stat"><span class="stat-label">Generated At</span><span class="timestamp" id="generated">—</span></div>
+    </div>
+
+    <div class="card">
+      <h2>SerpApi Quota</h2>
+      <div class="stat"><span class="stat-label">Searches Left</span><span class="stat-value" id="quota">—</span></div>
+      <div class="stat"><span class="stat-label">This Month</span><span class="stat-value" id="monthUsage">—</span></div>
+      <div class="stat"><span class="stat-label">Hourly Usage</span><span class="stat-value" id="hourUsage">—</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Current Market</h2>
+    <table id="marketTable">
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>Model</th>
+          <th>Input Price</th>
+          <th>Output Price</th>
+          <th>Free Tier</th>
+          <th>Last Changed</th>
+        </tr>
+      </thead>
+      <tbody id="marketBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <h2>Recent Changes</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Entity</th>
+          <th>Field</th>
+          <th>Before</th>
+          <th>After</th>
+        </tr>
+      </thead>
+      <tbody id="changesBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    // This script loads data from the CLI output
+    // In production, this would fetch from a live API
+    document.getElementById('generated').textContent = new Date().toISOString();
+  </script>
+</body>
+</html>
