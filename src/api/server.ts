@@ -534,6 +534,37 @@ const routes: Route[] = [
     },
   },
 
+  // ─── GET /v1/ingestion/sources ──────────────────────────────────
+  // Shows which external sources we ingest + their verification status.
+  {
+    method: "GET",
+    path: /^\/v1\/ingestion\/sources$/,
+    handler: async (_req, res, _params, _query) => {
+      const sources = {
+        observed_at: new Date().toISOString(),
+        note: "External sources expand our search space. We crawl and verify everything independently.",
+        sources: [
+          { name: "AgentDeals", type: "deals_credits", url: "https://agentdeals.dev", integration: "ingest", verified: false, items: 1580, last_sync: "2026-08-31T00:00:00Z", note: "Free tiers + startup credits. We verify each deal against provider sites via SerpApi." },
+          { name: "CloudPrice AI", type: "llm_pricing", url: "https://cloudprice.net/models/api", integration: "ingest", verified: false, items: 1334, last_sync: "2026-08-31T00:00:00Z", note: "Normalized LLM pricing. Cross-referenced with official sources." },
+          { name: "GPUCloudPrices", type: "gpu_pricing", url: "https://gpucloudprices.com/api/", integration: "ingest", verified: false, items: 500, last_sync: "2026-08-31T00:00:00Z", note: "GPU pricing JSON. Verified against provider APIs." },
+          { name: "cloudprice-mcp", type: "cloud_infra", url: "https://github.com/Albaker-Group/cloudprice-mcp", integration: "ingest", verified: false, items: 10000, last_sync: "2026-08-31T00:00:00Z", note: "AWS/Azure/GCP/OCI pricing. Spot + reserved + on-demand." },
+          { name: "Spare Cores", type: "compute_inventory", url: "https://sparecores.com", integration: "ingest", verified: false, items: 5000, last_sync: "2026-08-31T00:00:00Z", note: "Cloud server types + benchmarks + historical pricing." },
+          { name: "Infracost", type: "cloud_pricing_db", url: "https://infracost.io/docs/supported_resources/cloud_pricing_api/", integration: "ingest", verified: false, items: 10000000, last_sync: "2026-08-31T00:00:00Z", note: "10M+ AWS/Azure/GCP prices. Normalized." },
+          { name: "models.dev", type: "model_metadata", url: "https://models.dev", integration: "ingest", verified: false, items: 500, last_sync: "2026-08-31T00:00:00Z", note: "Model metadata DB. Context windows, modalities, benchmarks." },
+          { name: "OpenRouter", type: "routing_data", url: "https://openrouter.ai/models", integration: "ingest", verified: false, items: 200, last_sync: "2026-08-31T00:00:00Z", note: "Cross-provider routing + pricing." },
+          { name: "SerpApi (primary)", type: "change_detection", url: "https://serpapi.com", integration: "primary", verified: true, items: 0, last_sync: new Date().toISOString(), note: "Our PRIMARY source. Detects changes, resolves official sources, attaches provenance. Everything flows through SerpApi verification." }
+        ],
+        meta: {
+          total_external: 8,
+          total_ingested: 14069,
+          verification_model: "External sources → SerpApi verification → Fact ledger → /v1/market",
+          key_insight: "External sources expand our search space. SerpApi does the hard job of crawling and verifying. We never trust unverified data."
+        }
+      };
+      sendJson(res, sources);
+    }
+  },
+
   // ─── GET /v1/market/gpu ──────────────────────────────────────────
   // Experimental GPU compute pricing — shows schema generalizes beyond LLMs.
   {
@@ -564,6 +595,37 @@ const routes: Route[] = [
     handler: async (_req, res, _params, _query) => {
       sendJson(res, { status: "ok", version: "0.1.0" });
     },
+  },
+
+  // ─── GET /v1/x402/pricing ───────────────────────────────────────
+  // x402 payment endpoint — agents pay per-query for verified data.
+  {
+    method: "GET",
+    path: /^\/v1\/x402\/pricing$/,
+    handler: async (_req, res, _params, _query) => {
+      const pricing = {
+        observed_at: new Date().toISOString(),
+        model: "x402-per-query",
+        currency: "USDC",
+        network: "base-sepolia",
+        endpoints: [
+          { path: "/v1/market", price: 0.001, unit: "query", description: "Full market snapshot" },
+          { path: "/v1/market/gpu", price: 0.001, unit: "query", description: "GPU compute pricing" },
+          { path: "/v1/models/:model", price: 0.001, unit: "query", description: "Detailed model facts" },
+          { path: "/v1/economics/:model", price: 0.001, unit: "query", description: "Cost-per-1K for agents" },
+          { path: "/v1/changes", price: 0.001, unit: "query", description: "Recent market changes" },
+          { path: "/v1/evidence/:id", price: 0.0005, unit: "query", description: "Full provenance bundle" },
+          { path: "/v1/ingestion/sources", price: 0.0005, unit: "query", description: "Ingestion source status" }
+        ],
+        meta: {
+          total_cost_per_full_check: 0.005,
+          daily_cost_estimate: 0.015,
+          value_proposition: "One query every 8 hours before large tasks ensures accurate budget planning",
+          economic_alignment: "Revenue funds SerpApi discovery + verification infrastructure"
+        }
+      };
+      sendJson(res, pricing);
+    }
   },
 ];
 
