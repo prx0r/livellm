@@ -236,8 +236,23 @@ Future:  Anything an agent can spend money on
 - SerpApi (change detection + source discovery)
 - AI extraction (mimo-v2.5)
 - Deterministic validation
-- MCP server (read-only)
-- 7 HTTP API endpoints
+- MCP server (5 read-only tools)
+- 9 HTTP API endpoints
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v1/market` | GET | Full market snapshot (22 models, 23 routes) |
+| `/v1/market?models=X` | GET | Filter to specific models |
+| `/v1/market/gpu` | GET | GPU compute pricing (experimental) |
+| `/v1/models/:model` | GET | Detailed model facts with evidence |
+| `/v1/economics/:model` | GET | Cost-per-1K for agents |
+| `/v1/changes` | GET | Recent market changes |
+| `/v1/evidence/:id` | GET | Full provenance bundle |
+| `/v1/ingestion/sources` | GET | External sources + verification status |
+| `/v1/x402/pricing` | GET | Per-query pricing for agents |
+| `/v1/health` | GET | Health check |
 
 ## Submission
 
