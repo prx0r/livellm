@@ -1,17 +1,17 @@
-# LiveLLM — Pitch Document
+# LiveLLM — Extended Pitch & Demo
+
 **DevNetwork API + Cloud + AI Hackathon 2026**
+**Duration: 4 minutes + 2 minutes Q&A**
 
 ---
 
-## One-liner
+## SLIDE 1: Opening (15 sec)
 
-**Verified economic intelligence for autonomous agents.**
+**LiveLLM — Verified Economic Intelligence for Autonomous Agents**
 
-## The Problem
+> "Budget-aware agents are emerging. Google's BATS and CATS research shows that budget-aware planning improves the cost-performance frontier. But there's a missing layer: what do actions actually cost right now?"
 
-Agents are becoming budget-aware (Google's BATS/CATS research proves this), but their budgets are only useful if their economic assumptions are accurate.
-
-An agent reasoning trace looks like:
+Show the agent reasoning trace:
 
 ```
 GOAL: Earn > $20 from this task
@@ -19,257 +19,376 @@ KNOWN CAPABILITIES: P(success | coding task) = 0.71
 BUDGET: $5.00 remaining
 ```
 
-But what if the agent's cost assumptions are **wrong**?
+> "The planning algorithm can be mathematically excellent and still make the wrong economic decision because the inputs are stale. That's the problem we solve."
 
-- Claude changed pricing last week
-- A cheaper equivalent model appeared
-- The user's subscription gives them effectively-free calls
-- An OpenCode promotion provides 2× quota
-- GPU inference has temporarily become cheaper
+---
 
-**The planning algorithm can be mathematically excellent and still make the wrong economic decision because the inputs are stale.**
+## SLIDE 2: The Five Pricing Traps (60 sec)
 
-## The Solution
+> "This isn't an edge case. It's everywhere. Here are five pricing traps that break autonomous agents."
 
-LiveLLM turns the changing web into small, verifiable reference payloads that agents can safely use as economic state.
+**Trap 1: Subscriptions make "price" meaningless**
 
 ```
-SerpApi Discovery → Official Source → AI Extraction → Fact Ledger → GET /v1/market
+MiMo V2.5:   $0.14/M base  →  $0.023/M on Go (6× subscription value)
+GLM-5.3-Flash: $0.15/M base  →  $0.10/M on Go (1.5×)  →  $0.05/M with 2× promo
 ```
 
-**Existing systems answer:** "How much does Claude cost?"
+> "The same model has list price, amortized price, and promo-adjusted price. A static table gives you one number. That number is wrong."
 
-**LiveLLM answers:** "What are the economic conditions under which an agent can use Claude right now, where did those facts come from, when were they observed, what changed, and can I safely use them in an autonomous decision?"
+**Trap 2: Tool pricing is multidimensional**
 
-## What Makes This Different
+```
+Tavily: 1 credit × plan × remaining allocation
+Exa: $0.012 to $1/run depending on depth, reasoning, enrichment
+Firecrawl: credits/page × subscription tier × rollover rules × overage
+```
 
-### Not another pricing API
+> "An agent deciding 'Tavily vs Exa vs Firecrawl?' needs a cost function, not a price."
 
-| Pricing Database | LiveLLM |
-|-----------------|---------|
-| Static JSON dump | Temporal fact ledger with provenance |
-| Trust the number | Verify against official sources |
-| One snapshot | Detects changes via SerpApi |
-| No evidence | Full provenance bundle per fact |
-| LLM only | Generalizes to GPU, cloud, tools |
+**Trap 3: Coding subscriptions are the same everywhere**
 
-### The core primitive
+```
+Cursor: $20/$60/$200, two usage pools, model-specific tariffs, 10% regional uplift
+GitHub Copilot: AI credits, 50% off GPT-5.6 Sol through Sept 3
+OpenCode Go: $10/mo, 6× for MiMo, 1.5× for GLM, 2× promo
+```
+
+> "I pay for Cursor Pro and OpenCode Go. For this job, which subscription's remaining capacity should I consume first? Nobody can answer that."
+
+**Trap 4: GPU compute changes weekly**
+
+```
+Runpod cut prices 4 days ago (August 27)
+Vast: on-demand / reserved / interruptible — market price, not catalog
+Modal: GPU-second + $30/mo free on starter
+```
+
+> "The agent's GPU cost assumption was stale within a week."
+
+**Trap 5: Official surfaces disagree with themselves**
+
+```
+OpenCode /docs/go/:  Hy3 = 4,300 requests/5h
+OpenCode /go page:   Hy3 = 5,400 requests/5h
+```
+
+> "Two official OpenCode pages show different numbers for the same model. An agent scraping the wrong surface gets the wrong answer."
+
+---
+
+## SLIDE 3: The Pattern (20 sec)
+
+> "These aren't five separate problems. They're the same problem in five domains."
+
+Show the table:
+
+```
+                    LLM             Compute         Tools
+                    ─────────────   ─────────────   ─────────────
+nominal≠effective   Go subs         reserved GPU    monthly credits
+time-dependent      peak/off-peak   spot market     promotions
+route-dependent     Z.ai vs OC      host/region     API plan
+state-dependent     quota left      credits left    credits left
+composite billing   cache/in/out    compute+storage search+pages
+availability        model enabled   GPU rentable    rate limits
+temporary promos    GLM 2×          price cuts      free credits
+commitment effects  subscription    reserved term   monthly plan
+rounding            token units     seconds         request buckets
+source disagreement OC locales      API vs landing  docs vs pricing
+```
+
+> "That commonality is evidence that we're finding an actual primitive, not randomly adding markets."
+
+---
+
+## SLIDE 4: The Solution (20 sec)
+
+> "LiveLLM is the verified economic state layer for autonomous agents."
+
+Show the architecture:
+
+```
+SerpApi Discovery → Official Source → AI Extraction → Deterministic Validation → Fact Ledger → GET /v1/market
+```
+
+> "We discover pricing changes via SerpApi, validate them against official sources, and serve provenance-backed economic state. Not a pricing table. A fact ledger."
+
+---
+
+## SLIDE 5: The Demo — OpenCode Go Pricing Trap (60 sec)
+
+> "Let me show you why this matters. What does MiMo V2.5 cost on OpenCode Go?"
+
+**Step 1: The naive answer**
+
+```
+MiMo: $0.14/M    GLM-5.3-Flash: $0.075/M
+→ "GLM is cheaper"
+```
+
+**Step 2: The subscription-aware answer**
+
+```
+MiMo: $60 included / $10 fee = 6×  →  $0.0233/M
+GLM:  $15 included / $10 fee = 1.5×  →  $0.10/M
+→ "MiMo is 4.3× cheaper"
+```
+
+**Step 3: The promotion**
+
+```
+GLM has a 2× usage promo right now
+GLM amortized: $0.10 / 2 = $0.05/M
+MiMo: $0.0233/M
+→ "MiMo is still 2.14× cheaper"
+```
+
+> "A static pricing table gets this wrong. An LLM comparing prices gets this wrong. LiveLLM gets it right."
+
+---
+
+## SLIDE 6: The Proof (30 sec)
+
+> "We can prove our interpretation is correct."
+
+Show the reconciliation:
+
+```
+We independently compute request costs from token tariffs,
+calculate window allowances from plan limits, and reproduce
+OpenCode's own published request limits:
+
+MiMo: calculated 150,376 ≈ published 150,400 (0.02% error)
+GLM:  calculated 7,895 ≈ published 7,900 (0.07% error)
+```
+
+> "Our math matches OpenCode's numbers. The interpretation of their awkward subscription economics is correct."
+
+Show the conflict:
+
+```
+/docs/go/ baseline:  Hy3 = 4,300 requests/5h
+/go page:            Hy3 = 5,400 requests/5h
+
+verification_state: "conflicting_official_sources"
+```
+
+> "LiveLLM doesn't guess when official surfaces disagree. It emits the conflict with provenance."
+
+---
+
+## SLIDE 7: The x402 Business Model (20 sec)
+
+> "Here's the business model. Every payload is purchasable via x402 micropayment."
+
+```
+Agent needs economic state
+    ↓
+GET /v1/market
+    ↓
+x402 402 Payment Required ($0.001)
+    ↓
+Agent pays, receives verified payload
+    ↓
+Uses in routing decision
+    ↓
+Saves $5 on bad model choice
+    ↓
+ROI: 5,000×
+```
+
+> "Why pay $0.001 per query? Because the alternative is getting pricing wrong and wasting $5 on a bad model choice."
+
+---
+
+## SLIDE 8: The Daily Ritual (15 sec)
+
+> "This becomes a daily ritual for agents."
+
+```
+Every morning:
+  Agent checks LiveLLM → current economic state
+  Routes tasks to optimal models/tools
+  Saves 30-60% vs static pricing assumptions
+  Pays $0.001 for the privilege
+
+Every hour:
+  SerpApi detects changes
+  Fact ledger updates
+  Agent re-checks if task is long
+```
+
+> "Just as humans check market prices before financial decisions, agents check LiveLLM before economic decisions."
+
+---
+
+## SLIDE 9: The Routing Demo (15 sec)
+
+Show the MWGym router output:
 
 ```json
 {
-  "asset": "inference:anthropic/claude-sonnet-5",
-  "observed_at": "2026-08-31T07:12:31Z",
-  "valid_from": "2026-08-29T00:00:00Z",
-  "economics": {
-    "input_usd_per_million": 2.00,
-    "output_usd_per_million": 10.00
-  },
-  "evidence": {
-    "source_type": "official_provider",
-    "verification_state": "verified",
-    "search_observation": "SerpApi detected pricing page change"
+  "task": "write a Python script",
+  "model": "MiMo V2.5",
+  "amortized_cost": "$0.0233/M",
+  "subscription": { "base_value_multiple": 6.0 },
+  "promotion": null,
+  "verification_state": "reconciled",
+  "stale_comparison": {
+    "without_livellm": "GLM-5.3-Flash",
+    "with_livellm": "MiMo V2.5",
+    "reason": "MiMo is 2.14× cheaper with 8× more context"
   }
 }
 ```
 
-Small payload. Timestamped. Evidence-backed. Machine-readable.
+> "Without LiveLLM, the router picks GLM. With LiveLLM, it picks MiMo. Same task, better economics, verified provenance."
 
-## The Moat: Canonical Endpoint + x402 Trust
+---
 
-### The fragmentation problem
+## SLIDE 10: What's Next (20 sec)
 
-Today, agents that need economic data face a fragmented landscape:
-- **AgentDeals** — deals/free tiers only, no pricing
-- **CloudPrice** — LLM pricing only, no verification
-- **GPUCloudPrices** — GPU only, no provenance
-- **cloudprice-mcp** — AWS/Azure/GCP, no change detection
-- **Infracost** — cloud infra, no agent integration
+> "We started with LLM pricing because OpenCode Go exposed the problem. But the same pattern appears everywhere."
 
-Each MCP server is **unreliable by design** — no verification, no temporal tracking, no provenance. Agents can't trust them for autonomous decisions.
-
-### Why agents trust by volume
-
-Agents currently build trust through **repeated successful calls** — if an endpoint returns consistent data 100 times, the agent assumes it's reliable. But this breaks when:
-- The source goes stale
-- The provider changes pricing
-- The MCP server disappears
-- The data conflicts with another source
-
-**Volume-based trust is fragile.** One wrong answer at the wrong time can cost an agent its entire budget.
-
-### LiveLLM's moat: verification + x402
-
-LiveLLM provides what no fragmented MCP can:
-
-1. **Verification** — every fact traced to official sources via SerpApi
-2. **Temporal state** — when was this observed, when did it change
-3. **Provenance** — full evidence bundle for every number
-4. **x402 payment** — agents pay per-query, creating economic alignment
-
-With x402, the endpoint becomes **self-sustaining**:
-- Agent pays $0.001 per query
-- Revenue funds SerpApi credits + infrastructure
-- More agents = more revenue = more verification capacity
-- The endpoint improves as it scales
-
-### The flywheel
+Show the expansion sequence:
 
 ```
-Agent queries LiveLLM
-    ↓
-Pays via x402 ($0.001/query)
-    ↓
-Revenue funds SerpApi discovery
-    ↓
-More sources verified
-    ↓
-More agents trust endpoint
-    ↓
-More queries
-    ↓
-More revenue
-    ↓
-Better verification
+1. LLM/model economics    ← you are here
+2. GPU/compute            ← next (Runpod, Vast, Modal)
+3. agent tool-call economics  ← Tavily, Exa, Firecrawl, Browserbase
+4. coding-agent subscriptions ← Cursor, Copilot, Go
+5. x402 paid APIs
+6. generic cloud
 ```
 
-### Why this matters for autonomous agents
+> "Compute proves the abstraction generalizes. Tool-call economics proves why autonomous agents actually need it."
 
-An agent starting a large task (e.g., "build a SaaS app and launch it") needs to know:
-- What LLM to use (cheapest for the task)
-- What GPU to rent (if local inference is better)
-- What APIs to call (cheapest tool-call pricing)
-- What credits are available (free tiers, promotions)
-- What the total cost will be (budget planning)
+---
 
-Today, the agent would:
-1. Search for pricing (fragile, unverified)
-2. Assume prices are current (often wrong)
-3. Start the task
-4. Discover mid-task that prices changed
-5. Either eat the cost or restart
+## SLIDE 11: The Close (10 sec)
 
-With LiveLLM, the agent:
-1. Calls `/v1/market` before starting (verified, timestamped)
-2. Gets economic state with provenance
-3. Plans budget with accurate numbers
-4. Starts the task with confidence
-5. Re-checks periodically if the task is long
+> "LiveLLM is the verified economic state layer for autonomous agents. We discover via SerpApi, validate against official sources, and serve provenance-backed facts. The math works — we reproduce OpenCode's own published numbers. The advertised price is never the actual decision-relevant economic state. We built the layer that is."
 
-**This becomes a daily ritual for agents** — just as humans check market prices before making financial decisions, agents check LiveLLM before making economic decisions.
+---
 
-### The canonical endpoint
+## SERPAPI INTEGRATION (mention if asked)
 
-Instead of 10 fragmented MCPs with unverified data, agents have **one endpoint they can trust**:
+Deep integration, not surface-level:
 
-```
-GET /v1/market          — all LLM pricing, verified
-GET /v1/market/gpu      — GPU compute, verified
-GET /v1/economics/:model — cost-per-1K, verified
-GET /v1/evidence/:id    — full provenance
-GET /v1/changes         — what changed recently
-```
+| Feature | How We Use It |
+|---|---|
+| News Light | Detect provider announcements (price changes, new models) |
+| Google Light | Verify pricing pages, organic results + related questions |
+| Search Index Deep | Discover new providers, unknown unknowns |
+| JSON Restrictor | Strip discovery responses to only fields the pipeline needs |
+| Search Archive IDs | Persist as provenance handles for every observation |
+| Account API | Quota governance — check before spending, enforce reserve |
+| `nfpr=1` | Suppress autocorrect for obscure model names (MiMo, GLM-5) |
+| `filter=0` | Increase recall, deduplicate ourselves |
 
-One endpoint. Multiple domains. All verified. All timestamped. All with evidence.
+> "Search is not just another source. It's the change-detection mechanism."
 
-**That's the product.**
+---
 
-## The Demo (2 minutes)
-
-1. **Stale agent** — has old pricing assumptions
-2. **SerpApi detects change** — provider updated pricing page
-3. **LiveLLM resolves** — fetches official source, extracts fact
-4. **Validator checks** — deterministic validation passes
-5. **Fact enters ledger** — temporal, provenance-backed
-6. **`/v1/market` changes** — new prices live
-7. **3 agents consume** — each makes different economically rational decision
-
-```bash
-# Agent 1: Routes to cheapest provider
-curl localhost:3847/v1/economics/GLM-5.3-Flash
-# → "Use Z.ai — 50% off promotion until Sept 9"
-
-# Agent 2: Checks free tier
-curl localhost:3847/v1/market?models=gpt-4o-mini
-# → "OpenCode offers 2× usage quota"
-
-# Agent 3: Compares GPU vs API
-curl localhost:3847/v1/market/gpu
-# → "H100 at $1.89/hr on vast.ai vs $2.18 API cost — rent GPU"
-```
-
-## SerpApi Integration (Deep)
-
-- **News Light** — detect provider announcements
-- **Google Light** — verify pricing pages
-- **Search Index Deep** — discover new providers
-- **JSON Restrictor** — structured extraction from HTML
-- **Search Archive IDs** — provenance for every observation
-- **Account API** — quota governance
-
-**Search is not just another source. It's the change-detection mechanism.**
-
-## Research Backing
-
-**Google BATS (COLM 2026):** Budget-aware tool-use produces better cost-performance frontier than just giving agents more tools.
-
-**Google CATS (2026):** Higher accuracy using fewer tool calls + lower total cost via budget-aware allocation.
-
-**The gap:** BATS/CATS answer "how to allocate resources." LiveLLM answers "what those resources actually cost right now."
-
-A budget optimizer is only as correct as the economic state it receives.
-
-## Progression
+## TECH STACK
 
 ```
-Today:   LLM inference economics (22 models, 8 providers)
-Next:    GPU/compute economics (5 verified routes)
-Then:    API/tool-call economics
-Then:    Credits/free tiers/promotions
-Then:    Storage/network/cloud resources
-Future:  Anything an agent can spend money on
+TypeScript + Node.js
+SQLite (bitemporal fact ledger)
+SerpApi (change detection + source discovery)
+AI extraction (MiMo V2.5)
+Deterministic validation
+MCP server (5 read-only tools)
+9 HTTP API endpoints
+77 passing tests
 ```
 
-## Tech Stack
+---
 
-- TypeScript + Node.js
-- SQLite (bitemporal fact ledger)
-- SerpApi (change detection + source discovery)
-- AI extraction (mimo-v2.5)
-- Deterministic validation
-- MCP server (5 read-only tools)
-- 9 HTTP API endpoints
+## API ENDPOINTS
 
-## API Endpoints
+| Endpoint | Description |
+|---|---|
+| `GET /v1/market` | Full market snapshot (22 models, 23 routes) |
+| `GET /v1/market?models=X` | Filter to specific models |
+| `GET /v1/market/gpu` | GPU compute pricing (experimental) |
+| `GET /v1/models/:model` | Detailed model facts with evidence |
+| `GET /v1/economics/:model` | Cost-per-1K for agents |
+| `GET /v1/changes` | Recent market changes |
+| `GET /v1/evidence/:id` | Full provenance bundle |
+| `GET /v1/ingestion/sources` | External sources + verification status |
+| `GET /v1/x402/pricing` | Per-query pricing for agents |
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/v1/market` | GET | Full market snapshot (22 models, 23 routes) |
-| `/v1/market?models=X` | GET | Filter to specific models |
-| `/v1/market/gpu` | GET | GPU compute pricing (experimental) |
-| `/v1/models/:model` | GET | Detailed model facts with evidence |
-| `/v1/economics/:model` | GET | Cost-per-1K for agents |
-| `/v1/changes` | GET | Recent market changes |
-| `/v1/evidence/:id` | GET | Full provenance bundle |
-| `/v1/ingestion/sources` | GET | External sources + verification status |
-| `/v1/x402/pricing` | GET | Per-query pricing for agents |
-| `/v1/health` | GET | Health check |
+---
 
-## Submission
+## Q&A PREPARATION
+
+### "How is this different from CloudPrice?"
+CloudPrice is a FinOps tool for cloud infrastructure. LiveLLM is designed for autonomous agents — temporal facts, provenance, conflict detection, x402 micropayments. These projects demonstrate that machine-readable economic data is becoming infrastructure. LiveLLM adds a fact-level verification layer.
+
+### "Does the SerpApi integration actually work?"
+Yes. The radar pipeline checks the SerpApi Account API before spending searches, enforces a reserve, records search_metadata.id, deduplicates discoveries. We use Google Light, Google News Light, and Search Index with JSON Restrictor.
+
+### "What's the business model?"
+x402 micropayments. Agents pay $0.001 per query. Revenue funds SerpApi credits + infrastructure. More agents = more verification capacity. The endpoint improves as it scales.
+
+### "What about the Hy3 conflict?"
+We flag it as conflicting_official_sources. /docs/go/ says 4,300, /go page says 5,400. LiveLLM doesn't silently choose between disagreeing official surfaces. The agent gets the conflict with provenance.
+
+### "How many models?"
+22 models across 8 providers. Every fact has a provenance chain. We verify against official sources, not scraped data.
+
+### "Is the reconciliation actually correct?"
+Yes. We independently compute request costs from token tariffs, calculate window allowances from plan limits, and reproduce OpenCode's published 150,400 MiMo requests/month (0.02% error) and 7,900 GLM requests/month (0.07% error).
+
+### "What's next after LLM pricing?"
+GPU/compute (Runpod, Vast, Modal), then tool-call economics (Tavily, Exa, Firecrawl, Browserbase). The same pricing complexity appears in every domain autonomous agents touch.
+
+### "Why x402?"
+The 402 Payment Required response itself communicates what an API costs. Agent can inspect before paying. Eventually LiveLLM normalizes x402 responses into economic quotes. The observation is itself machine-verifiable.
+
+---
+
+## TIMING SUMMARY
+
+| Section | Duration | Cumulative |
+|---|---|---|
+| Opening | 15s | 0:15 |
+| Five Pricing Traps | 60s | 1:15 |
+| The Pattern | 20s | 1:35 |
+| The Solution | 20s | 1:55 |
+| Demo: OpenCode Go Trap | 60s | 2:55 |
+| The Proof | 30s | 3:25 |
+| x402 Business Model | 20s | 3:45 |
+| Daily Ritual | 15s | 4:00 |
+| Routing Demo | 15s | 4:15 |
+| What's Next | 20s | 4:35 |
+| Close | 10s | 4:45 |
+
+Total: ~4:45 (under 5 min with transitions)
+
+---
+
+## VISUAL ASSETS NEEDED
+
+1. **Agent reasoning trace** — stale budget assumptions
+2. **Five pricing traps** — side-by-side escalation
+3. **The pattern table** — 10 rows × 3 domains
+4. **Architecture diagram** — SerpApi → Source → Extraction → Validation → Ledger → API
+5. **6-step pricing escalation** — MiMo subscription → amortized → promo
+6. **Reconciliation proof** — calculated vs published request limits
+7. **Conflict screenshot** — /docs/go/ vs /go page for Hy3
+8. **x402 purchase flow** — 402 → pay → receive → use
+9. **Router JSON output** — stale_comparison showing decision change
+10. **Expansion sequence** — 6 domains with arrows
+11. **Competitive landscape** — AgentDeals, CloudPrice, etc. positioning
+
+---
+
+## SUBMISSION
 
 **Hackathon:** DevNetwork API + Cloud + AI 2026
 **Category:** Track 2 — SerpApi Integration
-**Prize:** $1,000 cash + $1,000 credits
 **Repo:** github.com/prx0r/livellm
-
-## Key Files
-
-```
-src/api/server.ts       — HTTP API (7 endpoints)
-src/radar.ts            — SerpApi discovery pipeline
-src/facts/              — Fact ledger + validation
-src/pipeline/           — Promotions, changes, economics
-src/mcp/server.ts       — MCP tools (read-only)
-tests/                  — 76 passing tests
-fixtures/recorded/      — SerpApi + source fixtures
-COMPETITIVE-LANDSCAPE.md — Full competitive analysis
-```
+**Deadline:** September 3, 2026 at 10:00 AM PDT

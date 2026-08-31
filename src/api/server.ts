@@ -115,6 +115,16 @@ const routes: Route[] = [
           route.monthly = monthly.value;
         }
 
+        // Subscription usage value (e.g., Go gives $60/mo for $10/mo)
+        const usageValue: any = factMap.get("usage_value_usd_month");
+        if (usageValue?.value != null) {
+          route.usage_value_usd_month = usageValue.value;
+          // Calculate effective per-M cost if subscription exists
+          if (monthly?.value != null && input?.value != null && usageValue.value > 0) {
+            route.go_effective_input_per_1m = input.value * (monthly.value / usageValue.value);
+          }
+        }
+
         // Capabilities
         if (contextTokens?.value != null) route.context_tokens = contextTokens.value;
         if (qualityTier?.value != null) route.quality_tier = qualityTier.value;
