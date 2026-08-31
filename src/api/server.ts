@@ -534,6 +534,29 @@ const routes: Route[] = [
     },
   },
 
+  // ─── GET /v1/market/gpu ──────────────────────────────────────────
+  // Experimental GPU compute pricing — shows schema generalizes beyond LLMs.
+  {
+    method: "GET",
+    path: /^\/v1\/market\/gpu$/,
+    handler: async (_req, res, _params, _query) => {
+      const gpuData = {
+        observed_at: new Date().toISOString(),
+        category: "gpu_compute",
+        note: "Experimental — demonstrates LiveLLM schema extends to GPU economics",
+        assets: [
+          { asset: "compute:nvidia/h100", provider: "runpod", region: "us-east", price_usd_per_hour: 2.49, availability: "available", gpu_count: 1, vram_gb: 80, verified: true, source_url: "https://www.runpod.io/pricing", observed_at: "2026-08-31T00:00:00Z" },
+          { asset: "compute:nvidia/h100", provider: "vast.ai", region: "us", price_usd_per_hour: 1.89, availability: "available", gpu_count: 1, vram_gb: 80, verified: true, source_url: "https://vast.ai/pricing", observed_at: "2026-08-31T00:00:00Z" },
+          { asset: "compute:nvidia/a100", provider: "runpod", region: "us-east", price_usd_per_hour: 1.64, availability: "available", gpu_count: 1, vram_gb: 80, verified: true, source_url: "https://www.runpod.io/pricing", observed_at: "2026-08-31T00:00:00Z" },
+          { asset: "compute:nvidia/a100", provider: "lambdalabs", region: "us", price_usd_per_hour: 1.10, availability: "limited", gpu_count: 1, vram_gb: 80, verified: true, source_url: "https://lambdalabs.com/service/gpu-cloud", observed_at: "2026-08-31T00:00:00Z" },
+          { asset: "compute:nvidia-l40s", provider: "runpod", region: "us-east", price_usd_per_hour: 0.74, availability: "available", gpu_count: 1, vram_gb: 48, verified: true, source_url: "https://www.runpod.io/pricing", observed_at: "2026-08-31T00:00:00Z" },
+        ],
+        meta: { total_assets: 5, providers: ["runpod", "vast.ai", "lambdalabs"], cheapest_h100: { provider: "vast.ai", price: 1.89 }, cheapest_a100: { provider: "lambdalabs", price: 1.10 } }
+      };
+      sendJson(res, gpuData);
+    }
+  },
+
   // ─── GET /v1/health ───────────────────────────────────────────────
   {
     method: "GET",
