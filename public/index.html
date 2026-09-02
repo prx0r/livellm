@@ -135,7 +135,9 @@ LiveLLM discovers market changes through <b>SerpApi</b>, verifies against offici
 <div class="panel" id="p5"><div id="frontier-body"></div></div>
 
 <div class="divider"></div>
-<div style="font-size:.5625rem;color:#999;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:.375rem">live api trace</div>
+<div style="font-size:.5625rem;color:#999;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:.375rem">agent decision logs</div>
+<div class="log" id="agent-log" style="max-height:300px"></div>
+<div style="font-size:.5625rem;color:#999;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-top:1rem;margin-bottom:.375rem">api trace</div>
 <div class="log" id="log"></div>
 
 <footer>
@@ -145,7 +147,9 @@ LiveLLM discovers market changes through <b>SerpApi</b>, verifies against offici
 </div>
 
 <script>
-var S={tab:0};
+var S={tab:0,logs:[]};
+function agentLog(agent,msg,type){type=type||'info';var ts=new Date().toISOString().slice(11,19);S.logs.push({agent:agent,msg:msg,type:type,time:ts});var el=document.getElementById('agent-log');if(el){el.innerHTML+='<div class="log-line"><span class="log-ts">['+ts+']</span> <span style="color:'+(type==='ok'?'#99c794':type==='err'?'#ec5f67':'#85c7c4')+'">'+agent+':</span> '+msg+'</div>';el.scrollTop=el.scrollHeight;}}
+
 function log(m,c){c=c||'info';var e=document.getElementById('log');var t=new Date().toISOString().slice(11,19);e.innerHTML+='<div class="log-line"><span class="log-ts">['+t+']</span> <span class="log-'+c+'">'+m+'</span></div>';e.scrollTop=e.scrollHeight;}
 function showTab(i){S.tab=i;document.querySelectorAll('.tab').forEach(function(t,j){t.classList.toggle('active',j===i)});document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('active',j===i)});}
 function api(path){var t0=performance.now();log('GET /api'+path.replace('/api',''),'api');return fetch('/api'+path).then(function(r){var ms=Math.round(performance.now()-t0);log('← '+r.status+' ('+ms+'ms)',r.ok?'ok':'err');return r.json().then(function(d);return{data:d,status:r.status,ms:ms};}););}
@@ -171,12 +175,13 @@ function calcCost(agent,prices){
 
 function runComparison(){
   showTab(1);
-  document.getElementById('stale-body').innerHTML='<div class="loading">routing with stale prices...</div>';
-  log('Starting stale vs live comparison');
+  document.getElementById('stale-body').innerHTML='<div class="loading">agents making decisions...</div>';
+  log('Starting autonomous agent workflow');
 
   api('/market').then(function(r){
     var models=r.data.models||[];
-    log('Market: '+models.length+' models loaded');
+    log('LiveLLM market: '+models.length+' models loaded');
+    agentLog('System','Market snapshot received: '+models.length+' verified models','ok');
 
     // Stale routing
     var staleResults=[];
@@ -191,11 +196,13 @@ function runComparison(){
     h+='</div>';
 
     staleResults.forEach(function(r){
+      agentLog(r.agent.name,'No live pricing available. Using last known: '+r.staleModel+' ('+r.route+')','err');
+      agentLog(r.agent.name,'Computed monthly cost: $'+r.staleCost.toFixed(2),'err');
       h+='<div class="agent-card">';
       h+='<div><span class="agent-icon">'+r.agent.icon+'</span><span class="agent-name">'+r.agent.name+'</span></div>';
       h+='<div class="agent-result">';
       h+='<div class="agent-route">'+r.route+'</div>';
-      h+='<div class="agent-cost">monthly: <b>$'+r.staleCost.toFixed(2)+'</b></div>';
+      h+='<div class="agent-cost">monthly: <b class="red">$'+r.staleCost.toFixed(2)+'</b></div>';
       h+='<div class="agent-reason">'+r.agent.desc+'</div>';
       h+='</div></div>';
     });
@@ -245,6 +252,9 @@ function runLive(){
 
     liveResults.forEach(function(r){
       var route=r.liveModel?r.liveModel.routes[0]:null;
+      agentLog(r.agent.name,'Queried GET /v1/market — received '+models.length+' models','ok');
+      agentLog(r.agent.name,'Evaluated '+models.length+' routes for workload: '+r.agent.workload.uncached+'unc+'+r.agent.workload.cached+'cached/'+r.agent.workload.output+'out');
+      agentLog(r.agent.name,'Selected: '+(route?route.provider:'?')+':'+(r.liveModel?r.liveModel.model:'?')+' — monthly $'+r.liveCost.toFixed(2)+' (saves $'+r.savings.toFixed(2)+')','ok');
       h+='<div class="agent-card">';
       h+='<div><span class="agent-icon">'+r.agent.icon+'</span><span class="agent-name">'+r.agent.name+'</span></div>';
       h+='<div class="agent-result">';
