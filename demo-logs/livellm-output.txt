@@ -1,0 +1,86 @@
+MI Mo V2.5 vs GLM-5.3-Flash — math below.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MI MO V2.5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pricing basis (OpenCode Go subscription $10/mo = $60/mo usage, 6× multiplier):
+  Amortized input:  $0.02333/M
+  Cached input:     $0.0028/M
+  Output:           $0.04667/M
+
+Workload: 100K input (70% cached, 30% fresh), 5K output
+
+  Fresh input:  30,000 tokens × $0.02333/M  =  $0.000700
+  Cached input: 70,000 tokens × $0.0028/M   =  $0.000196
+  Output:        5,000 tokens × $0.04667/M  =  $0.000233
+                                       ─────────────────
+  TOTAL INFERENCE COST                    $0.001129
+
+  Profit:  $15.00 − $0.001129 = $14.999 (effectively the full bounty)
+
+  Context fit: 100K in + 5K out = 105K — trivially within 1M. No overflow risk.
+
+
+GLM-5.3-FLASH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pricing basis ($10/mo for $15/mo base, × 2 promo = 3× effective):
+  Amortized input:  $0.05/M
+  Cached input:     $0.03/M
+  Output:           $0.16667/M
+
+  Fresh input:  30,000 tokens × $0.05/M     =  $0.001500
+  Cached input: 70,000 tokens × $0.03/M     =  $0.002100
+  Output:        5,000 tokens × $0.16667/M  =  $0.000833
+                                       ─────────────────
+  TOTAL INFERENCE COST                    $0.004433
+
+  Profit:  $15.00 − $0.004433 = $14.996
+
+  Context fit: 100K in + 5K out = 105K. Context limit is 128K.
+  That leaves 23K headroom — tight but technically fits.
+  Real risk: if the codebase expands mid-session (extra reads,
+  retries, error output), you blow the context window and lose
+  the session. MiMo's 1M absorbs this without thinking.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    MiMo V2.5       GLM-5.3-Flash
+  Total cost:       $0.0011         $0.0044
+  Profit:           $14.999         $14.996
+  Cost ratio:       1×              ~3.9× more expensive
+  Context:          1M (safe)       128K (tight, overflow risk)
+  Cached rate:      $0.0028/M       $0.03/M  (10.7× more)
+  Output rate:      $0.0467/M       $0.1667/M (3.6× more)
+
+  The dominant cost driver is cached input — you're reading a
+  50K-token codebase with 70% cache hit. MiMo's cached rate is
+  10.7× cheaper than GLM's. That gap dwarfs every other factor.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERDICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use MiMo V2.5. Three reasons:
+
+1. COST: 3.9× cheaper per bounty. Same profit either way at
+   these volumes, but at scale (100 bounties) that's $0.11 vs
+   $0.44 — not meaningful, but MiMo wins on principle.
+
+2. CONTEXT HEADROOM: 1M vs 128K is the real differentiator.
+   A 50K-token codebase + fix + verification output + retries
+   will eat 128K fast. Blowing context mid-task means starting
+   over and paying double. MiMo can't overflow this workload.
+
+3. CACHED RATE: $0.0028/M vs $0.03/M. Any task with repeated
+   patterns (code reads, re-reads after edits) gets 10× cheaper
+   caching on MiMo. This compounds across multi-turn work.
+
+Bottom line: $15 bounty costs $0.001 with MiMo. You keep
+$14.999. Use MiMo, save yourself the context anxiety.

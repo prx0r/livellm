@@ -1,0 +1,25 @@
+I need to decide if a $15.00 bounty is worth doing.
+
+BOUNTY: Fix flaky test in auth-service
+PAYOUT: $15.00
+DEADLINE: 2 hours
+
+WORKLOAD:
+- Read codebase (~50K tokens input)
+- Identify flaky test (~20K tokens input)
+- Write fix (~5K tokens output)
+- Verify fix passes (~30K tokens input)
+
+TOTAL: ~100,000 input tokens, ~5,000 output tokens
+
+PRICES (from web search):
+- GLM-5.3-Flash: $0.075/M input, $0.25/M output, $0.015/M cached
+- Context: 128,000 tokens
+
+Compute:
+1. My total inference cost for this bounty
+2. My projected profit ($15.00 - cost)
+3. Should I take this bounty?
+4. Which model should I use?
+
+Show the math.

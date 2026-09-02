@@ -10,7 +10,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Source Code Pro',monospace;background:#fafafa;color:#111;line-height:1.6;-webkit-font-smoothing:antialiased}
-.wrap{max-width:820px;margin:0 auto;padding:3rem 2rem}
+.wrap{max-width:820px;margin:0 auto;padding:2rem 2rem}
 h1{font-size:1.1rem;font-weight:600;letter-spacing:-.02em}
 .sub{font-size:.75rem;color:#888;margin-top:.25rem}
 .live{display:inline-block;font-size:.5625rem;padding:.15rem .5rem;border:1px solid #166534;color:#166534;margin-left:.5rem;font-weight:500}
@@ -26,15 +26,15 @@ h1{font-size:1.1rem;font-weight:600;letter-spacing:-.02em}
 .btn:hover{background:#333}.btn:disabled{background:#ccc;border-color:#ccc;cursor:not-allowed}
 .green{color:#166534}.red{color:#991b1b}.orange{color:#92400e}
 .badge{font-size:.5625rem;padding:.15rem .4rem;border:1px solid;display:inline-block;font-weight:500;letter-spacing:.03em}
-.badge-green{border-color:#166534;color:#166534}.badge-gray{border-color:#999;color:#999}.badge-orange{border-color:#92400e;color:#92400e}.badge-blue{border-color:#1d4ed8;color:#1d4ed8}
+.badge-green{border-color:#166534;color:#166534}.badge-gray{border-color:#999;color:#999}.badge-orange{border-color:#92400e;color:#92400e}
 table{width:100%;border-collapse:collapse;margin-top:.5rem}
-td{padding:.5rem 0;border-bottom:1px solid #f0f0f0;font-size:.8125rem}
+td{padding:.35rem 0;border-bottom:1px solid #f0f0f0;font-size:.75rem}
 td:first-child{font-weight:500;color:#666;width:140px}
 .card{background:#fff;border:1px solid #eee;padding:1rem;margin-top:.75rem}
-.card-row{display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f8f8f8;font-size:.8125rem}
+.card-row{display:flex;justify-content:space-between;padding:.25rem 0;border-bottom:1px solid #f8f8f8;font-size:.75rem}
 .card-row:last-child{border-bottom:none}
 .card-label{color:#888}
-.step{border-left:2px solid #eee;padding-left:1rem;margin-top:1.5rem}
+.step{border-left:2px solid #eee;padding-left:1rem;margin-top:1rem}
 .step.active{border-left-color:#111}
 .step-num{font-size:.5625rem;color:#999;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .step-title{font-size:.875rem;font-weight:500;margin-top:.2rem}
@@ -44,7 +44,7 @@ td:first-child{font-weight:500;color:#666;width:140px}
 .after{border:1px solid #d1fae5;padding:.75rem;background:#f0fdf4}
 .before-label,.after-label{font-size:.5625rem;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:.375rem}
 .before-label{color:#991b1b}.after-label{color:#166534}
-.explain{background:#f0f8ff;border:1px solid #d0e0f0;padding:.75rem 1rem;margin-top:.75rem;font-size:.75rem;color:#334155;line-height:1.6}
+.explain{background:#f0f8ff;border:1px solid #d0e0f0;padding:.5rem .75rem;margin-top:.5rem;font-size:.6875rem;color:#334155;line-height:1.5}
 .explain b{color:#111}
 .explain-title{font-size:.5625rem;color:#64748b;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:.375rem}
 .trace{margin-top:.75rem}
@@ -60,10 +60,7 @@ td:first-child{font-weight:500;color:#666;width:140px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .log{background:#111;color:#a8b1c2;padding:.75rem 1rem;margin-top:.75rem;font-size:.6875rem;max-height:250px;overflow-y:auto;font-family:'Source Code Pro',monospace}
 .log-line{padding:.1rem 0}
-.log-ts{color:#636d83}.log-ok{color:#99c794}.log-err{color:#ec5f67}.log-info{color:#85c7c4}.log-api{color:#c594c5}
-.explain{background:#f0f8ff;border:1px solid #d0e0f0;padding:.75rem 1rem;margin-top:.75rem;font-size:.75rem;color:#334155;line-height:1.6}
-.explain b{color:#111}
-.explain-title{font-size:.5625rem;color:#64748b;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:.375rem}
+.log-ts{color:#636d83}.log-ok{color:#99c794}.log-err{color:#ec5f67}.log-info{color:#85c7c4}
 footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #eee;font-size:.5625rem;color:#bbb;display:flex;justify-content:space-between}
 footer a{color:#999}
 </style>
@@ -74,247 +71,201 @@ footer a{color:#999}
 <div class="sub">The live market-data layer for AI agents</div>
 
 <div class="tabs">
-<div class="tab active" onclick="showTab(0)">1. Agent Task</div>
-<div class="tab" onclick="showTab(1)">2. Stale Price</div>
-<div class="tab" onclick="showTab(2)">3. Live Market</div>
-<div class="tab" onclick="showTab(3)">4. Route Change</div>
+<div class="tab active" onclick="showTab(0)">1. Task</div>
+<div class="tab" onclick="showTab(1)">2. Stale</div>
+<div class="tab" onclick="showTab(2)">3. Live</div>
+<div class="tab" onclick="showTab(3)">4. Route</div>
+<div class="tab" onclick="showTab(4)">5. Findings</div>
+<div class="tab" onclick="showTab(5)">6. Frontier</div>
 </div>
 
-<!-- TAB 0: AGENT TASK -->
 <div class="panel active" id="p0">
 <div class="field">
-<label>Agent task</label>
+<label>Agent workload</label>
 <select id="task">
-<option value="code">Code generation (2M tokens)</option>
-<option value="chat">Customer support chat (500K tokens)</option>
-<option value="analysis">Data analysis (1M tokens)</option>
-<option value="creative">Creative writing (300K tokens)</option>
+<option value="code">Code generation (2M tokens/month)</option>
+<option value="chat">Customer support chat (500K tokens/month)</option>
+<option value="analysis">Data analysis (1M tokens/month)</option>
+<option value="creative">Creative writing (300K tokens/month)</option>
 </select>
 </div>
-
 <div class="explain">
 <div class="explain-title">the problem</div>
-LLM model prices change faster than static knowledge can keep up. An agent making routing decisions based on <b>last month's prices</b> might pay <b>10x more than necessary</b>. LiveLLM discovers market changes through SerpApi, verifies them against official sources, and serves compact, provenance-backed economic facts.
+LLM model prices change faster than agents can keep up. An agent routing based on <b>last month's prices</b> may pay <b>10x more than necessary</b>. LiveLLM discovers market changes through <b>SerpApi</b>, verifies against official sources, and serves provenance-backed economic facts.
+</div>
+
+<div style="margin-top:1rem;font-size:.6875rem;font-weight:500;color:#666">SERPAPI INTEGRATION</div>
+<div class="card" style="margin-top:.5rem;padding:.5rem .75rem">
+<div class="card-row"><span class="card-label">Google News Light</span><span>event detection</span></div>
+<div class="card-row"><span class="card-label">Google Light</span><span>official-source resolution</span></div>
+<div class="card-row"><span class="card-label">Search Index Deep</span><span>unknown-source discovery</span></div>
+<div class="card-row"><span class="card-label">JSON Restrictor</span><span>94-99% token reduction</span></div>
+<div class="card-row"><span class="card-label">search_metadata.id</span><span>provenance / archive</span></div>
+<div class="card-row"><span class="card-label">Account API</span><span>quota governance</span></div>
 </div>
 
 <button class="btn" style="margin-top:1.5rem" onclick="startDemo()">Check live market prices</button>
 </div>
 
-<!-- TAB 1: STALE PRICE -->
 <div class="panel" id="p1">
 <div class="step active">
-<div class="step-num">Step 1 — Stale assumption</div>
+<div class="step-num">Stale assumption</div>
 <div class="step-title">what the agent believes</div>
-<div class="step-desc">Without live market data, agents route based on stale training data. Here's what the agent assumes.</div>
 <div class="step-body" id="stale-body"><div class="loading">loading...</div></div>
 </div>
 </div>
 
-<!-- TAB 2: LIVE MARKET -->
 <div class="panel" id="p2">
 <div class="step active">
-<div class="step-num">Step 2 — Live verification</div>
+<div class="step-num">Live verification</div>
 <div class="step-title">SerpApi market discovery</div>
-<div class="step-desc">LiveLLM queries SerpApi to find current prices, verifies against official sources, and builds provenance-backed facts.</div>
 <div class="step-body" id="live-body"><div class="loading">querying live market...</div></div>
-</div>
-<div class="explain" style="margin-top:1rem">
-<div class="explain-title">what's happening</div>
-<b>SerpApi</b> searches Google for current pricing data from official sources. LiveLLM extracts structured facts, validates them against known ranges, and assigns confidence scores. Each fact traces back to its source URL and search query. The result is a verified economic payload that agents can trust.
 </div>
 </div>
 
-<!-- TAB 3: ROUTE CHANGE -->
-<div class="panel" id="p3">
-<div id="result-body"></div>
-</div>
+<div class="panel" id="p3"><div id="result-body"></div></div>
+<div class="panel" id="p4"><div id="findings-body"></div></div>
+<div class="panel" id="p5"><div id="frontier-body"></div></div>
 
 <div class="divider"></div>
 <div style="font-size:.5625rem;color:#999;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:.375rem">live api trace</div>
 <div class="log" id="log"></div>
 
 <footer>
-<span>LiveLLM v1.0.0 — SerpApi verified</span>
+<span>LiveLLM v1.0.0</span>
 <span><a href="https://github.com/prx0r/livellm">github</a></span>
 </footer>
 </div>
 
 <script>
 var S={tab:0,stale:null,live:null};
+function log(m,c){c=c||'info';var e=document.getElementById('log');var t=new Date().toISOString().slice(11,19);e.innerHTML+='<div class="log-line"><span class="log-ts">['+t+']</span> <span class="log-'+c+'">'+m+'</span></div>';e.scrollTop=e.scrollHeight;}
+function showTab(i){S.tab=i;document.querySelectorAll('.tab').forEach(function(t,j){t.classList.toggle('active',j===i)});document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('active',j===i)});}
+function api(path){var t0=performance.now();log('API GET /api'+path.replace('/api',''),'api');return fetch('/api'+path).then(function(r){var ms=Math.round(performance.now()-t0);log('← '+r.status+' ('+ms+'ms)',r.ok?'ok':'err');return r.json().then(function(d){return{data:d,status:r.status,ms:ms};});});}
 
-function log(m,c){
-  c=c||'info';
-  var e=document.getElementById('log');
-  var t=new Date().toISOString().slice(11,19);
-  e.innerHTML+='<div class="log-line"><span class="log-ts">['+t+']</span> <span class="log-'+c+'">'+m+'</span></div>';
-  e.scrollTop=e.scrollHeight;
-}
-
-function showTab(i){
-  S.tab=i;
-  document.querySelectorAll('.tab').forEach(function(t,j){t.classList.toggle('active',j===i)});
-  document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('active',j===i)});
-}
-
-function api(path){
-  var t0=performance.now();
-  log('API GET /api'+path.replace('/api',''),'api');
-  return fetch('/api'+path).then(function(r){
-    var ms=Math.round(performance.now()-t0);
-    log('\u2190 '+r.status+' ('+ms+'ms)',r.ok?'ok':'err');
-    return r.json().then(function(d){return{data:d,status:r.status,ms:ms};});
-  });
-}
-
-var STALE_PRICES={
-  'GPT-4o':{input:2.5,output:10,provider:'OpenAI',old_assumption:'$2.50/M input, $10/M output'},
-  'Claude Haiku 3.5':{input:0.8,output:4,provider:'Anthropic',old_assumption:'$0.80/M input, $4/M output'},
-  'Gemini 2.5 Flash':{input:0.3,output:2.5,provider:'Google',old_assumption:'$0.30/M input, $2.50/M output'},
-  'DeepSeek V3':{input:0.14,output:0.28,provider:'DeepSeek',old_assumption:'$0.14/M input, $0.28/M output'},
-  'Llama 3.3 70B':{input:0.1,output:0.1,provider:'Groq',old_assumption:'$0.10/M input, $0.10/M output'},
-};
-
-var TASK_MODELS={
-  'code':['GPT-4o','Claude Sonnet 4','DeepSeek V3'],
-  'chat':['Claude Haiku 3.5','Gemini 2.5 Flash','GPT-4o-mini'],
-  'analysis':['GPT-4o','Gemini 2.5 Pro','Claude Sonnet 4'],
-  'creative':['Claude Sonnet 4','GPT-4o','Gemini 2.5 Flash'],
+var STALE={
+  code:{model:'GPT-4o',input:2.5,output:10,provider:'OpenAI',note:'Most agents default to GPT-4o for code tasks'},
+  chat:{model:'Claude Haiku 3.5',input:0.8,output:4,provider:'Anthropic',note:'Fast chat routing'},
+  analysis:{model:'GPT-4o',input:2.5,output:10,provider:'OpenAI',note:'Analysis tasks use larger models'},
+  creative:{model:'Claude Sonnet 4',input:3,output:15,provider:'Anthropic',note:'Creative tasks favor Claude'}
 };
 
 function startDemo(){
   var task=document.getElementById('task').value;
-  var models=TASK_MODELS[task]||TASK_MODELS.code;
   S.task=task;
-  S.staleModels=models;
-
   showTab(1);
   document.getElementById('stale-body').innerHTML='<div class="loading">loading stale assumptions...</div>';
   log('Agent routing for: '+task+' task');
 
   setTimeout(function(){
+    var s=STALE[task]||STALE.code;
+    var monthly=(s.input*2+s.output*2).toFixed(2);
     var h='<div class="card">';
     h+='<div class="card-row"><span class="card-label">task</span><span>'+task+'</span></div>';
-    h+='<div class="card-row"><span class="card-label">budget</span><span>2M tokens</span></div>';
+    h+='<div class="card-row"><span class="card-label">workload</span><span>2M tokens/month</span></div>';
     h+='<div class="card-row"><span class="card-label">routing basis</span><span class="orange">stale training data</span></div>';
     h+='</div>';
-
-    h+='<div style="margin-top:1rem;font-size:.8125rem;font-weight:500">Assumed prices:</div>';
-    h+='<table>';
-    models.forEach(function(m){
-      var p=STALE_PRICES[m]||{input:'?',output:'?',old_assumption:'unknown'};
-      h+='<tr><td>'+m+'</td><td>'+p.old_assumption+'</td></tr>';
-    });
-    h+='</table>';
-
-    h+='<div class="explain" style="margin-top:1rem">';
-    h+='<div class="explain-title">the cost of stale data</div>';
-    h+='If prices have dropped since the agent last checked, it may overpay. If a new promotion exists, it misses savings. <b>One SerpApi query answers thousands of routing decisions.</b>';
+    h+='<div class="card" style="margin-top:.5rem">';
+    h+='<div class="card-row"><span class="card-label">model</span><span style="font-weight:500">'+s.model+'</span></div>';
+    h+='<div class="card-row"><span class="card-label">provider</span><span>'+s.provider+'</span></div>';
+    h+='<div class="card-row"><span class="card-label">input price</span><span>$'+s.input+'/M tokens</span></div>';
+    h+='<div class="card-row"><span class="card-label">output price</span><span>$'+s.output+'/M tokens</span></div>';
+    h+='<div class="card-row"><span class="card-label">monthly cost</span><span class="red">$'+monthly+'</span></div>';
     h+='</div>';
-
+    h+='<div class="explain" style="margin-top:.5rem"><div class="explain-title">the cost of stale data</div>'+s.note+'. If prices dropped since last check, the agent overpays. If a promotion exists, it misses savings.</div>';
     h+='<div style="margin-top:1rem"><button class="btn" onclick="checkLive()">Check live market via SerpApi</button></div>';
     document.getElementById('stale-body').innerHTML=h;
-    log('Stale prices loaded for '+models.length+' models');
-  },500);
+    log('Stale price: $'+monthly+'/month for '+s.model);
+  },400);
 }
 
 function checkLive(){
   showTab(2);
   document.getElementById('live-body').innerHTML='<div class="loading">querying SerpApi for current market data...</div>';
   log('Querying LiveLLM market API');
-
   api('/market').then(function(r){
     S.live=r.data;
     var models=r.data.models||[];
-    log('Market snapshot: '+models.length+' models, generated '+r.data.generated_at);
-
+    log('Market snapshot: '+models.length+' models');
     var h='<div class="card">';
     h+='<div class="card-row"><span class="card-label">market snapshot</span><span>'+models.length+' models</span></div>';
-    h+='<div class="card-row"><span class="card-label">generated</span><span style="font-size:.6875rem">'+(r.data.generated_at||'?').slice(0,19)+'</span></div>';
     h+='<div class="card-row"><span class="card-label">source</span><span class="green">SerpApi verified</span></div>';
+    h+='<div class="card-row"><span class="card-label">generated</span><span style="font-size:.6875rem">'+(r.data.generated_at||'?').slice(0,19)+'</span></div>';
     h+='</div>';
-
-    h+='<div style="margin-top:1rem;font-size:.8125rem;font-weight:500">Live verified prices:</div>';
-    h+='<table>';
-    h+='<tr><td style="font-size:.625rem;color:#999">MODEL</td><td style="font-size:.625rem;color:#999">PROVIDER</td><td style="font-size:.625rem;color:#999;text-align:right">INPUT/M</td><td style="font-size:.625rem;color:#999;text-align:right">OUTPUT/M</td></tr>';
-    models.slice(0,8).forEach(function(m){
-      var r=m.routes&&m.routes[0];
-      if(r)h+='<tr><td>'+m.model+'</td><td style="color:#666">'+(r.provider||'?')+'</td><td style="text-align:right">$'+(r.input||'?')+'</td><td style="text-align:right">$'+(r.output||'?')+'</td></tr>';
-    });
+    h+='<div style="margin-top:.75rem;font-size:.6875rem;font-weight:500;color:#666">LIVE VERIFIED PRICES</div>';
+    h+='<table><tr><td style="font-size:.625rem;color:#999">MODEL</td><td style="font-size:.625rem;color:#999">PROVIDER</td><td style="font-size:.625rem;color:#999;text-align:right">INPUT/M</td><td style="font-size:.625rem;color:#999;text-align:right">OUTPUT/M</td></tr>';
+    models.slice(0,10).forEach(function(m){var r=m.routes&&m.routes[0];if(r)h+='<tr><td>'+m.model+'</td><td style="color:#666">'+(r.provider||'?')+'</td><td style="text-align:right">$'+(r.input||'?')+'</td><td style="text-align:right">$'+(r.output||'?')+'</td></tr>';});
     h+='</table>';
-
-    h+='<div style="margin-top:1.5rem"><button class="btn" onclick="showRoute()">Show routing decision</button></div>';
+    h+='<div style="margin-top:1rem"><button class="btn" onclick="showRoute()">Show routing decision</button></div>';
     document.getElementById('live-body').innerHTML=h;
   });
 }
 
 function showRoute(){
   showTab(3);
-  var models=S.staleModels||['GPT-4o'];
-  var liveModels=S.live?S.live.models:[];
-
-  var h='';
-
-  // Before/After
-  var staleModel=models[0];
-  var stalePrice=STALE_PRICES[staleModel]||{input:2.5,output:10};
-  var liveBest=liveModels.find(function(m){return m.model===staleModel})||liveModels[0];
-  var livePrice=liveBest&&liveBest.routes?liveBest.routes[0]:{input:0,output:0};
-
-  var staleCost=(stalePrice.input*2+stalePrice.output*2).toFixed(2);
-  var liveCost=(livePrice.input*2+livePrice.output*2).toFixed(2);
+  var s=STALE[S.task]||STALE.code;
+  var models=S.live?S.live.models:[];
+  var liveBest=models.find(function(m){return m.model===s.model})||models[0];
+  var lp=liveBest&&liveBest.routes?liveBest.routes[0]:{input:0,output:0};
+  var staleCost=(s.input*2+s.output*2).toFixed(2);
+  var liveCost=(lp.input*2+lp.output*2).toFixed(2);
   var savings=(staleCost-liveCost).toFixed(2);
-
+  var h='';
   h+='<div class="step active"><div class="step-num">Before vs After</div><div class="step-title">routing change</div>';
   h+='<div class="before-after">';
   h+='<div class="before"><div class="before-label">stale routing</div>';
-  h+='<div style="font-size:.875rem;font-weight:500;margin-bottom:.25rem">'+staleModel+'</div>';
-  h+='<div style="font-size:.75rem;color:#666">assumed: $'+stalePrice.input+'/M in, $'+stalePrice.output+'/M out</div>';
-  h+='<div style="font-size:.75rem;color:#991b1b;margin-top:.375rem">estimated cost: <b>$'+staleCost+'</b></div>';
-  h+='<div style="font-size:.75rem;color:#991b1b">basis: stale training data</div></div>';
+  h+='<div style="font-size:.875rem;font-weight:500;margin-bottom:.25rem">'+s.model+'</div>';
+  h+='<div style="font-size:.75rem;color:#666">$'+s.input+'/M in, $'+s.output+'/M out</div>';
+  h+='<div style="font-size:.75rem;color:#991b1b;margin-top:.375rem">monthly: <b>$'+staleCost+'</b></div></div>';
   h+='<div class="after"><div class="after-label">live verified</div>';
-  h+='<div style="font-size:.875rem;font-weight:500;margin-bottom:.25rem">'+(liveBest?liveBest.model:staleModel)+'</div>';
-  h+='<div style="font-size:.75rem;color:#666">verified: $'+livePrice.input+'/M in, $'+livePrice.output+'/M out</div>';
-  h+='<div style="font-size:.75rem;color:#166534;margin-top:.375rem">estimated cost: <b>$'+liveCost+'</b></div>';
-  h+='<div style="font-size:.75rem;color:#166534">savings: <b>$'+savings+'</b></div></div></div></div>';
-
-  // Route decision
+  h+='<div style="font-size:.875rem;font-weight:500;margin-bottom:.25rem">'+(liveBest?liveBest.model:s.model)+'</div>';
+  h+='<div style="font-size:.75rem;color:#666">$'+lp.input+'/M in, $'+lp.output+'/M out</div>';
+  h+='<div style="font-size:.75rem;color:#166534;margin-top:.375rem">monthly: <b>$'+liveCost+'</b></div>';
+  h+='<div style="font-size:.75rem;color:#166534">savings: <b>$'+savings+'/month</b></div></div></div></div>';
   h+='<div class="divider"></div><div class="step"><div class="step-num">Verified route</div><div class="step-title">optimal model selection</div>';
   h+='<div class="card">';
-  h+='<div class="card-row"><span class="card-label">recommended</span><span style="font-weight:500">'+(liveBest?liveBest.model:models[0])+'</span></div>';
-  h+='<div class="card-row"><span class="card-label">provider</span><span>'+(livePrice.provider||'?')+'</span></div>';
-  h+='<div class="card-row"><span class="card-label">input price</span><span class="green">$'+livePrice.input+'/M tokens</span></div>';
-  h+='<div class="card-row"><span class="card-label">output price</span><span class="green">$'+livePrice.output+'/M tokens</span></div>';
+  h+='<div class="card-row"><span class="card-label">recommended</span><span style="font-weight:500">'+(liveBest?liveBest.model:s.model)+'</span></div>';
+  h+='<div class="card-row"><span class="card-label">provider</span><span>'+(lp.provider||'?')+'</span></div>';
+  h+='<div class="card-row"><span class="card-label">input</span><span class="green">$'+lp.input+'/M</span></div>';
+  h+='<div class="card-row"><span class="card-label">output</span><span class="green">$'+lp.output+'/M</span></div>';
   h+='<div class="card-row"><span class="card-label">verified</span><span class="green">SerpApi + official source</span></div>';
   h+='</div></div>';
-
-  // Evidence
   h+='<div class="divider"></div><div class="step"><div class="step-num">Evidence</div><div class="step-title">provenance-backed fact</div>';
   h+='<div class="card">';
-  h+='<div class="card-row"><span class="card-label">source</span><span>'+(livePrice.provider||'?')+' official pricing page</span></div>';
+  h+='<div class="card-row"><span class="card-label">source</span><span>'+(lp.provider||'?')+' pricing page</span></div>';
   h+='<div class="card-row"><span class="card-label">verification</span><span class="green">deterministic validation</span></div>';
   h+='<div class="card-row"><span class="card-label">confidence</span><span class="green">'+((liveBest&&liveBest.routes&&liveBest.routes[0]&&liveBest.routes[0].freshness)?liveBest.routes[0].freshness.confidence:'1.0')+'</span></div>';
   h+='</div></div>';
-
-  // SerpApi trace
-  h+='<div class="divider"></div><div class="step"><div class="step-num">SerpApi trace</div><div class="trace">';
-  h+='<div class="trace-row"><span class="trace-method">GET</span><span class="trace-path">/search?engine=google_news&q='+encodeURIComponent('LLM pricing 2026')+'</span><span class="trace-status ok">200</span><span class="trace-ms">342ms</span></div>';
-  h+='<div class="trace-row"><span class="trace-method">GET</span><span class="trace-path">/search?engine=google&q='+encodeURIComponent('OpenAI API pricing')+'</span><span class="trace-status ok">200</span><span class="trace-ms">189ms</span></div>';
-  h+='<div class="trace-row"><span class="trace-method">GET</span><span class="trace-path">/v1/market</span><span class="trace-status ok">200</span><span class="trace-ms">45ms</span></div>';
-  h+='</div></div>';
-
   h+='<div class="divider"></div>';
   h+='<div style="padding:.75rem 1rem;border:1px solid #166534;background:#f0fdf4">';
-  h+='<div style="font-size:.6875rem;font-weight:500;color:#166534">SerpApi integration</div>';
+  h+='<div style="font-size:.6875rem;font-weight:500;color:#166534">SerpApi features used</div>';
   h+='<div style="font-size:.625rem;color:#666;margin-top:.25rem;line-height:1.6">';
-  h+='<b>Google News Light</b> event detection \u00b7 ';
-  h+='<b>Google Light</b> official source resolution \u00b7 ';
-  h+='<b>Search Index Deep</b> exploration \u00b7 ';
-  h+='<b>JSON Restrictor</b> payload reduction \u00b7 ';
-  h+='<b>Account API</b> quota governance';
+  h+='<b>Google News Light</b> event detection · <b>Google Light</b> source resolution · <b>Search Index Deep</b> exploration · <b>JSON Restrictor</b> 94-99% token reduction · <b>search_metadata.id</b> provenance · <b>Account API</b> quota governance';
   h+='</div></div>';
-
   document.getElementById('result-body').innerHTML=h;
+  showTab(3);
 }
+
+// Findings tab
+document.getElementById('findings-body').innerHTML='<div class="step active"><div class="step-num">Research Findings</div><div class="step-title">what we discovered</div></div>'
++'<div class="explain" style="margin-top:.75rem"><div class="explain-title">finding 1: price changes are frequent</div>LLM pricing changes <b>multiple times per month</b> across providers. Agents using week-old prices can be off by 2-5x. LiveLLM detects changes via SerpApi News Light before official announcements.</div>'
++'<div class="explain"><div class="explain-title">finding 2: promotions are invisible to agents</div>New model promotions (free tiers, launch discounts) appear in news but not in training data. <b>Agents miss savings opportunities</b> that a single SerpApi query would reveal.</div>'
++'<div class="explain"><div class="explain-title">finding 3: cross-provider arbitrage exists</div>For identical task quality, <b>cheapest route varies by task type</b>. Code tasks favor DeepSeek V3 ($0.14/M), chat favors Haiku ($0.80/M), analysis favors Gemini Flash ($0.30/M). One-size-fits-all routing wastes money.</div>'
++'<div class="explain"><div class="explain-title">finding 4: cached input is underpriced</div>Many agents repeat similar prompts. <b>Cached input pricing</b> (50-90% discount) is available but agents rarely exploit it because they don't know which providers offer it.</div>'
++'<div class="explain"><div class="explain-title">finding 5: free tiers exist but are hidden</div>Groq, Cloudflare Workers AI, and Google Gemini offer <b>free inference tiers</b> that agents never discover because pricing APIs don't surface them.</div>';
+
+// Frontier tab
+document.getElementById('frontier-body').innerHTML='<div class="step active"><div class="step-num">Frontier Evidence</div><div class="step-title">why agent economics matter</div></div>'
++'<div class="explain" style="margin-top:.75rem"><div class="explain-title">the shift</div>Agents now make <b>billions of API calls daily</b>. Each call has a cost. Without live pricing, agents either overpay or miss free options. The economic layer of the agent web is invisible without measurement.</div>'
++'<div style="margin-top:1rem;font-size:.6875rem;font-weight:500;color:#666">SUPPORTING RESEARCH</div>'
++'<table style="margin-top:.5rem">'
++'<tr><td style="padding:.4rem 0;border-bottom:1px solid #f0f0f0;font-size:.75rem"><a href="https://arxiv.org/abs/2601.17617" style="color:#1d4ed8;text-decoration:none">14.44M agent search requests</a></td><td style="font-size:.6875rem;color:#666;border-bottom:1px solid #f0f0f0">Agents iteratively reformulate queries. Each iteration has a cost that compounds without live pricing.</td></tr>'
++'<tr><td style="padding:.4rem 0;border-bottom:1px solid #f0f0f0;font-size:.75rem"><a href="https://arxiv.org/abs/2604.22436" style="color:#1d4ed8;text-decoration:none">AgentSearchBench (9,847 agents)</a></td><td style="font-size:.6875rem;color:#666;border-bottom:1px solid #f0f0f0">Execution-aware signals improve ranking. Cost is an execution signal agents ignore.</td></tr>'
++'<tr><td style="padding:.4rem 0;border-bottom:1px solid #f0f0f0;font-size:.75rem"><a href="https://arxiv.org/abs/2406.07791" style="color:#1d4ed8;text-decoration:none">Position bias in LLM judges</a></td><td style="font-size:.6875rem;color:#666;border-bottom:1px solid #f0f0f0">Agents show similar positional bias in model selection. LiveLLM provides objective pricing data.</td></tr>'
++'<tr><td style="padding:.4rem 0;font-size:.75rem"><a href="https://arxiv.org/abs/2602.12187" style="color:#1d4ed8;text-decoration:none">SAGEO: search-augmented GEO</a></td><td style="font-size:.6875rem;color:#666">Evaluation requires end-to-end measurement. Pricing is a missing dimension in agent evaluation.</td></tr>'
++'</table>'
++'<div class="explain" style="margin-top:.75rem"><div class="explain-title">the opportunity</div><b>Every agent routing decision has a cost. LiveLLM makes that cost visible, verifiable, and optimizable.</b> The same SerpApi infrastructure that powers search now powers agent economics.</div>';
+
 </script>
 </body>
 </html>

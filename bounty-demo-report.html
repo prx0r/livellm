@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LiveLLM — Bounty Demo</title>
+<style>
+  :root { --bg: #0a0a0f; --card: #12121a; --border: #1e1e2e; --text: #e0e0e0; --dim: #666; --green: #4ade80; --red: #ef4444; --blue: #818cf8; --yellow: #f59e0b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--bg); color: var(--text); padding: 24px; line-height: 1.6; }
+  h1 { font-size: 1.8em; margin-bottom: 4px; }
+  .subtitle { color: var(--dim); font-size: 0.85em; margin-bottom: 24px; }
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 0.75em; text-transform: uppercase; letter-spacing: 2px; color: #555; margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .bounty { border-left: 4px solid var(--yellow); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .comparison { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 16px; }
+  .comparison h3 { color: var(--blue); font-size: 0.9em; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
+  th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); color: #888; font-weight: normal; text-transform: uppercase; font-size: 0.8em; letter-spacing: 1px; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .mono { font-family: 'SF Mono', monospace; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .verdict { background: linear-gradient(135deg, #0d1117 0%, #1a1a25 100%); border: 1px solid var(--green); border-radius: 8px; padding: 24px; margin-top: 16px; }
+  .verdict h2 { color: var(--green); margin-bottom: 8px; }
+  .pre { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 14px; font-size: 0.78em; color: #999; white-space: pre-wrap; max-height: 300px; overflow-y: auto; margin-top: 12px; }
+  .footer { text-align: center; color: #444; font-size: 0.75em; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
+  .tag-stale { background: #ff444422; color: var(--red); }
+  .tag-live { background: #4ade8022; color: var(--green); }
+</style>
+</head>
+<body>
+<h1>◉ LiveLLM — Bounty Demo</h1>
+<p class="subtitle">Same agent. Same task. Different data. Watch it re-route.</p>
+
+<div class="section">
+  <div class="section-title">The Bounty</div>
+  <div class="card bounty">
+    <h2 style="color: var(--yellow); margin-bottom: 8px;">Fix flaky test in auth-service</h2>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px;">
+      <div><span style="color: var(--dim);">Payout</span><br><strong>$15.00</strong></div>
+      <div><span style="color: var(--dim);">Deadline</span><br><strong>2 hours</strong></div>
+      <div><span style="color: var(--dim);">Input</span><br><strong>100,000 tokens</strong></div>
+      <div><span style="color: var(--dim);">Output</span><br><strong>5,000 tokens</strong></div>
+    </div>
+    <div style="margin-top: 12px; font-size: 0.85em; color: var(--dim);">
+      Steps: Read codebase (~50K tokens input) → Identify flaky test (~20K tokens input) → Write fix (~5K tokens output) → Verify fix passes (~30K tokens input)
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Side-by-Side: Stale Prices vs LiveLLM</div>
+  <div class="grid">
+    <div class="comparison">
+      <h3><span class="tag tag-stale">STALE</span> Web Search Prices</h3>
+      <p style="font-size: 0.8em; color: var(--dim); margin-bottom: 8px;">
+        Agent found GLM-5.3-Flash at $0.075/M (Z.ai PAYG). No subscription awareness.
+      </p>
+      <div class="pre" style="max-height: 200px;">## Math: $15 Bounty vs. GLM-5.3-Flash
+
+### Costs (no prompt caching)
+
+```
+Input:   100,000 tokens × $0.075/M  =  $7.50   ... wait no.
+
+Input:   100,000 tokens × $0.075/1,000,000  =  $0.00750
+Output:   5,000 tokens  × $0.25/1,000,000   =  $0.00125
+                                          ─────────────
+TOTAL INFERENCE COST                      =  $0.00875
+```
+
+### Costs (with prompt caching — realistic, since the codebase context repeats across phases)
+
+```
+Fresh input (phase 1):  50,000 × $0.075/M  =  $0.00375
+Cached input (ph 2-4):  50,000 × $0.015/M  =  $0.00075
+Output:                   5,000 × $0.25/M   =  $0.00125
+                                               ────────
+TOTAL INFERENCE COST                           = $0.00575
+```
+
+### Verdict
+
+```
+                          No Cache    Cached
+                          ────────    ──────
+Total inference cost:      $0.009     $0.006
+Profit:                   $14.991    $14.994
+Profit margin:            99.94%     99.96%
+Cost as % of bounty:       0.06%      0.04%
+```
+
+**Your inference cost is under one cent either way.** This bounty is essentially pure profit on the compute side.
+
+### Should you take it?
+
+Compute cost: irrelevant. The real questions are:
+
+1. **Can you finish in 2 hours?** — 50K input is a medium codebase. Identifying a flaky test requires reading test output patterns, timing issues, non-deterministic state. That's reasoning work, not just token generation.
+
+2. **Do you actually know auth-service?** — Flaky tests are notoriously context-dependent. Race conditions, shared DB state, unmocked external calls. Without domain familiarity you could burn the full 2 hours.
+
+3. **Platform overhead** — Does the bounty platform take a cut? Does Hermes take a fee? That affects the real number.
+
+**Bottom line:** At $0.006–0.009 per run, you could attempt this bounty 1,500+ times and still break even. Take it if you can finish the work — the compute economics are a rounding error.</div>
+    </div>
+    <div class="comparison">
+      <h3><span class="tag tag-live">LIVE</span> LiveLLM Verified Prices</h3>
+      <p style="font-size: 0.8em; color: var(--dim); margin-bottom: 8px;">
+        Agent received subscription-aware pricing from LiveLLM API.
+      </p>
+      <div class="pre" style="max-height: 200px;">MI Mo V2.5 vs GLM-5.3-Flash — math below.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MI MO V2.5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pricing basis (OpenCode Go subscription $10/mo = $60/mo usage, 6× multiplier):
+  Amortized input:  $0.02333/M
+  Cached input:     $0.0028/M
+  Output:           $0.04667/M
+
+Workload: 100K input (70% cached, 30% fresh), 5K output
+
+  Fresh input:  30,000 tokens × $0.02333/M  =  $0.000700
+  Cached input: 70,000 tokens × $0.0028/M   =  $0.000196
+  Output:        5,000 tokens × $0.04667/M  =  $0.000233
+                                       ─────────────────
+  TOTAL INFERENCE COST                    $0.001129
+
+  Profit:  $15.00 − $0.001129 = $14.999 (effectively the full bounty)
+
+  Context fit: 100K in + 5K out = 105K — trivially within 1M. No overflow risk.
+
+
+GLM-5.3-FLASH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pricing basis ($10/mo for $15/mo base, × 2 promo = 3× effective):
+  Amortized input:  $0.05/M
+  Cached input:     $0.03/M
+  Output:           $0.16667/M
+
+  Fresh input:  30,000 tokens × $0.05/M     =  $0.001500
+  Cached input: 70,000 tokens × $0.03/M     =  $0.002100
+  Output:        5,000 tokens × $0.16667/M  =  $0.000833
+                                       ─────────────────
+  TOTAL INFERENCE COST                    $0.004433
+
+  Profit:  $15.00 − $0.004433 = $14.996
+
+  Context fit: 100K in + 5K out = 105K. Context limit is 128K.
+  That leaves 23K headroom — tight but technically fits.
+  Real risk: if the codebase expands mid-session (extra reads,
+  retries, error output), you blow the context window and lose
+  the session. MiMo's 1M absorbs this without thinking.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    MiMo V2.5       GLM-5.3-Flash
+  Total cost:       $0.0011         $0.0044
+  Profit:           $14.999         $14.996
+  Cost ratio:       1×              ~3.9× more expensive
+  Context:          1M (safe)       128K (tight, overflow r</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Cost Comparison</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Stale Cost</th>
+        <th>Live Cost</th>
+        <th>Diff</th>
+        <th>Stale Profit</th>
+        <th>Live Profit</th>
+        <th>Stale Margin</th>
+        <th>Live Margin</th>
+        <th>Stale Mult</th>
+        <th>Live Mult</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>GLM-5.3-Flash</strong></td><td class="mono">$0.0046</td><td class="mono">$0.0044</td><td class="mono green">-$0.0001</td><td class="mono">$15.00</td><td class="mono green">$15.00</td><td class="mono">100.0%</td><td class="mono">100.0%</td><td class="mono">1.0×</td><td class="mono">3.0×</td></tr>
+      <tr><td><strong>MiMo V2.5</strong></td><td class="mono">$0.0058</td><td class="mono">$0.0011</td><td class="mono green">-$0.0047</td><td class="mono">$14.99</td><td class="mono green">$15.00</td><td class="mono">100.0%</td><td class="mono">100.0%</td><td class="mono">1.0×</td><td class="mono">6.0×</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-title">The Verdict</div>
+  <div class="verdict">
+    <h2>Without LiveLLM: agent picks GLM (wrong model)</h2>
+    <p style="margin-bottom: 12px;">
+      Stale prices make GLM look cheaper ($0.075/M vs $0.14/M). Agent picks GLM.
+      But GLM has 128K context — may not fit the codebase. And it's actually MORE expensive on Go.
+    </p>
+    <h2 style="color: var(--blue);">With LiveLLM: agent picks MiMo (right model)</h2>
+    <p>
+      MiMo is $0.023/M amortized (6× subscription value). GLM is $0.05/M (1.5× + 2× promo).
+      MiMo has 1M context — fits everything. Agent picks MiMo. 3.9× cheaper.
+    </p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">The Invisible Miscalculation</div>
+  <div class="card" style="border-color: var(--red);">
+    <p style="font-size: 1.3em; margin-bottom: 16px; color: var(--text);">
+      <strong>The agent's math was correct. Its economic state was wrong.</strong>
+    </p>
+    <p style="font-size: 0.9em; color: var(--dim); margin-bottom: 12px;">
+      Using stale pricing, it estimates MiMo V2.5 at about $0.0058 per bounty
+      and concludes GLM-5.3-Flash is cheaper.
+    </p>
+    <p style="font-size: 0.9em; color: var(--dim); margin-bottom: 12px;">
+      LiveLLM resolves the current economic state and finds that MiMo actually costs
+      about $0.0011 for the same workload — meaning the agent had
+      overestimated MiMo's effective cost by roughly 5.1×.
+    </p>
+    <p style="font-size: 0.9em; color: var(--red); margin-bottom: 12px;">
+      <strong>That error changes the decision.</strong>
+    </p>
+    <p style="font-size: 0.9em; color: var(--dim); margin-bottom: 12px;">
+      The agent chooses GLM and pays about $0.0044 per bounty,
+      roughly 4× the cost of the route it should have chosen.
+    </p>
+    <p style="font-size: 0.9em; color: var(--dim); margin-bottom: 16px;">
+      The individual mistake is only about $0.0033, so neither the agent
+      nor a human reviewer is likely to notice it. At 50 jobs per day,
+      however, the same invisible routing error compounds to roughly $4.96 per month.
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+      <div style="background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 16px; text-align: center;">
+        <div style="color: var(--dim); font-size: 0.75em; text-transform: uppercase;">Per Bounty</div>
+        <div style="color: var(--red); font-size: 1.5em; font-weight: bold; margin-top: 4px;">$0.0033</div>
+        <div style="color: var(--dim); font-size: 0.75em; margin-top: 4px;">waste from wrong route</div>
+      </div>
+      <div style="background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 16px; text-align: center;">
+        <div style="color: var(--dim); font-size: 0.75em; text-transform: uppercase;">Per Month (50/day)</div>
+        <div style="color: var(--red); font-size: 1.5em; font-weight: bold; margin-top: 4px;">$4.96</div>
+        <div style="color: var(--dim); font-size: 0.75em; margin-top: 4px;">compounded waste</div>
+      </div>
+      <div style="background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 16px; text-align: center;">
+        <div style="color: var(--dim); font-size: 0.75em; text-transform: uppercase;">LiveLLM Check</div>
+        <div style="color: var(--green); font-size: 1.5em; font-weight: bold; margin-top: 4px;">$0.30/mo</div>
+        <div style="color: var(--dim); font-size: 0.75em; margin-top: 4px;">$0.001/query × 30 days</div>
+      </div>
+    </div>
+    <p style="font-size: 0.85em; color: var(--dim); margin-top: 16px; text-align: center;">
+      Proposed API price: $0.001/query · ROI: <strong style="color: var(--green);">17×</strong> on this tiny workload alone
+    </p>
+    <p style="font-size: 0.95em; color: var(--text); margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center;">
+      <strong>The important result isn't the $4.96. It's that stale economic state caused an otherwise rational agent to choose the wrong action.</strong>
+    </p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Why This Matters</div>
+  <div class="card">
+    <p style="font-size: 1.0em; margin-bottom: 12px;">
+      <strong>The agent's math was correct. Its economic state was wrong.</strong>
+    </p>
+    <p style="font-size: 0.85em; color: var(--dim); margin-bottom: 12px;">
+      The arithmetic checked out at every step. The error wasn't in calculation — it was in the
+      input assumptions. And neither the agent nor a human reviewer had a way to validate them.
+    </p>
+    <p style="font-size: 0.85em; color: var(--dim); margin-bottom: 12px;">
+      This is the fundamental problem: <strong>agents and humans both lack a way to verify
+      their economic assumptions.</strong> LiveLLM provides that verification — timestamped,
+      provenance-backed, proposed at $0.001 per query.
+    </p>
+    <p style="font-size: 0.85em; color: var(--dim);">
+      This extends beyond LLM inference to GPU compute, tool calling, and every domain
+      autonomous agents touch. The same pricing traps appear everywhere.
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  LiveLLM — Verified Economic Intelligence for Autonomous Agents<br>
+  Generated: 2026-08-31T21:25:28.618093 · Data as of: 2026-08-31T21:25:28.618093
+</div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LiveLLM — 3-Agent Stale vs Live</title>
+<style>
+  :root { --bg: #0a0a0f; --card: #12121a; --border: #1e1e2e; --text: #e0e0e0; --dim: #666; --green: #4ade80; --red: #ef4444; --blue: #818cf8; --yellow: #f59e0b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--bg); color: var(--text); padding: 24px; line-height: 1.6; }
+  h1 { font-size: 1.8em; margin-bottom: 4px; }
+  .subtitle { color: var(--dim); font-size: 0.85em; margin-bottom: 24px; }
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 0.75em; text-transform: uppercase; letter-spacing: 2px; color: #555; margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
+  th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); color: #888; font-weight: normal; text-transform: uppercase; font-size: 0.75em; letter-spacing: 1px; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: #1a1a25; }
+  .mono { font-family: 'SF Mono', monospace; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .verdict { background: linear-gradient(135deg, #0d1117 0%, #1a1a25 100%); border: 1px solid var(--green); border-radius: 8px; padding: 24px; margin-top: 16px; }
+  .footer { text-align: center; color: #444; font-size: 0.75em; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .tag-stale { background: #ff444422; color: var(--red); }
+  .tag-live { background: #4ade8022; color: var(--green); }
+</style>
+</head>
+<body>
+<h1>◉ LiveLLM — 3-Agent Stale vs Live</h1>
+<p class="subtitle">Same agents. Same tasks. Different data. Watch them re-route.</p>
+
+<div class="section">
+  <div class="section-title">The Setup</div>
+  <div class="card">
+    <p style="font-size: 0.9em; margin-bottom: 12px;">Three autonomous agents receive market pricing data and compute their optimal model.</p>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+      
+      <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:12px;">
+        <div style="color:#4ade80;font-weight:bold;">  CodeReview Agent</div>
+        <div style="font-size:0.8em;color:var(--dim);margin-top:4px;">240 code reviews/day. Needs large context, fast responses.</div>
+        <div style="font-size:0.75em;color:#555;margin-top:4px;">1000 uncached + 55000 cached input, 200 output per request, 240/day</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:12px;">
+        <div style="color:#818cf8;font-weight:bold;">  Research Agent</div>
+        <div style="font-size:0.8em;color:var(--dim);margin-top:4px;">500 research summaries/day. Frontier quality, minimize cost.</div>
+        <div style="font-size:0.75em;color:#555;margin-top:4px;">5000 input, 1000 output per request, no cache, 500/day</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:12px;">
+        <div style="color:#f59e0b;font-weight:bold;">  Batch Classifier</div>
+        <div style="font-size:0.8em;color:var(--dim);margin-top:4px;">500 document classifications/day. Near-zero budget.</div>
+        <div style="font-size:0.75em;color:#555;margin-top:4px;">200 input, 50 output per request, 500/day</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Results</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Agent</th><th>Workload</th><th><span class="tag tag-stale">STALE</span> Monthly</th>
+        <th><span class="tag tag-live">LIVE</span> Monthly</th><th>Diff</th>
+        <th><span class="tag tag-stale">STALE</span> Pick</th>
+        <th><span class="tag tag-live">LIVE</span> Pick</th>
+        <th><span class="tag tag-stale">STALE</span> Reason</th>
+        <th><span class="tag tag-live">LIVE</span> Reason</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+    <tr>
+      <td><span style="color:#4ade80">  CodeReview Agent</span></td>
+      <td>240 code reviews/day. Needs large context, fast responses.</td>
+      <td class="mono">$2.52</td>
+      <td class="mono">$1.34</td>
+      <td class="mono green">$1.18</td>
+      <td class="mono" style="color:#4ade80">MiMo V2.5</td>
+      <td class="mono" style="color:#4ade80">MiMo V2.5</td>
+      <td style="font-size:0.75em;color:#999;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Cheapest option that handles 56K context; at 240 reviews/day the 5x cost savings over Claude Haiku dominates, and MiMo's context window covers the workload.">Cheapest option that handles 56K context; at 240 reviews/day</td>
+      <td style="font-size:0.75em;color:#999;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="MiMo V2.5">MiMo V2.5</td>
+    </tr>
+    <tr>
+      <td><span style="color:#818cf8">  Research Agent</span></td>
+      <td>500 research summaries/day. Frontier quality, minimize cost.</td>
+      <td class="mono">$9.38</td>
+      <td class="mono">$2.45</td>
+      <td class="mono green">$6.93</td>
+      <td class="mono" style="color:#f59e0b">GLM-5.3-Flash</td>
+      <td class="mono" style="color:#4ade80">MiMo V2.5</td>
+      <td style="font-size:0.75em;color:#999;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Already verified in-session for Sanskrit philology work at ~40% the cost of the next competent option (DeepSeek V4 Flash), and Haiku's 8x price premium doesn't justify the marginal quality gain on structured research summaries.">Already verified in-session for Sanskrit philology work at ~</td>
+      <td style="font-size:0.75em;color:#999;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="At 500 structured research summaries/day (5K in / 1K out), summarization sits within MiMo's reasoning strengths, and the 3.6x savings over DeepSeek V4 Flash or 8x over GPT-4o mini make it the cost floor that still delivers reliable synthesis — if quality drift appears on dense technical inputs, escalate to DeepSeek V4 Flash ($8.80) and keep MiMo as the default.">At 500 structured research summaries/day (5K in / 1K out), s</td>
+    </tr>
+    <tr>
+      <td><span style="color:#f59e0b">  Batch Classifier</span></td>
+      <td>500 document classifications/day. Near-zero budget.</td>
+      <td class="mono">$0.41</td>
+      <td class="mono">$0.10</td>
+      <td class="mono green">$0.31</td>
+      <td class="mono" style="color:#f59e0b">GLM-5.3-Flash</td>
+      <td class="mono" style="color:#4ade80">MiMo V2.5</td>
+      <td style="font-size:0.75em;color:#999;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Simple classification needs minimal capability; GLM-5.3-Flash is 5-13x cheaper than alternatives and sufficient for this task.">Simple classification needs minimal capability; GLM-5.3-Flas</td>
+      <td style="font-size:0.75em;color:#999;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Cheapest option; simple classification task with short I/O (200 in / 50 out) fits well within any model's capability at 15K requests/month.">Cheapest option; simple classification task with short I/O (</td>
+    </tr>
+      <tr style="border-top:2px solid var(--border);font-weight:bold;">
+        <td colspan="2">TOTAL</td>
+        <td class="mono">$12.31/mo</td>
+        <td class="mono">$3.90/mo</td>
+        <td class="mono green">$8.41</td>
+        <td colspan="5"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-title">The Verdict</div>
+  <div class="verdict">
+    <p style="font-size: 1.2em; margin-bottom: 12px;">
+      <strong>The agent's math was correct. Its economic state was wrong.</strong>
+    </p>
+    <p style="font-size: 0.9em; color: var(--dim); margin-bottom: 12px;">
+      With stale prices, the agents see GLM-5.3-Flash at $0.075/M and pick it over MiMo.
+      With LiveLLM's subscription-aware pricing, MiMo is $0.023/M — 3× cheaper than GLM on Go.
+      The agents change their minds. The routing improves. The cost goes down.
+    </p>
+    <p style="font-size: 0.9em; color: var(--dim);">
+      This is why autonomous agents need verified economic state. Not a pricing table.
+      Not a web search. A timestamped, provenance-backed fact ledger that computes
+      the decision-relevant economic state, not just the list price.
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  LiveLLM — Verified Economic Intelligence for Autonomous Agents<br>
+  Generated: 2026-08-31T21:50:37.847Z · DevNetwork API + Cloud + AI Hackathon 2026
+</div>
+</body>
+</html>
