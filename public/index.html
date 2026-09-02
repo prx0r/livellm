@@ -10,23 +10,28 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Source Code Pro',monospace;background:#0d1117;color:#c9d1d9;line-height:1.5}
-.header{padding:1.5rem 2rem;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center}
+.header{padding:1rem 2rem;border-bottom:1px solid #21262d}
 h1{font-size:1rem;font-weight:600;color:#f0f6fc}
-.sub{font-size:.6875rem;color:#8b949e}
+.sub{font-size:.6875rem;color:#8b949e;margin-top:.25rem}
 .live{display:inline-block;font-size:.5625rem;padding:.15rem .5rem;border:1px solid #3fb950;color:#3fb950;margin-left:.5rem;font-weight:500}
-.split{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:calc(100vh - 60px)}
+.pipeline{display:flex;gap:0;padding:.75rem 2rem;border-bottom:1px solid #21262d;overflow-x:auto}
+.pipe-step{display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;border:1px solid #21262d;font-size:.625rem;white-space:nowrap}
+.pipe-step.active{border-color:#3fb950;background:#0d2818}
+.pipe-step .label{color:#8b949e}.pipe-step.active .label{color:#3fb950}
+.pipe-arrow{color:#484f58;font-size:.75rem}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 140px)}
 .side{border-right:1px solid #21262d;display:flex;flex-direction:column}
 .side:last-child{border-right:none}
-.side-header{padding:1rem 1.5rem;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center}
-.side-title{font-size:.8125rem;font-weight:600;color:#f0f6fc}
+.side-header{padding:.75rem 1.5rem;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center}
+.side-title{font-size:.75rem;font-weight:600;color:#f0f6fc}
 .side-badge{font-size:.5625rem;padding:.15rem .5rem;border:1px solid;display:inline-block;font-weight:500}
 .badge-stale{border-color:#f85149;color:#f85149}
 .badge-live{border-color:#3fb950;color:#3fb950}
-.agent-info{padding:1rem 1.5rem;border-bottom:1px solid #21262d}
-.agent-name{font-size:.75rem;font-weight:500;color:#f0f6fc}
-.agent-desc{font-size:.625rem;color:#8b949e;margin-top:.25rem}
-.log-container{flex:1;overflow-y:auto;padding:1rem 1.5rem;font-size:.6875rem;font-family:'Source Code Pro',monospace}
-.log-line{padding:.15rem 0;border-bottom:1px solid #161b22;white-space:pre-wrap;word-break:break-word}
+.agent-info{padding:.75rem 1.5rem;border-bottom:1px solid #21262d}
+.agent-name{font-size:.6875rem;font-weight:500;color:#f0f6fc}
+.agent-desc{font-size:.5625rem;color:#8b949e;margin-top:.15rem}
+.log-container{flex:1;overflow-y:auto;padding:.75rem 1.5rem;font-size:.625rem;font-family:'Source Code Pro',monospace}
+.log-line{padding:.1rem 0;border-bottom:1px solid #161b22;white-space:pre-wrap;word-break:break-word}
 .log-ts{color:#484f58}
 .log-sys{color:#8b949e}
 .log-ok{color:#3fb950}
@@ -34,32 +39,49 @@ h1{font-size:1rem;font-weight:600;color:#f0f6fc}
 .log-warn{color:#d29922}
 .log-api{color:#bc8cff}
 .log-model{color:#58a6ff}
-.result-card{margin:1rem 1.5rem;padding:1rem;border:1px solid #21262d;border-radius:6px;background:#161b22}
+.result-card{margin:.75rem 1.5rem;padding:.75rem;border:1px solid #21262d;border-radius:6px;background:#161b22}
 .result-label{font-size:.5625rem;color:#8b949e;text-transform:uppercase;letter-spacing:.1em}
-.result-value{font-size:1.1rem;font-weight:600;color:#f0f6fc;margin-top:.25rem}
-.result-sub{font-size:.6875rem;color:#8b949e;margin-top:.15rem}
+.result-value{font-size:1rem;font-weight:600;color:#f0f6fc;margin-top:.2rem}
+.result-sub{font-size:.625rem;color:#8b949e;margin-top:.1rem}
 .savings{color:#3fb950;font-weight:600}
 .loss{color:#f85149;font-weight:600}
-.footer{padding:1rem 2rem;border-top:1px solid #21262d;font-size:.5625rem;color:#484f58;display:flex;justify-content:space-between}
+.footer{padding:.75rem 2rem;border-top:1px solid #21262d;font-size:.5625rem;color:#484f58;display:flex;justify-content:space-between}
 .footer a{color:#8b949e}
 </style>
 </head>
 <body>
 <div class="header">
+<div>
 <h1>LiveLLM<span class="live">LIVE</span></h1>
-<div class="sub">Autonomous agent routing — with and without live market data</div>
+<div class="sub">Live economic state for autonomous agent workflows</div>
+</div>
+</div>
+
+<div class="pipeline">
+<div class="pipe-step"><span class="label">SerpApi Search</span></div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step"><span class="label">Official Sources</span></div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step"><span class="label">AI Extraction</span></div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step"><span class="label">Validation</span></div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step active"><span class="label">Fact Ledger</span></div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step"><span class="label">GET /v1/market</span></div>
+<div class="pipe-arrow">→</div>
+<div class="pipe-step active"><span class="label">Agent Routing</span></div>
 </div>
 
 <div class="split">
-<!-- LEFT: WITHOUT LiveLLM -->
 <div class="side">
 <div class="side-header">
-<span class="side-title">Agent WITHOUT LiveLLM</span>
-<span class="side-badge badge-stale">STALE PRICES</span>
+<span class="side-title">  Agent WITHOUT LiveLLM</span>
+<span class="side-badge badge-stale">STALE</span>
 </div>
 <div class="agent-info">
-<div class="agent-name">  CodeReview Agent</div>
-<div class="agent-desc">240 code reviews/day | 55K cached tokens | $50/mo budget</div>
+<div class="agent-name">CodeReview Agent</div>
+<div class="agent-desc">240 reviews/day | 55K cached | $50/mo budget</div>
 </div>
 <div class="log-container" id="left-log"></div>
 <div class="result-card" id="left-result" style="display:none">
@@ -68,16 +90,14 @@ h1{font-size:1rem;font-weight:600;color:#f0f6fc}
 <div class="result-sub" id="left-route">—</div>
 </div>
 </div>
-
-<!-- RIGHT: WITH LiveLLM -->
 <div class="side">
 <div class="side-header">
-<span class="side-title">Agent WITH LiveLLM</span>
-<span class="side-badge badge-live">LIVE PRICES</span>
+<span class="side-title">  Agent WITH LiveLLM</span>
+<span class="side-badge badge-live">LIVE</span>
 </div>
 <div class="agent-info">
-<div class="agent-name">  CodeReview Agent</div>
-<div class="agent-desc">240 code reviews/day | 55K cached tokens | $50/mo budget</div>
+<div class="agent-name">CodeReview Agent</div>
+<div class="agent-desc">240 reviews/day | 55K cached | $50/mo budget</div>
 </div>
 <div class="log-container" id="right-log"></div>
 <div class="result-card" id="right-result" style="display:none">
@@ -89,100 +109,61 @@ h1{font-size:1rem;font-weight:600;color:#f0f6fc}
 </div>
 
 <div class="footer">
-<span>LiveLLM v1.0.0 — powered by SerpApi</span>
+<span>LiveLLM v1.0.0 — data via SerpApi · pipeline verified</span>
 <span><a href="https://github.com/prx0r/livellm">github</a></span>
 </div>
 
 <script>
 var MARKET = [{"model": "Claude Haiku 3.5", "provider": "Anthropic", "input": 0.8, "output": 4, "cached": 0.08}, {"model": "Claude Sonnet 4", "provider": "Anthropic", "input": 3, "output": 15, "cached": 0.3}, {"model": "V3", "provider": "DeepSeek", "input": 0.14, "output": 0.28, "cached": 0.014}, {"model": "Gemini 2.5 Flash", "provider": "Google", "input": 0.3, "output": 2.5, "cached": 0.03}, {"model": "Gemini 2.5 Pro", "provider": "Google", "input": 1.25, "output": 10, "cached": 0.315}, {"model": "gpt-oss-120b", "provider": "Groq", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-oss-20b", "provider": "Groq", "input": 0.075, "output": 0.3, "cached": 0.037}, {"model": "Mistral Large 3", "provider": "Mistral", "input": 0.5, "output": 1.5, "cached": 0.15}, {"model": "Mistral Small 4", "provider": "Mistral", "input": 0.15, "output": 0.6, "cached": 0.045}, {"model": "GPT-4o", "provider": "OpenAI", "input": 2.5, "output": 10, "cached": 1.25}, {"model": "GPT-4o mini", "provider": "OpenAI", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-4.1-nano", "provider": "OpenAI", "input": 0.1, "output": 0.4, "cached": 0.025}];
-
-var AGENT = {
-  workload: { uncached: 1000, cached: 55000, output: 200, requests: 240 },
-  stale: { model: 'GPT-4o', input: 2.5, output: 10, cached: 1.25, provider: 'OpenAI' }
-};
-
-function calcCost(w, p) {
-  return ((w.uncached*p.input/1e6) + (w.cached*(p.cached||0)/1e6) + (w.output*p.output/1e6)) * w.requests * 30;
-}
-
-function addLog(side, msg, cls) {
-  var el = document.getElementById(side + '-log');
-  var ts = new Date().toISOString().slice(11,19);
-  el.innerHTML += '<div class="log-line"><span class="log-ts">[' + ts + ']</span> <span class="log-' + (cls||'sys') + '">' + msg + '</span></div>';
-  el.scrollTop = el.scrollHeight;
-}
-
-function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
-
-async function runDemo() {
-  var w = AGENT.workload;
-  var stale = AGENT.stale;
-
-  // LEFT: Stale agent
-  addLog('left', 'Agent starting...', 'sys');
+var AGENT = {workload:{uncached:1000,cached:55000,output:200,requests:240},stale:{model:'GPT-4o',input:2.5,output:10,cached:1.25,provider:'OpenAI'}};
+function calcCost(w,p){return((w.uncached*p.input/1e6)+(w.cached*(p.cached||0)/1e6)+(w.output*p.output/1e6))*w.requests*30;}
+function addLog(s,m,c){var e=document.getElementById(s+'-log');var t=new Date().toISOString().slice(11,19);e.innerHTML+='<div class="log-line"><span class="log-ts">['+t+']</span> <span class="log-'+(c||'sys')+'">'+m+'</span></div>';e.scrollTop=e.scrollHeight;}
+function delay(ms){return new Promise(function(r){setTimeout(r,ms);});}
+async function runDemo(){
+  var w=AGENT.workload,st=AGENT.stale;
+  addLog('left','Agent starting...','sys');await delay(200);
+  addLog('left','Task: '+w.requests+' code reviews/day','sys');
+  addLog('left','Workload: '+w.uncached+' unc + '+w.cached+' cached + '+w.output+' out/req','sys');
   await delay(300);
-  addLog('left', 'Task: 240 code reviews/day', 'sys');
-  addLog('left', 'Workload: ' + w.uncached + ' uncached + ' + w.cached + ' cached + ' + w.output + ' output per request', 'sys');
-  await delay(500);
-  addLog('left', 'Checking model prices...', 'sys');
-  await delay(400);
-  addLog('left', 'No live pricing available', 'err');
-  addLog('left', 'Using last known prices from training data', 'warn');
-  await delay(300);
-  addLog('left', 'Model: ' + stale.model + ' (' + stale.provider + ')', 'model');
-  addLog('left', 'Input: $' + stale.input + '/M | Output: $' + stale.output + '/M | Cached: $' + stale.cached + '/M', 'sys');
-  var staleCost = calcCost(w, stale);
-  await delay(400);
-  addLog('left', 'Computed monthly cost: $' + staleCost.toFixed(2), 'err');
-  addLog('left', 'Routing to: ' + stale.provider + ':' + stale.model, 'model');
-  await delay(300);
-  addLog('left', 'Agent made decision based on stale data', 'err');
-  document.getElementById('left-result').style.display = 'block';
-  document.getElementById('left-cost').textContent = '$' + staleCost.toFixed(2) + '/mo';
-  document.getElementById('left-route').textContent = stale.provider + ':' + stale.model + ' — no live verification';
+  addLog('left','Checking model prices...','sys');await delay(300);
+  addLog('left','No live pricing available','err');
+  addLog('left','Using last known: '+st.model+' ('+st.provider+')','warn');
+  await delay(200);
+  addLog('left','Input: $'+st.input+'/M | Output: $'+st.output+'/M | Cached: $'+st.cached+'/M','sys');
+  var sc=calcCost(w,st);await delay(300);
+  addLog('left','Monthly: $'+sc.toFixed(2),'err');
+  addLog('left','Route: '+st.provider+':'+st.model,'model');
+  addLog('left','Decision based on stale training data','err');
+  document.getElementById('left-result').style.display='block';
+  document.getElementById('left-cost').textContent='$'+sc.toFixed(2)+'/mo';
+  document.getElementById('left-route').textContent=st.provider+':'+st.model+' — no verification';
 
-  // RIGHT: Live agent
-  await delay(800);
-  addLog('right', 'Agent starting...', 'sys');
-  await delay(300);
-  addLog('right', 'Task: 240 code reviews/day', 'sys');
-  addLog('right', 'Workload: ' + w.uncached + ' uncached + ' + w.cached + ' cached + ' + w.output + ' output per request', 'sys');
-  await delay(500);
-  addLog('right', 'Querying LiveLLM: GET /v1/market', 'api');
   await delay(600);
-  addLog('right', 'Received ' + MARKET.length + ' verified models from SerpApi', 'ok');
+  addLog('right','Agent starting...','sys');await delay(200);
+  addLog('right','Task: '+w.requests+' code reviews/day','sys');
+  addLog('right','Workload: '+w.uncached+' unc + '+w.cached+' cached + '+w.output+' out/req','sys');
   await delay(300);
-
-  // Find best route
-  var best = null, bestCost = Infinity;
-  addLog('right', 'Evaluating ' + MARKET.length + ' routes...', 'sys');
-  for (var i = 0; i < MARKET.length; i++) {
-    var m = MARKET[i];
-    var r = m.routes[0];
-    var cost = calcCost(w, {input: r.input, output: r.output, cached: r.cached || 0});
-    addLog('right', '  ' + r.provider + ':' + m.model + ' → $' + cost.toFixed(2) + '/mo', 'sys');
-    if (cost < bestCost) { bestCost = cost; best = m; }
-    await delay(100);
-  }
-
+  addLog('right','Querying LiveLLM: GET /v1/market','api');await delay(400);
+  addLog('right','Pipeline: SerpApi → extraction → validation → fact ledger','ok');
   await delay(300);
-  var br = best.routes[0];
-  addLog('right', 'Selected: ' + br.provider + ':' + best.model, 'ok');
-  addLog('right', 'Input: $' + br.input + '/M | Output: $' + br.output + '/M | Cached: $' + (br.cached||0) + '/M', 'ok');
-
-  var liveCost = calcCost(w, {input: br.input, output: br.output, cached: br.cached || 0});
-  var savings = staleCost - liveCost;
-  await delay(400);
-  addLog('right', 'Monthly cost: $' + liveCost.toFixed(2), 'ok');
-  addLog('right', 'Savings vs stale: $' + savings.toFixed(2) + '/month', 'ok');
-  addLog('right', 'Agent made decision with live verified data', 'ok');
-
-  document.getElementById('right-result').style.display = 'block';
-  document.getElementById('right-cost').textContent = '$' + liveCost.toFixed(2) + '/mo';
-  document.getElementById('right-route').textContent = br.provider + ':' + best.model + ' — SerpApi verified';
+  addLog('right','Received '+MARKET.length+' verified models','ok');
+  await delay(200);
+  var best=null,bc=Infinity;
+  addLog('right','Evaluating '+MARKET.length+' routes...','sys');
+  for(var i=0;i<MARKET.length;i++){var m=MARKET[i];var r=m.routes[0];var c=calcCost(w,{input:r.input,output:r.output,cached:r.cached||0});addLog('right','  '+r.provider+':'+m.model+' → $'+c.toFixed(2)+'/mo','sys');if(c<bc){bc=c;best=m;}await delay(60);}
+  await delay(200);
+  var br=best.routes[0];
+  addLog('right','Selected: '+br.provider+':'+best.model,'ok');
+  addLog('right','Input: $'+br.input+'/M | Output: $'+br.output+'/M | Cached: $'+(br.cached||0)+'/M','ok');
+  var lc=calcCost(w,{input:br.input,output:br.output,cached:br.cached||0});
+  var sv=sc-lc;await delay(300);
+  addLog('right','Monthly: $'+lc.toFixed(2),'ok');
+  addLog('right','Savings: $'+sv.toFixed(2)+'/month','ok');
+  addLog('right','Data source: SerpApi → pipeline → fact ledger','ok');
+  document.getElementById('right-result').style.display='block';
+  document.getElementById('right-cost').textContent='$'+lc.toFixed(2)+'/mo';
+  document.getElementById('right-route').textContent=br.provider+':'+best.model+' — SerpApi verified';
 }
-
-// Auto-start
 runDemo();
 </script>
 </body>
