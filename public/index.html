@@ -10,171 +10,287 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Source Code Pro',monospace;background:#0d1117;color:#c9d1d9;line-height:1.5}
-.header{padding:1rem 2rem;border-bottom:1px solid #21262d}
+.header{padding:1rem 2rem;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center}
 h1{font-size:1rem;font-weight:600;color:#f0f6fc}
-.sub{font-size:.6875rem;color:#8b949e;margin-top:.25rem}
-.live{display:inline-block;font-size:.5625rem;padding:.15rem .5rem;border:1px solid #3fb950;color:#3fb950;margin-left:.5rem;font-weight:500}
-.pipeline{display:flex;gap:0;padding:.75rem 2rem;border-bottom:1px solid #21262d;overflow-x:auto}
-.pipe-step{display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;border:1px solid #21262d;font-size:.625rem;white-space:nowrap}
-.pipe-step.active{border-color:#3fb950;background:#0d2818}
-.pipe-step .label{color:#8b949e}.pipe-step.active .label{color:#3fb950}
-.pipe-arrow{color:#484f58;font-size:.75rem}
-.split{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 140px)}
+.sub{font-size:.6875rem;color:#8b949e;margin-top:.15rem}
+.live{font-size:.5625rem;padding:.15rem .5rem;border:1px solid #3fb950;color:#3fb950;margin-left:.5rem;font-weight:500}
+.tabs{display:flex;gap:0;border-bottom:1px solid #21262d;padding:0 2rem}
+.tab{padding:.6rem 1.2rem;font-size:.6875rem;font-weight:500;color:#8b949e;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:#c9d1d9}.tab.active{color:#f0f6fc;border-bottom-color:#3fb950}
+.panel{display:none;padding:1.5rem 2rem}.panel.active{display:block}
+.go-btn{background:#238636;color:#fff;border:none;padding:.75rem 2rem;font-family:'Source Code Pro',monospace;font-size:.875rem;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s}
+.go-btn:hover{background:#2ea043}
+.go-btn:disabled{background:#21262d;color:#484f58;cursor:not-allowed}
+.agent-select{display:flex;gap:.75rem;margin-bottom:1rem}
+.agent-opt{padding:.5rem 1rem;border:1px solid #30363d;border-radius:6px;cursor:pointer;font-size:.6875rem;color:#8b949e;transition:all .15s}
+.agent-opt:hover{border-color:#58a6ff;color:#c9d1d9}
+.agent-opt.selected{border-color:#3fb950;color:#3fb950;background:#0d2818}
+.agent-opt .icon{font-size:1rem;margin-right:.375rem}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 200px)}
 .side{border-right:1px solid #21262d;display:flex;flex-direction:column}
 .side:last-child{border-right:none}
-.side-header{padding:.75rem 1.5rem;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center}
+.side-hdr{padding:.6rem 1.5rem;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center}
 .side-title{font-size:.75rem;font-weight:600;color:#f0f6fc}
-.side-badge{font-size:.5625rem;padding:.15rem .5rem;border:1px solid;display:inline-block;font-weight:500}
-.badge-stale{border-color:#f85149;color:#f85149}
-.badge-live{border-color:#3fb950;color:#3fb950}
-.agent-info{padding:.75rem 1.5rem;border-bottom:1px solid #21262d}
-.agent-name{font-size:.6875rem;font-weight:500;color:#f0f6fc}
-.agent-desc{font-size:.5625rem;color:#8b949e;margin-top:.15rem}
-.log-container{flex:1;overflow-y:auto;padding:.75rem 1.5rem;font-size:.625rem;font-family:'Source Code Pro',monospace}
-.log-line{padding:.1rem 0;border-bottom:1px solid #161b22;white-space:pre-wrap;word-break:break-word}
-.log-ts{color:#484f58}
-.log-sys{color:#8b949e}
-.log-ok{color:#3fb950}
-.log-err{color:#f85149}
-.log-warn{color:#d29922}
-.log-api{color:#bc8cff}
-.log-model{color:#58a6ff}
-.result-card{margin:.75rem 1.5rem;padding:.75rem;border:1px solid #21262d;border-radius:6px;background:#161b22}
+.badge{font-size:.5625rem;padding:.15rem .5rem;border:1px solid;display:inline-block;font-weight:500}
+.badge-stale{border-color:#f85149;color:#f85149}.badge-live{border-color:#3fb950;color:#3fb950}
+.log{flex:1;overflow-y:auto;padding:.75rem 1.5rem;font-size:.625rem;font-family:'Source Code Pro',monospace}
+.log-line{padding:.1rem 0;border-bottom:1px solid #161b22;white-space:pre-wrap}
+.log-ts{color:#484f58}.log-ok{color:#3fb950}.log-err{color:#f85149}.log-warn{color:#d29922}.log-api{color:#bc8cff}.log-model{color:#58a6ff}
+.result{margin:.75rem 1.5rem;padding:.75rem;border:1px solid #21262d;border-radius:6px;background:#161b22}
 .result-label{font-size:.5625rem;color:#8b949e;text-transform:uppercase;letter-spacing:.1em}
-.result-value{font-size:1rem;font-weight:600;color:#f0f6fc;margin-top:.2rem}
+.result-val{font-size:1.1rem;font-weight:600;color:#f0f6fc;margin-top:.2rem}
 .result-sub{font-size:.625rem;color:#8b949e;margin-top:.1rem}
-.savings{color:#3fb950;font-weight:600}
-.loss{color:#f85149;font-weight:600}
+.green{color:#3fb950}.red{color:#f85149}
+.card{background:#161b22;border:1px solid #21262d;border-radius:6px;padding:1rem;margin-top:.75rem}
+.card-row{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid #21262d;font-size:.75rem}
+.card-row:last-child{border-bottom:none}
+.card-label{color:#8b949e}
+.section{margin-top:1.5rem}
+.section-title{font-size:.75rem;font-weight:600;color:#f0f6fc;margin-bottom:.5rem}
+.section-sub{font-size:.625rem;color:#8b949e;margin-bottom:.75rem}
+.explain{background:#0d1821;border:1px solid #1f3d5c;padding:.75rem;border-radius:6px;margin-top:.75rem;font-size:.6875rem;color:#c9d1d9;line-height:1.5}
+.explain b{color:#f0f6fc}
+.explain-label{font-size:.5625rem;color:#58a6ff;text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:.375rem}
+.trace-row{display:flex;gap:.5rem;font-size:.625rem;padding:.2rem 0;border-bottom:1px solid #21262d}
+.trace-method{font-weight:600;min-width:32px;color:#f0f6fc}.trace-path{flex:1;color:#8b949e}
+.trace-status{font-weight:500;min-width:24px}.trace-ok{color:#3fb950}.trace-ms{color:#484f58;text-align:right}
+.divider{border-top:1px solid #21262d;margin:1.5rem 0}
+table{width:100%;border-collapse:collapse}
+td{padding:.4rem 0;border-bottom:1px solid #21262d;font-size:.75rem}
+td:first-child{color:#8b949e;width:160px}
+.badge-green{border-color:#3fb950;color:#3fb950;font-size:.5625rem;padding:.1rem .4rem;border:1px solid;display:inline-block;font-weight:500}
+.badge-orange{border-color:#d29922;color:#d29922;font-size:.5625rem;padding:.1rem .4rem;border:1px solid;display:inline-block;font-weight:500}
 .footer{padding:.75rem 2rem;border-top:1px solid #21262d;font-size:.5625rem;color:#484f58;display:flex;justify-content:space-between}
 .footer a{color:#8b949e}
 </style>
 </head>
 <body>
 <div class="header">
-<div>
-<h1>LiveLLM<span class="live">LIVE</span></h1>
-<div class="sub">Live economic state for autonomous agent workflows</div>
-</div>
+<div><h1>LiveLLM<span class="live">LIVE</span></h1>
+<div class="sub">Live market data for autonomous agent workflows</div></div>
 </div>
 
-<div class="pipeline">
-<div class="pipe-step"><span class="label">SerpApi Search</span></div>
-<div class="pipe-arrow">→</div>
-<div class="pipe-step"><span class="label">Official Sources</span></div>
-<div class="pipe-arrow">→</div>
-<div class="pipe-step"><span class="label">AI Extraction</span></div>
-<div class="pipe-arrow">→</div>
-<div class="pipe-step"><span class="label">Validation</span></div>
-<div class="pipe-arrow">→</div>
-<div class="pipe-step active"><span class="label">Fact Ledger</span></div>
-<div class="pipe-arrow">+</div>
-<div class="pipe-step"><span class="label">x402 $0.01/search</span></div>
-<div class="pipe-arrow">→</div>
-<div class="pipe-step"><span class="label">GET /v1/market</span></div>
-<div class="pipe-arrow">→</div>
-<div class="pipe-step active"><span class="label">Agent Routing</span></div>
+<div class="tabs">
+<div class="tab active" onclick="showTab(0)">Demo</div>
+<div class="tab" onclick="showTab(1)">API Spotlight</div>
+<div class="tab" onclick="showTab(2)">Traps</div>
+<div class="tab" onclick="showTab(3)">Future</div>
 </div>
 
-<div id="serpapi-panel" style="padding:.5rem 2rem;border-bottom:1px solid #21262d;font-size:.5625rem;color:#8b949e;display:flex;gap:1.5rem;flex-wrap:wrap">
-<span>  Google Light</span>
-<span>  search_metadata.id</span>
-<span>  JSON Restrictor</span>
-<span>  Account API</span>
-<span>  x402 payments</span>
+<!-- TAB 0: DEMO -->
+<div class="panel active" id="p0">
+<div class="section-title">Choose agent type</div>
+<div class="agent-select" id="agent-select">
+<div class="agent-opt selected" onclick="selectAgent(0)" data-i="0"><span class="icon"> </span>Coding Agent</div>
+<div class="agent-opt" onclick="selectAgent(1)" data-i="1"><span class="icon"> </span>Research Agent</div>
+<div class="agent-opt" onclick="selectAgent(2)" data-i="2"><span class="icon"> </span>Batch Classifier</div>
+<div class="agent-opt" onclick="selectAgent(3)" data-i="3"><span class="icon"> </span>Support Agent</div>
 </div>
-<div class="split">
+<div class="section-sub" id="agent-desc">240 code reviews/day | 55K cached tokens | $50/mo budget</div>
+<button class="go-btn" id="go-btn" onclick="runDemo()">GO</button>
+<div class="split" id="split-area" style="display:none">
 <div class="side">
-<div class="side-header">
-<span class="side-title">  Agent WITHOUT LiveLLM</span>
-<span class="side-badge badge-stale">STALE</span>
-</div>
-<div class="agent-info">
-<div class="agent-name">CodeReview Agent</div>
-<div class="agent-desc">240 reviews/day | 55K cached | $50/mo budget</div>
-</div>
-<div class="log-container" id="left-log"></div>
-<div class="result-card" id="left-result" style="display:none">
+<div class="side-hdr"><span class="side-title">Without LiveLLM</span><span class="badge badge-stale">STALE</span></div>
+<div class="log" id="left-log"></div>
+<div class="result" id="left-result" style="display:none">
 <div class="result-label">Monthly Cost</div>
-<div class="result-value loss" id="left-cost">—</div>
+<div class="result-val red" id="left-cost">—</div>
 <div class="result-sub" id="left-route">—</div>
 </div>
 </div>
 <div class="side">
-<div class="side-header">
-<span class="side-title">  Agent WITH LiveLLM</span>
-<span class="side-badge badge-live">LIVE</span>
-</div>
-<div class="agent-info">
-<div class="agent-name">CodeReview Agent</div>
-<div class="agent-desc">240 reviews/day | 55K cached | $50/mo budget</div>
-</div>
-<div class="log-container" id="right-log"></div>
-<div class="result-card" id="right-result" style="display:none">
+<div class="side-hdr"><span class="side-title">With LiveLLM</span><span class="badge badge-live">LIVE</span></div>
+<div class="log" id="right-log"></div>
+<div class="result" id="right-result" style="display:none">
 <div class="result-label">Monthly Cost</div>
-<div class="result-value savings" id="right-cost">—</div>
+<div class="result-val green" id="right-cost">—</div>
 <div class="result-sub" id="right-route">—</div>
 </div>
 </div>
 </div>
+</div>
 
-<div id="serpapi-info" style="padding:.5rem 2rem;border-top:1px solid #21262d;font-size:.5625rem;color:#484f58;display:flex;gap:2rem"></div>
+<!-- TAB 1: API SPOTLIGHT -->
+<div class="panel" id="p1">
+<div class="section-title">SerpApi Integration</div>
+<div class="section-sub">How LiveLLM uses SerpApi and why it's needed</div>
+
+<div class="card">
+<div class="card-row"><span class="card-label">Why SerpApi?</span><span>LLM prices change multiple times per month. Agents need live data, not stale training knowledge.</span></div>
+<div class="card-row"><span class="card-label">What SerpApi provides</span><span>Real-time pricing from official sources, verified and structured</span></div>
+<div class="card-row"><span class="card-label">x402 cost</span><span class="green">$0.01/search | 250 free/month</span></div>
+</div>
+
+<div class="section" style="margin-top:1rem">
+<div class="section-title">Endpoints used</div>
+<table>
+<tr><td>Google Light</td><td>Official source resolution — finds pricing pages from providers</td></tr>
+<tr><td>Google News Light</td><td>Event detection — catches price changes, promotions, quota updates</td></tr>
+<tr><td>Search Index Deep</td><td>Exploration — discovers unknown providers and offers</td></tr>
+<tr><td>JSON Restrictor</td><td>94-99% token reduction — cuts payload size for agent consumption</td></tr>
+<tr><td>search_metadata.id</td><td>Provenance — every fact traces to a specific search</td></tr>
+<tr><td>Account API</td><td>Quota governance — tracks usage and limits</td></tr>
+</table>
+</div>
+
+<div class="section">
+<div class="section-title">Pipeline</div>
+<div class="card">
+<div class="card-row"><span class="card-label">1. Discovery</span><span>SerpApi searches Google for pricing data</span></div>
+<div class="card-row"><span class="card-label">2. Extraction</span><span>AI extracts structured pricing facts from results</span></div>
+<div class="card-row"><span class="card-label">3. Validation</span><span>Deterministic checks against known ranges</span></div>
+<div class="card-row"><span class="card-label">4. Fact Ledger</span><span>Temporal facts with provenance and confidence</span></div>
+<div class="card-row"><span class="card-label">5. API</span><span>GET /v1/market serves verified economic payload</span></div>
+</div>
+</div>
+</div>
+
+<!-- TAB 2: TRAPS -->
+<div class="panel" id="p2">
+<div class="section-title">5 Traps of Stale Agent Economics</div>
+
+<div class="explain">
+<div class="explain-label">trap 1: stale routing</div>
+Agent uses last month's prices, pays <b>2-5x more</b> than necessary. A coding agent routing to GPT-4o at $2.50/M when DeepSeek V3 does the same job at $0.14/M.
+</div>
+<div class="explain">
+<div class="explain-label">trap 2: missing promotions</div>
+New model promotions (free tiers, launch discounts) appear in news but not in training data. <b>Agents miss savings</b> that a single SerpApi query would reveal.
+</div>
+<div class="explain">
+<div class="explain-label">trap 3: one-size-fits-all</div>
+Same model for all tasks wastes money. Code tasks favor DeepSeek V3 ($0.14/M), chat favors Haiku ($0.80/M), analysis favors Gemini Flash ($0.30/M). <b>Cross-provider arbitrage exists.</b>
+</div>
+<div class="explain">
+<div class="explain-label">trap 4: ignoring cached input</div>
+Many agents repeat prompts. <b>Cached input</b> (50-90% discount) is available but agents rarely exploit it because they don't know which providers offer it.
+</div>
+<div class="explain">
+<div class="explain-label">trap 5: no budget limits</div>
+Agents run until quota exhausted, with <b>no cost awareness</b>. A runaway agent can burn hundreds before anyone notices.
+</div>
+</div>
+
+<!-- TAB 3: FUTURE -->
+<div class="panel" id="p3">
+<div class="section-title">Domain Applications & Future</div>
+
+<div class="section">
+<div class="section-title">Expansion domains</div>
+<table>
+<tr><td>Agent marketplaces</td><td>Marketplaces need live pricing to rank tools fairly</td></tr>
+<tr><td>Cost optimization APIs</td><td>Route to cheapest viable model per task automatically</td></tr>
+<tr><td>Budget enforcement</td><td>Hard cost limits per agent/session/task</td></tr>
+<tr><td>Promotion detection</td><td>Real-time alerts when free tiers or discounts appear</td></tr>
+<tr><td>Cached input optimization</td><td>Identify and reuse cached prompts for 50-90% savings</td></tr>
+<tr><td>Free tier discovery</td><td>Groq, Cloudflare, Gemini free inference for suitable tasks</td></tr>
+</table>
+</div>
+
+<div class="section">
+<div class="section-title">Development plan</div>
+<div class="card">
+<div class="card-row"><span class="card-label">Phase 1</span><span>Market API with SerpApi pipeline (current)</span></div>
+<div class="card-row"><span class="card-row"><span class="card-label">Phase 2</span><span>Agent routing SDK — drop-in for any agent framework</span></div>
+<div class="card-row"><span class="card-label">Phase 3</span><span>Cost optimization API — automatic model selection</span></div>
+<div class="card-row"><span class="card-label">Phase 4</span><span>Budget enforcement — hard limits per agent</span></div>
+<div class="card-row"><span class="card-label">Phase 5</span><span>Promotion alerts — real-time discount detection</span></div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">x402 payments</div>
+<div class="explain">
+<div class="explain-label">the agent economy</div>
+As agents make billions of API calls daily, <b>x402 (HTTP 402 + crypto)</b> enables machine-to-machine payments. LiveLLM provides the economic layer: agents know what things cost before they spend. This is the infrastructure for the agent economy.
+</div>
+</div>
+</div>
+
 <div class="footer">
-<span>LiveLLM v1.0.0 — data via SerpApi · pipeline verified</span>
-<span><a href="https://github.com/prx0r/livellm">github</a></span>
+<span>LiveLLM v1.0.0</span>
+<span><a href="https://github.com/prx0r/livellm">github</a> | <a href="https://serpapi.com">SerpApi</a></span>
 </div>
 
 <script>
-var MARKET = [{"model": "Claude Haiku 3.5", "provider": "Anthropic", "input": 0.8, "output": 4, "cached": 0.08}, {"model": "Claude Sonnet 4", "provider": "Anthropic", "input": 3, "output": 15, "cached": 0.3}, {"model": "V3", "provider": "DeepSeek", "input": 0.14, "output": 0.28, "cached": 0.014}, {"model": "Gemini 2.5 Flash", "provider": "Google", "input": 0.3, "output": 2.5, "cached": 0.03}, {"model": "Gemini 2.5 Pro", "provider": "Google", "input": 1.25, "output": 10, "cached": 0.315}, {"model": "gpt-oss-120b", "provider": "Groq", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-oss-20b", "provider": "Groq", "input": 0.075, "output": 0.3, "cached": 0.037}, {"model": "Mistral Large 3", "provider": "Mistral", "input": 0.5, "output": 1.5, "cached": 0.15}, {"model": "Mistral Small 4", "provider": "Mistral", "input": 0.15, "output": 0.6, "cached": 0.045}, {"model": "GPT-4o", "provider": "OpenAI", "input": 2.5, "output": 10, "cached": 1.25}, {"model": "GPT-4o mini", "provider": "OpenAI", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-4.1-nano", "provider": "OpenAI", "input": 0.1, "output": 0.4, "cached": 0.025}];
-var AGENT = {workload:{uncached:1000,cached:55000,output:200,requests:240},stale:{model:'GPT-4o',input:2.5,output:10,cached:1.25,provider:'OpenAI'}};
+var MARKET=[{"model": "Claude Haiku 3.5", "provider": "Anthropic", "input": 0.8, "output": 4, "cached": 0.08}, {"model": "Claude Sonnet 4", "provider": "Anthropic", "input": 3, "output": 15, "cached": 0.3}, {"model": "V3", "provider": "DeepSeek", "input": 0.14, "output": 0.28, "cached": 0.014}, {"model": "Gemini 2.5 Flash", "provider": "Google", "input": 0.3, "output": 2.5, "cached": 0.03}, {"model": "Gemini 2.5 Pro", "provider": "Google", "input": 1.25, "output": 10, "cached": 0.315}, {"model": "gpt-oss-120b", "provider": "Groq", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-oss-20b", "provider": "Groq", "input": 0.075, "output": 0.3, "cached": 0.037}, {"model": "Mistral Large 3", "provider": "Mistral", "input": 0.5, "output": 1.5, "cached": 0.15}, {"model": "Mistral Small 4", "provider": "Mistral", "input": 0.15, "output": 0.6, "cached": 0.045}, {"model": "GPT-4o", "provider": "OpenAI", "input": 2.5, "output": 10, "cached": 1.25}, {"model": "GPT-4o mini", "provider": "OpenAI", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-4.1-nano", "provider": "OpenAI", "input": 0.1, "output": 0.4, "cached": 0.025}];
+var AGENTS=[
+  {name:'Coding Agent',icon:' ',desc:'240 code reviews/day | 55K cached tokens | $50/mo budget',w:{uncached:1000,cached:55000,output:200,requests:240},stale:{model:'GPT-4o',input:2.5,output:10,cached:1.25,provider:'OpenAI'}},
+  {name:'Research Agent',icon:' ',desc:'500 research summaries/day | Frontier quality | Minimize cost',w:{uncached:5000,cached:0,output:1000,requests:500},stale:{model:'Claude Sonnet 4',input:3,output:15,cached:0,provider:'Anthropic'}},
+  {name:'Batch Classifier',icon:' ',desc:'500 classifications/day | Near-zero budget | Short inputs',w:{uncached:200,cached:0,output:50,requests:500},stale:{model:'GPT-4o mini',input:0.15,output:0.6,cached:0,provider:'OpenAI'}},
+  {name:'Support Agent',icon:' ',desc:'1000 chat responses/day | Fast replies | $30/mo budget',w:{uncached:500,cached:2000,output:300,requests:1000},stale:{model:'Claude Haiku 3.5',input:0.8,output:4,cached:0.08,provider:'Anthropic'}}
+];
+var selectedAgent=0;
+function selectAgent(i){selectedAgent=i;document.querySelectorAll('.agent-opt').forEach(function(e,j){e.classList.toggle('selected',j===i)});document.getElementById('agent-desc').textContent=AGENTS[i].desc;}
 function calcCost(w,p){return((w.uncached*p.input/1e6)+(w.cached*(p.cached||0)/1e6)+(w.output*p.output/1e6))*w.requests*30;}
-function addLog(s,m,c){var e=document.getElementById(s+'-log');var t=new Date().toISOString().slice(11,19);e.innerHTML+='<div class="log-line"><span class="log-ts">['+t+']</span> <span class="log-'+(c||'sys')+'">'+m+'</span></div>';e.scrollTop=e.scrollHeight;}
-function delay(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function log(s,m,c){var e=document.getElementById(s+'-log');if(!e)return;var t=new Date().toISOString().slice(11,19);e.innerHTML+='<div class="log-line"><span class="log-ts">['+t+']</span> <span class="log-'+(c||'sys')+'">'+m+'</span></div>';e.scrollTop=e.scrollHeight;}
+function delay(ms){return new Promise(function(r){setTimeout(r,ms)});}
+
 async function runDemo(){
-  var w=AGENT.workload,st=AGENT.stale;
-  addLog('left','Agent starting...','sys');await delay(200);
-  addLog('left','Task: '+w.requests+' code reviews/day','sys');
-  addLog('left','Workload: '+w.uncached+' unc + '+w.cached+' cached + '+w.output+' out/req','sys');
+  var a=AGENTS[selectedAgent],w=a.w,st=a.stale;
+  document.getElementById('go-btn').disabled=true;
+  document.getElementById('split-area').style.display='grid';
+  document.getElementById('left-log').innerHTML='';
+  document.getElementById('right-log').innerHTML='';
+  document.getElementById('left-result').style.display='none';
+  document.getElementById('right-result').style.display='none';
+
+  // LEFT
+  log('left',a.name+' starting...','sys');await delay(200);
+  log('left','Workload: '+w.uncached+' unc + '+w.cached+' cached + '+w.output+' out × '+w.requests+'/day','sys');
   await delay(300);
-  addLog('left','Checking model prices...','sys');await delay(300);
-  addLog('left','No live pricing available','err');
-  addLog('left','Using last known: '+st.model+' ('+st.provider+')','warn');
+  log('left','Checking prices...','sys');await delay(300);
+  log('left','No live data available','err');
+  log('left','Using: '+st.model+' ('+st.provider+')','warn');
   await delay(200);
-  addLog('left','Input: $'+st.input+'/M | Output: $'+st.output+'/M | Cached: $'+st.cached+'/M','sys');
+  log('left','$'+st.input+'/M in, $'+st.output+'/M out, $'+st.cached+'/M cached','sys');
   var sc=calcCost(w,st);await delay(300);
-  addLog('left','Monthly: $'+sc.toFixed(2),'err');
-  addLog('left','Route: '+st.provider+':'+st.model,'model');
-  addLog('left','Decision based on stale training data','err');
+  log('left','Monthly: $'+sc.toFixed(2),'err');
+  log('left','Route: '+st.provider+':'+st.model,'model');
   document.getElementById('left-result').style.display='block';
   document.getElementById('left-cost').textContent='$'+sc.toFixed(2)+'/mo';
   document.getElementById('left-route').textContent=st.provider+':'+st.model+' — no verification';
 
-  await delay(600);
-  addLog('right','Agent starting...','sys');await delay(200);
-  addLog('right','Task: '+w.requests+' code reviews/day','sys');
-  addLog('right','Workload: '+w.uncached+' unc + '+w.cached+' cached + '+w.output+' out/req','sys');
+  // RIGHT
+  await delay(500);
+  log('right',a.name+' starting...','sys');await delay(200);
+  log('right','Workload: '+w.uncached+' unc + '+w.cached+' cached + '+w.output+' out × '+w.requests+'/day','sys');
   await delay(300);
-  addLog('right','Querying LiveLLM: GET /v1/market','api');await delay(400);
-  addLog('right','Pipeline: SerpApi → extraction → validation → fact ledger','ok');
-  await delay(300);
-  addLog('right','Received '+MARKET.length+' verified models','ok');
+
+  // Live SerpApi call
+  log('right','GET /api/market...','api');
+  var t0=performance.now();
+  var r=await fetch('/api/market');
+  var d=await r.json();
+  var ms=Math.round(performance.now()-t0);
+  var models=d.models||[];
+  log('right',''+ms+'ms → '+models.length+' models (SerpApi: '+(d.serpapi?d.serpapi.id.slice(0,12)+'...':'cached')+')','ok');
+
+  // Account info
+  var r2=await fetch('/api/account');
+  var acct=await r2.json();
+  if(acct.plan_name){log('right','Account: '+acct.plan_name+' | '+acct.this_month_usage+'/'+acct.searches_per_month+' used','ok');log('right','x402: $0.01/search','ok');}
+
   await delay(200);
+  log('right','Evaluating '+models.length+' routes...','sys');
   var best=null,bc=Infinity;
-  addLog('right','Evaluating '+MARKET.length+' routes...','sys');
-  for(var i=0;i<MARKET.length;i++){var m=MARKET[i];var r=m.routes[0];var c=calcCost(w,{input:r.input,output:r.output,cached:r.cached||0});addLog('right','  '+r.provider+':'+m.model+' → $'+c.toFixed(2)+'/mo','sys');if(c<bc){bc=c;best=m;}await delay(60);}
+  for(var i=0;i<models.length;i++){var m=models[i],r2=m.routes[0];var c=calcCost(w,{input:r2.input,output:r2.output,cached:r2.cached||0});if(c<bc){bc=c;best=m;}log('right','  '+r2.provider+':'+m.model+' $'+c.toFixed(2)+'/mo','sys');await delay(50);}
+
   await delay(200);
   var br=best.routes[0];
-  addLog('right','Selected: '+br.provider+':'+best.model,'ok');
-  addLog('right','Input: $'+br.input+'/M | Output: $'+br.output+'/M | Cached: $'+(br.cached||0)+'/M','ok');
+  log('right','Selected: '+br.provider+':'+best.model,'ok');
   var lc=calcCost(w,{input:br.input,output:br.output,cached:br.cached||0});
-  var sv=sc-lc;await delay(300);
-  addLog('right','Monthly: $'+lc.toFixed(2),'ok');
-  addLog('right','Savings: $'+sv.toFixed(2)+'/month','ok');
-  addLog('right','Data source: SerpApi → pipeline → fact ledger','ok');
+  var sv=sc-lc;
+  log('right','$'+br.input+'/M in, $'+br.output+'/M out','ok');
+  log('right','Monthly: $'+lc.toFixed(2)+' (saves $'+sv.toFixed(2)+')','ok');
+
   document.getElementById('right-result').style.display='block';
   document.getElementById('right-cost').textContent='$'+lc.toFixed(2)+'/mo';
   document.getElementById('right-route').textContent=br.provider+':'+best.model+' — SerpApi verified';
+  document.getElementById('go-btn').disabled=false;
 }
-runDemo();
+
+function showTab(i){document.querySelectorAll('.tab').forEach(function(t,j){t.classList.toggle('active',j===i)});document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('active',j===i)});}
 </script>
 </body>
 </html>
