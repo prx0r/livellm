@@ -310,7 +310,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
   <div class="done-box">
     <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Evidence Trail</div>
     <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">Provenance for this run</div>
-    <div id="evidence-body">Click "Run Demo" first.</div>
+    <div id="evidence-body" style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap">Run the demo to see evidence.</div>
   </div>
 </div>
 
@@ -391,6 +391,8 @@ async function runStory(){
             logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok"><strong>'+evt.verdict_title+'</strong></span>\n';
             logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok">'+evt.verdict_detail+'</span>\n';
             logEl.scrollTop=logEl.scrollHeight;
+            // Populate evidence tab
+            document.getElementById('evidence-body').innerHTML='search_id: '+evt.search_id+'\ncontent_hash: sha256:'+evt.content_hash.slice(0,32)+'...\nstale_route: '+evt.stale_route+'\nstale_cost: '+evt.stale_cost+'\nlive_route: '+evt.live_route+'\nlive_cost: '+evt.live_cost+'\nmath.zai_monthly: $'+evt.math.zai.monthly.toFixed(2)+'\nmath.mimo_effective: $'+evt.math.mimo.effective.toFixed(2)+'\nmath.glm_effective: $'+evt.math.glm.effective.toFixed(2);
           }else if(evt.type==='error'){
             logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="err">ERROR: '+evt.message+'</span>\n';
           }
@@ -407,16 +409,56 @@ async function runAgents(){
   var btn=document.getElementById('agents-btn');
   btn.disabled=true;btn.textContent='Running...';
   var area=document.getElementById('agents-area');
-  area.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#64748b;padding:2rem">Running both agents with stale and live data...</div>';
+  area.innerHTML='<div class="log-area" id="agents-log" style="max-height:200px;margin-bottom:1rem"></div><div id="agents-results"></div>';
+  var logEl=document.getElementById('agents-log');
   try{
     var r=await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'}});
-    var d=await r.json();
-    var html='';
-    for(var id in d.stale){
-      var s=d.stale[id], l=d.live[id];
-      html+='<div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
-      html+='<div class="done-box" style="border-color:#f87171">';
-      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600">'+s.icon+' '+s.name+' — Stale</div>';
+    var reader=r.body.getReader();
+    var dec=new TextDecoder();
+    var buf='';
+    while(true){
+      var chunk=await reader.read();
+      if(chunk.done)break;
+      buf+=dec.decode(chunk.value,{stream:true});
+      var lines=buf.split('\n');
+      buf=lines.pop();
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i].trim();
+        if(!line||line.charAt(0)===':')continue;
+        if(line.indexOf('data: ')!==0)continue;
+        try{
+          var evt=JSON.parse(line.slice(6));
+          if(evt.type==='log'){
+            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(evt.cls||'info')+'">'+evt.msg+'</span>\n';
+            logEl.scrollTop=logEl.scrollHeight;
+          }else if(evt.type==='done'){
+            // Render results
+            var resEl=document.getElementById('agents-results');
+            var html='';
+            for(var id in evt.stale){
+              var s=evt.stale[id], l=evt.live[id];
+              html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
+              html+='<div class="done-box" style="border-color:#f87171">';
+              html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600">'+s.icon+' '+s.name+' — Stale</div>';
+              html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(s.decision)+'</div>';
+              html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+s.latencyMs+'ms | '+s.model+'</div>';
+              html+='</div>';
+              html+='<div class="done-box" style="border-color:#059669">';
+              html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600">'+l.icon+' '+l.name+' — Live</div>';
+              html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(l.decision)+'</div>';
+              html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+l.latencyMs+'ms | '+l.model+'</div>';
+              html+='</div></div>';
+            }
+            resEl.innerHTML=html;
+          }
+        }catch(e){}
+      }
+    }
+  }catch(e){
+    logEl.innerHTML+='<span class="err">Error: '+e.message+'</span>\n';
+  }
+  btn.disabled=false;btn.textContent='Run Agent Comparison';
+}
       html+='<div style="font-size:.65rem;color:#64748b;margin:.4rem 0">'+s.workload+'</div>';
       html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(s.decision)+'</div>';
       html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+s.latencyMs+'ms | '+s.model+'</div>';
@@ -899,37 +941,58 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
     }
 
     if (url.pathname === "/api/agents" && request.method === "POST") {
-      // Build live market data from our verified models
-      let liveMarket = "## Live Market Data (from LiveLLM — verified, content-addressed)\n";
-      liveMarket += "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free |\n";
-      liveMarket += "|----------|-------|----------|-----------|--------|---------|------|\n";
-      for (const m of MODELS) {
-        const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
-        liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " |\n";
-      }
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          function send(obj) { controller.enqueue(encoder.encode("data: " + JSON.stringify(obj) + "\n\n")); }
+          function log(cls, msg) { send({ type: "log", cls, msg }); }
+          function sep() { send({ type: "log", cls: "dim", msg: "────────────────────────────────────────" }); }
 
-      const results = {};
-      for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
-        const prompt = agentPrompt(persona.persona, STALE_MARKET);
-        const llmResult = await callLLM(env.OPENCODE_API_KEY, prompt);
-        let decision;
-        try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
-        results[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
-      }
+          try {
+            log("info", "<strong>Running 3 agents — stale vs live data</strong>");
+            sep();
 
-      // Now run with live data
-      const liveResults = {};
-      for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
-        const prompt = agentPrompt(persona.persona, liveMarket);
-        const llmResult = await callLLM(env.OPENCODE_API_KEY, prompt);
-        let decision;
-        try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
-        liveResults[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
-      }
+            let liveMarket = "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free |\n";
+            liveMarket += "|----------|-------|----------|-----------|--------|---------|------|\n";
+            for (const m of MODELS) {
+              const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
+              liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " |\n";
+            }
 
-      return new Response(JSON.stringify({ stale: results, live: liveResults, live_market: liveMarket }), {
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+            const results = {};
+            for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
+              log("info", "<strong>" + persona.icon + " " + persona.name + " — stale</strong>");
+              log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+              const llmResult = await callLLM(env.OPENCODE_API_KEY, agentPrompt(persona.persona, STALE_MARKET));
+              log("res", "200 OK (" + llmResult.latencyMs + "ms)");
+              let decision;
+              try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
+              results[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
+              log("ok", "decided: " + JSON.stringify(decision).slice(0, 120));
+            }
+
+            sep();
+            const liveResults = {};
+            for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
+              log("info", "<strong>" + persona.icon + " " + persona.name + " — live</strong>");
+              log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+              const llmResult = await callLLM(env.OPENCODE_API_KEY, agentPrompt(persona.persona, liveMarket));
+              log("res", "200 OK (" + llmResult.latencyMs + "ms)");
+              let decision;
+              try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
+              liveResults[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
+              log("ok", "decided: " + JSON.stringify(decision).slice(0, 120));
+            }
+
+            sep();
+            send({ type: "done", stale: results, live: liveResults });
+          } catch (e) {
+            send({ type: "error", message: e.message });
+          }
+          controller.close();
+        }
       });
+      return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive", "Access-Control-Allow-Origin": "*" } });
     }
 
     return new Response("not found", { status: 404 });
