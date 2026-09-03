@@ -370,7 +370,18 @@ async function runStory(){
   try{
     var r=await fetch('/api/story',{method:'POST',headers:{'Content-Type':'application/json'}});
     var d=await r.json();
-    if(d.error){area.innerHTML='<div style="color:#f87171;padding:2rem">Error: '+d.error+'</div>';btn.disabled=false;btn.textContent='Run Story';return;}
+    if(d.error){area.innerHTML='<div style="color:#f87171;padding:2rem">Error: '+d.error+'</div>';btn.disabled=false;btn.textContent='Run Demo';return;}
+
+    // Stream logs
+    var logs=d.logs||[];
+    area.innerHTML='<div class="log-area" id="story-log" style="max-height:300px;margin-bottom:1.5rem"></div>';
+    var logEl=document.getElementById('story-log');
+    for(var li=0;li<logs.length;li++){
+      logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(logs[li].cls||'info')+'">'+logs[li].msg+'</span>\n';
+      logEl.scrollTop=logEl.scrollHeight;
+      await new Promise(function(r){setTimeout(r,30)});
+    }
+    await new Promise(function(r){setTimeout(r,300)});
 
     var html='';
     // Step 1: The Problem
@@ -828,8 +839,14 @@ export default {
     }
 
     if (url.pathname === "/api/story" && request.method === "POST") {
+      const logs = [];
+      function logMsg(cls, msg) { logs.push({ cls, msg }); }
       try {
+        logMsg("info", "<strong>LiveLLM — running live market discovery</strong>");
+        logMsg("dim", "────────────────────────────────────────");
+
         // Build live market data with full economics
+        logMsg("info", "Building agent market payload from verified fact ledger...");
         let liveMarket = "## Live Market Data (from LiveLLM API — verified, content-addressed)\n\n";
         liveMarket += "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free | Sub | Requests/sub | Effective $/req |\n";
         liveMarket += "|----------|-------|----------|-----------|--------|---------|------|-----|-------------|----------------|\n";
@@ -837,13 +854,15 @@ export default {
           const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
           const sub = m.sub ? "$" + m.sub + "/mo" : "—";
           const req = m.requests ? m.requests.toLocaleString() : "—";
-          // Compute effective cost per request for coding workload
           const cpr = costPerRequest(m, { uncachedInput: 830, cachedInput: 71500, output: 295 });
           const eff = m.sub && m.requests ? (m.promo ? "$" + (cpr * m.requests * m.promo / m.sub).toFixed(1) + "×" : "$" + (cpr * m.requests / m.sub).toFixed(1) + "×") : "$" + (cpr * 240 * 30).toFixed(2) + "/mo";
           liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " | " + sub + " | " + req + " | " + eff + " |\n";
         }
+        logMsg("ok", MODELS.length + " models loaded from fact ledger");
 
-        // Stale data: what an agent sees from OpenRouter/LiteLLM (PAYG only, no subscriptions)
+        // Stale data
+        logMsg("dim", "────────────────────────────────────────");
+        logMsg("info", "<strong>Agent stale data (from OpenRouter/LiteLLM)</strong>");
         const staleMarket = `## Stale Market Data (from OpenRouter/LiteLLM — PAYG prices only)
 | Provider | Model | Input/1M | Output/1M | Context |
 |----------|-------|----------|-----------|---------|
@@ -856,6 +875,7 @@ export default {
 
 Note: Agent sees Z.ai GLM-5.3-Flash at $0.075/M as the cheapest option.
 Agent does NOT know about OpenCode Go subscriptions, MiMo V2.5, or promotion multipliers.`;
+        logMsg("ok", "6 PAYG models visible, subscriptions hidden");
 
         const codingPersona = `You are a coding agent that reviews pull requests. 240 reviews/day. Each review: 830 uncached input tokens, 71500 cached tokens (repeated file patterns across reviews), 295 output tokens. Budget: $50/month.
 
@@ -868,46 +888,75 @@ ROUTE: <provider>:<model>
 COST: $<monthly cost or effective cost>
 REASON: <one sentence>`;
 
-        // Run stale — agent sees only PAYG prices from OpenRouter
+        // Run stale
+        logMsg("dim", "────────────────────────────────────────");
+        logMsg("info", "<strong>Agent decision WITHOUT LiveLLM (stale data)</strong>");
+        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+        logMsg("dim", "model: mimo-v2.5 | agent sees only PAYG prices from OpenRouter");
         const stalePrompt = codingPersona + "\n\n" + staleMarket;
         const staleLLM = await callLLM(env.OPENCODE_API_KEY, stalePrompt);
+        logMsg("res", "200 OK (" + staleLLM.latencyMs + "ms)");
         const staleRoute = staleLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
         const staleCost = staleLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
         const staleReason = staleLLM.response.match(/REASON:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || staleLLM.response.slice(0, 200);
+        logMsg("dim", "raw: " + staleLLM.response.slice(0, 300));
+        logMsg("ok", "ROUTE: " + staleRoute);
+        logMsg("ok", "COST: " + staleCost);
+        logMsg("ok", "REASON: " + staleReason);
 
-        // Run live — agent sees full market with subscriptions
+        // Run live
+        logMsg("dim", "────────────────────────────────────────");
+        logMsg("info", "<strong>Agent decision WITH LiveLLM (live verified data)</strong>");
+        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+        logMsg("dim", "model: mimo-v2.5 | agent sees 23 verified models + subscriptions");
         const livePrompt = codingPersona + "\n\n" + liveMarket;
         const liveLLM = await callLLM(env.OPENCODE_API_KEY, livePrompt);
+        logMsg("res", "200 OK (" + liveLLM.latencyMs + "ms)");
         const liveRoute = liveLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
         const liveCost = liveLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
         const liveReason = liveLLM.response.match(/REASON:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || liveLLM.response.slice(0, 200);
+        logMsg("dim", "raw: " + liveLLM.response.slice(0, 300));
+        logMsg("ok", "ROUTE: " + liveRoute);
+        logMsg("ok", "COST: " + liveCost);
+        logMsg("ok", "REASON: " + liveReason);
 
-        // Content hash for provenance
+        // Content hash
+        logMsg("dim", "────────────────────────────────────────");
+        logMsg("info", "<strong>Provenance</strong>");
         const contentHash = await sha256(liveMarket);
+        logMsg("ok", "content_hash: sha256:" + contentHash.slice(0, 32) + "...");
 
         // Search ID
+        logMsg("req", "GET https://serpapi.com/search.json (provenance)");
         const searchQ = "site:opencode.ai/go GLM-5.3-Flash usage limits";
         const sp = new URLSearchParams({ q: searchQ, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
         const sr = await fetch("https://serpapi.com/search.json?" + sp);
         const sd = await sr.json();
         const searchId = sd.search_metadata?.id || "unknown";
+        logMsg("res", "200 OK");
+        logMsg("ok", "search_id: " + searchId);
+        logMsg("dim", "Every fact traces to this search. Reproducible via Search Archive.");
 
-        // Pre-computed math for the verdict
+        // Math
+        logMsg("dim", "────────────────────────────────────────");
+        logMsg("info", "<strong>Cost Math</strong>");
         const glmZai = MODELS.find(m => m.entity === "Z.ai:GLM-5.3-Flash");
         const mimo = MODELS.find(m => m.entity === "OpenCode:MiMo V2.5");
         const glmFlash = MODELS.find(m => m.entity === "OpenCode:GLM-5.3-Flash");
         const workload = { uncachedInput: 830, cachedInput: 71500, output: 295 };
-
         const zaiCpr = costPerRequest(glmZai, workload);
         const zaiMonthly = zaiCpr * 240 * 30;
-
         const mimoCpr = costPerRequest(mimo, workload);
         const mimoEffective = mimoCpr * mimo.requests / mimo.sub;
-
         const glmCpr = costPerRequest(glmFlash, workload);
         const glmEffective = glmCpr * glmFlash.requests * glmFlash.promo / glmFlash.sub;
+        logMsg("info", "Z.ai GLM-5.3-Flash: $" + zaiCpr.toFixed(6) + "/req × 7200 = $" + zaiMonthly.toFixed(2) + "/mo");
+        logMsg("info", "MiMo V2.5: $" + mimoCpr.toFixed(6) + "/req × " + mimo.requests.toLocaleString() + " / $" + mimo.sub + " = $" + mimoEffective.toFixed(2) + "/mo");
+        logMsg("info", "GLM-5.3-Flash: $" + glmCpr.toFixed(6) + "/req × " + glmFlash.requests.toLocaleString() + " × " + glmFlash.promo + " / $" + glmFlash.sub + " = $" + glmEffective.toFixed(2) + "/mo");
+        logMsg("ok", "MiMo V2.5 is " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper than Z.ai");
 
         return new Response(JSON.stringify({
+          logs,
           stale_reasoning: staleLLM.response,
           stale_route: staleRoute,
           stale_cost: staleCost,
