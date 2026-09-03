@@ -382,7 +382,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
     <div class="done-box">
       <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Agent Payload</div>
       <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">What the agent actually receives</div>
-      <div style="font-size:.72rem;color:#64748b;margin-bottom:.75rem">26 models × 46 fields — compact markdown, ~2K tokens. Ingested via system prompt, RAG, or MCP tool output.</div>
+      <div style="font-size:.72rem;color:#64748b;margin-bottom:.75rem">Live SerpApi search.md output + enriched fact ledger. Compact markdown for agent ingestion via system prompt, RAG, or MCP tool output.</div>
       <button class="btn btn-g" id="gen-payload-btn" onclick="generatePayload()" style="margin-bottom:1rem">Generate Payload</button>
       <div id="payload-body" class="payload-box" style="display:none"></div>
     </div>
@@ -548,14 +548,19 @@ async function generatePayload(){
     pl('res','200 OK ('+ms+'ms)');
     pl('ok','SerpApi search: '+d.search_id);
     pl('ok','Content hash: sha256:'+d.content_hash.slice(0,32)+'...');
-    pl('ok','Models in payload: '+d.model_count);
-    pl('ok','Token budget: ~'+d.token_estimate+' tokens');
-    pl('info','Format: compact markdown (50%+ savings vs JSON)');
+    pl('ok','Models: '+d.model_count+' | Tokens: ~'+d.token_estimate);
+    pl('info','SerpApi search.md: output=md (LLM-optimized markdown format)');
     pl('dim','────────────────────────────────────────');
-    pl('info','<strong>Payload Content</strong>');
-    var md=d.markdown||'';var chars=md.split('');var i=0;
-    function streamNext(){if(i>=chars.length){btn.disabled=false;btn.textContent='Generate Payload';pl('ok','Done.');return;}body.textContent+=chars.slice(i,i+12).join('');i+=12;body.scrollTop=body.scrollHeight;setTimeout(streamNext,8);}
-    streamNext();
+    pl('info','<strong>SerpApi Raw Output (search.md)</strong>');
+    var serpChars=(d.serpapi_markdown||'').split('');var si=0;
+    function streamSerp(){if(si>=serpChars.length){
+      pl('dim','────────────────────────────────────────');
+      pl('info','<strong>Enriched Agent Payload (fact ledger + economics)</strong>');
+      var eChars=(d.enriched_markdown||'').split('');var ei=0;
+      function streamEnriched(){if(ei>=eChars.length){btn.disabled=false;btn.textContent='Generate Payload';pl('ok','Done.');return;}body.textContent+=eChars.slice(ei,ei+12).join('');ei+=12;body.scrollTop=body.scrollHeight;setTimeout(streamEnriched,8);}
+      streamEnriched();return;}
+    body.textContent+=serpChars.slice(si,si+12).join('');si+=12;body.scrollTop=body.scrollHeight;setTimeout(streamSerp,8);}
+    streamSerp();
   }catch(e){pl('err','Error: '+e.message);btn.disabled=false;btn.textContent='Generate Payload';}
 }
 
@@ -583,37 +588,40 @@ export default {
           fetch("https://serpapi.com/search.md?" + mdParams)
         ]);
         const jsonData = await jsonRes.json();
-        const md = await mdRes.text();
-        const contentHash = await sha256(md);
+        const serpApiMd = await mdRes.text();
+        const contentHash = await sha256(serpApiMd);
 
-        // Build full agent payload with all 26 models
-        let payload = "# LLM Market Data\nUpdated: " + new Date().toISOString() + "\n\n";
-        payload += "## Models\n| Provider | Model | Input/1M | Output/1M | Cached | Context | MaxOut | Free | Mod |\n";
-        payload += "|----------|-------|----------|-----------|--------|---------|--------|------|-----|\n";
+        // Build enriched agent payload with economics
+        let enriched = "# Agent Market Payload (enriched from LiveLLM fact ledger)\n";
+        enriched += "Generated: " + new Date().toISOString() + "\n";
+        enriched += "Source: SerpApi search.md → verified fact ledger → economics engine\n\n";
+        enriched += "## Models\n| Provider | Model | Input/1M | Output/1M | Cached | Context | MaxOut | Free | Mod |\n";
+        enriched += "|----------|-------|----------|-----------|--------|---------|--------|------|-----|\n";
         for (const m of MODELS) {
           const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
-          payload += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + (m.maxOutput/1000) + "K | " + free + " | " + m.modalities + " |\n";
+          enriched += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + (m.maxOutput/1000) + "K | " + free + " | " + m.modalities + " |\n";
         }
-        payload += "\n## Economics\n| Provider | Model | $/req | Monthly | Sub | Multiple | Requests |\n";
-        payload += "|----------|-------|-------|---------|-----|----------|----------|\n";
+        enriched += "\n## Economics (cost-per-request for coding workload)\n";
+        enriched += "Formula: (input×830 + cached×71500 + output×295) / 1,000,000\n\n";
+        enriched += "| Provider | Model | $/req | Monthly | Sub | Multiple | Requests |\n";
+        enriched += "|----------|-------|-------|---------|-----|----------|----------|\n";
         for (const m of MODELS) {
           if (!m.sub) continue;
           const cprVal = costPerRequest(m, { uncachedInput: 830, cachedInput: 71500, output: 295 });
           const eff = m.promo ? m.requests * m.promo : m.requests;
           const sim = cprVal * eff;
           const mult = (sim / m.sub).toFixed(1);
-          payload += "| " + m.provider + " | " + m.name + " | $" + cprVal.toFixed(6) + " | $" + sim.toFixed(2) + " | $" + m.sub + "/mo | " + mult + "× | " + eff.toLocaleString() + " |\n";
+          enriched += "| " + m.provider + " | " + m.name + " | $" + cprVal.toFixed(6) + " | $" + sim.toFixed(2) + " | $" + m.sub + "/mo | " + mult + "× | " + eff.toLocaleString() + " |\n";
         }
-        payload += "\n---\n_" + MODELS.length + " models | " + MODELS.filter(m=>m.sub).length + " with subscription economics | verified from official pricing pages | content-addressed provenance_";
-
-        const modelCount = MODELS.length;
+        enriched += "\n---\n_" + MODELS.length + " models | " + MODELS.filter(m=>m.sub).length + " with subscription economics | verified from official pricing pages | content-addressed provenance_";
 
         return new Response(JSON.stringify({
-          markdown: payload,
+          serpapi_markdown: serpApiMd,
+          enriched_markdown: enriched,
           search_id: jsonData.search_metadata?.id || "unknown",
           content_hash: contentHash,
-          model_count: modelCount,
-          token_estimate: Math.round(payload.length / 4),
+          model_count: MODELS.length,
+          token_estimate: Math.round(enriched.length / 4),
           results_count: jsonData.organic_results?.length || 0,
         }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
       } catch (e) {

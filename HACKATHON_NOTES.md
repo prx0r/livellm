@@ -16,11 +16,13 @@
 
 ## The Thesis (0:20 — 0:35)
 
-> "LiveLLM fixes this. SerpApi discovers changing prices in real time — not from training data, not from cached tables, from the live web. We verify against official sources. The agent gets a compact, provenance-backed payload.
+> "LiveLLM fixes this. We use SerpApi's Google Light engine to discover changing prices in real time — not from training data, not from cached tables, from the live web. SerpApi gives us a search ID for every discovery. We follow the result to the provider's official pricing page, extract structured facts with AI, validate them deterministically, and serve the result through an API and MCP interface.
+>
+> The key insight: SerpApi's `output=md` format gives us a compact, LLM-optimized markdown payload. 50%+ token savings vs JSON. Agents ingest this directly — no parsing, no transformation. Just verified market state.
 >
 > Same agent, same workload — different decision."
 
-**Show:** The 5-step pipeline on the landing page. SerpApi → Official Source → AI Extraction → Validation → Fact Ledger.
+**Show:** The 5-step pipeline on the landing page. Emphasize Step 1 (SerpApi Discovery) and Step 5 (Fact Ledger).
 
 ---
 
@@ -32,13 +34,16 @@ Click **Try the Live Demo** → lands on `/demo` → click **Run Demo**.
 
 Logs stream live:
 - "23 models loaded from fact ledger"
-- Agent receives stale price list: Z.ai $0.075/M, DeepSeek $0.14/M
+- "POST opencode.ai/zen/go/v1/chat/completions — agent receives stale price list"
 - Agent picks Z.ai at $39/mo
-- Agent receives LiveLLM payload: MiMo $0.14/M + $10 sub
+- "POST opencode.ai/zen/go/v1/chat/completions — agent receives LiveLLM payload"
 - Agent picks MiMo at $6/mo
+- "GET serpapi.com/search.json — provenance"
 - search_id, content_hash, cost math streaming
 
-> "The agent picked Z.ai from stale data. With LiveLLM, it discovers MiMo via subscription — 85% cheaper. Same model, same workload."
+> "The agent picked Z.ai from stale data. With LiveLLM, it discovers MiMo via subscription — 85% cheaper. Same model, same workload.
+>
+> Every fact traces to a SerpApi search ID. Content-addressed with SHA-256. Reproducible via Search Archive."
 
 ---
 
@@ -62,7 +67,13 @@ Click **Demo 2** tab → **Run Agent Comparison**.
 
 ---
 
-## The Moat (1:40 — 2:00)
+## The Payload (1:40 — 1:55)
+
+Click **Payload** tab → **Generate Payload**.
+
+> "This is what the agent actually receives. The first block is raw SerpApi markdown — the `output=md` format, optimized for LLM consumption. The second block is our enriched payload with economics — cost-per-request, subscription multiples, effective monthly cost.
+>
+> 23 models across 9 providers. Verified from official pricing pages. Content-addressed with SHA-256. ~2K tokens."
 
 > "The moat: verified economic intelligence compounds. Every search, every verification, every fact builds a dataset that gets more valuable over time.
 >
@@ -85,7 +96,15 @@ Click **Demo 2** tab → **Run Agent Comparison**.
 
 ---
 
-## Key Lines
+## The Moat (1:55 — 2:10)
+
+> "The moat: verified economic intelligence compounds. Every search, every verification, every fact builds a dataset that gets more valuable over time.
+>
+> We track 23 models across 9 providers. 368 active facts. Temporal supersession — old facts are never overwritten, they're superseded with timestamps.
+>
+> This dataset is sellable. Model routers, agent frameworks, inference gateways — they all need verified, current economics. LiveLLM is the source of truth.
+>
+> SerpApi discovers. We verify. Agents decide."
 
 - "The agent's math was correct. Its market state was wrong."
 - "Same model, same workload, same agent. Only the market data changed."
