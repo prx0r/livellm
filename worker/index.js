@@ -163,6 +163,33 @@ async function fetchSource(url) {
 }
 
 // ─── Prompts ─────────────────────────────────────────────────────
+const AGENT_PERSONAS = {
+  coding: {
+    name: "CodeReview Agent",
+    icon: " ",
+    workload: "240 code reviews/day | 830 uncached + 71.5K cached + 295 output tokens | $50/mo budget",
+    persona: `You are a coding agent that reviews pull requests. 240 reviews/day. Each review: 1000 uncached input, 55000 cached, 200 output tokens. Budget: $50/month. Use market data to compute cost_per_request: (input_per_1m * uncached + cached_per_1m * cached + output_per_1m * output) / 1,000,000. Multiply by 240 * 30. Pick ONE route. Return: ROUTE: <provider>:<model> | COST: $<monthly> | REASON: <one sentence>`,
+  },
+  research: {
+    name: "Research Agent",
+    icon: " ",
+    workload: "500 research summaries/day | 5K uncached + 0 cached + 1K output | frontier quality",
+    persona: `You are a research agent that summarizes papers. 500 summaries/day. Each: 5000 uncached input, 0 cached, 1000 output tokens. Need frontier quality. Use market data to compute cost_per_request. Pick ONE route. Return: ROUTE: <provider>:<model> | COST: $<monthly> | REASON: <one sentence>`,
+  },
+};
+
+function agentPrompt(persona, marketData) {
+  return persona + "\n\nMarket data:\n" + marketData;
+}
+
+const STALE_MARKET = `## Stale Market Data (from training knowledge)
+| Provider | Model | Input/1M | Output/1M |
+|----------|-------|----------|-----------|
+| OpenAI | GPT-4o | $2.5 | $10 |
+| Anthropic | Claude Sonnet 4 | $3 | $15 |
+| Anthropic | Claude Haiku 3.5 | $0.8 | $4 |
+| Google | Gemini 2.5 Flash | $0.30 | $2.50 |`;
+
 function extractionPrompt(sourceText) {
   return `You are extracting economic facts from an official provider page.
 
@@ -251,9 +278,10 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 
 <div class="tabs" id="tabs-bar" style="display:none">
   <button class="tab on" onclick="showTab(0,this)">Live Demo</button>
-  <button class="tab" onclick="showTab(1,this)">Evidence</button>
-  <button class="tab" onclick="showTab(2,this)">API</button>
-  <button class="tab" onclick="showTab(3,this)">Payload</button>
+  <button class="tab" onclick="showTab(1,this)">Agents</button>
+  <button class="tab" onclick="showTab(2,this)">Evidence</button>
+  <button class="tab" onclick="showTab(3,this)">API</button>
+  <button class="tab" onclick="showTab(4,this)">Payload</button>
 </div>
 
 <div class="panel on" id="p0">
@@ -263,6 +291,16 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="panel" id="p1">
+  <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center">
+    <button class="btn btn-g" id="agents-btn" onclick="runAgents()">Run Agent Comparison</button>
+    <span style="font-size:.72rem;color:#64748b">Two agents, same workload. Stale data vs LiveLLM verified data.</span>
+  </div>
+  <div id="agents-area" style="display:grid;gap:1rem">
+    <div style="text-align:center;color:#64748b;padding:2rem;font-size:.78rem">Click "Run Agent Comparison" to see side-by-side</div>
+  </div>
+</div>
+
+<div class="panel" id="p2">
   <div class="done-box">
     <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Evidence Trail</div>
     <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">Provenance for this run</div>
@@ -270,7 +308,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
   </div>
 </div>
 
-<div class="panel" id="p2">
+<div class="panel" id="p3">
   <div class="done-box">
     <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">API Reference</div>
     <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">The product underneath the demo</div>
@@ -288,7 +326,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
   </div>
 </div>
 
-<div class="panel" id="p3">
+<div class="panel" id="p4">
   <div style="display:flex;gap:1rem;flex-direction:column">
     <div class="done-box">
       <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Agent Payload</div>
@@ -314,6 +352,53 @@ function logSep(){log('dim','─────────────────
 
 function showTab(i,el){document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('on',j===i)});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});el.classList.add('on');}
 
+async function runAgents(){
+  var btn=document.getElementById('agents-btn');
+  btn.disabled=true;btn.textContent='Running...';
+  var area=document.getElementById('agents-area');
+  area.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#64748b;padding:2rem">Running both agents with stale and live data...</div>';
+  try{
+    var r=await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'}});
+    var d=await r.json();
+    var html='';
+    for(var id in d.stale){
+      var s=d.stale[id], l=d.live[id];
+      html+='<div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
+      html+='<div class="done-box" style="border-color:#f87171">';
+      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600">'+s.icon+' '+s.name+' — Stale</div>';
+      html+='<div style="font-size:.65rem;color:#64748b;margin:.4rem 0">'+s.workload+'</div>';
+      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(s.decision)+'</div>';
+      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+s.latencyMs+'ms | '+s.model+'</div>';
+      html+='</div>';
+      html+='<div class="done-box" style="border-color:#059669">';
+      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600">'+l.icon+' '+l.name+' — Live</div>';
+      html+='<div style="font-size:.65rem;color:#64748b;margin:.4rem 0">'+l.workload+'</div>';
+      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(l.decision)+'</div>';
+      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+l.latencyMs+'ms | '+l.model+'</div>';
+      html+='</div></div>';
+    }
+    area.innerHTML=html;
+  }catch(e){
+    area.innerHTML='<div style="grid-column:1/-1;color:#f87171">Error: '+e.message+'</div>';
+  }
+  btn.disabled=false;btn.textContent='Run Agent Comparison';
+}
+
+function formatAgentResponse(d){
+  if(!d)return '<span class="err">No response</span>';
+  if(d.raw)return d.raw.slice(0,500);
+  var lines=[];
+  if(d.ROUTE)lines.push('ROUTE: '+d.ROUTE);
+  if(d.COST)lines.push('COST: '+d.COST);
+  if(d.REASON)lines.push('REASON: '+d.REASON);
+  if(d.decision)lines.push('DECISION: '+d.decision);
+  if(d.reason)lines.push('REASON: '+d.reason);
+  if(d.route)lines.push('ROUTE: '+d.route);
+  if(d.cost)lines.push('COST: '+d.cost);
+  if(!lines.length)lines.push(JSON.stringify(d,null,2));
+  return lines.join('\n');
+}
+
 function renderStep(num,title,bodyHtml,done){
   return '<div class="step '+(done?'done':'active')+'"><div class="step-num">Step '+num+'</div><div class="step-title">'+title+'</div><div class="step-body">'+bodyHtml+'</div></div>';
 }
@@ -331,9 +416,9 @@ async function generatePayload(){
   pl('info','<strong>Generating live agent payload</strong>');
   pl('dim','────────────────────────────────────────');
   try{
-    pl('req','POST /api/demo/payload');
+    pl('req','POST /api/payload');
     var t0=performance.now();
-    var r=await fetch('/api/demo/payload');
+    var r=await fetch('/api/payload');
     var d=await r.json();
     var ms=Math.round(performance.now()-t0);
     if(d.error){pl('err','Error: '+d.error);btn.disabled=false;btn.textContent='Generate Payload';return;}
@@ -368,7 +453,7 @@ async function runDemo(){
   logSep();
 
   try{
-    var r=await fetch('/api/demo/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:'opencode-glm-capacity',required_requests:2500,window_hours:5})});
+    var r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:'opencode-glm-capacity',required_requests:2500,window_hours:5})});
     var run=await r.json();
     if(run.error){log('err','Pipeline error: '+run.error);document.getElementById('steps-area').innerHTML=renderStep(1,'Error','<span class="err">'+run.error+'</span>',false);btn.disabled=false;btn.textContent='Run Demo';return;}
 
@@ -402,7 +487,7 @@ export default {
 
     if (url.pathname === "/") return new Response(PAGE, { headers: { "Content-Type": "text/html;charset=utf-8" } });
 
-    if (url.pathname === "/api/demo/run" && request.method === "POST") {
+    if (url.pathname === "/api/run" && request.method === "POST") {
       const steps = [];
       const logs = [];
       let stepIdx = -1;
@@ -436,18 +521,24 @@ export default {
         logMsg(baselineValid ? "ok" : "err", "check: " + REQUIRED_REQUESTS + " <= " + BASELINE_CAPACITY + " = " + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + " → " + (baselineValid ? "CONFIRMED" : "REJECTED"));
         steps.push({ title: "Baseline Agent Decision", body: '<span class="sys">MiMo v2.5 (' + baselineLLM.latencyMs + 'ms):</span>\n<span class="' + (baselineDecision.decision === "BUY_FALLBACK" ? "err" : "ok") + '">Decision: ' + baselineDecision.decision + '</span>\nReason: ' + (baselineDecision.reason || "—") + '\n<span class="sys">Check: ' + REQUIRED_REQUESTS + ' <= ' + BASELINE_CAPACITY + ' = ' + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + ' → ' + (baselineValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
 
-        // ── Step 3: SerpApi ──
+        // ── Step 3: SerpApi + canonical request hash ──
         stepIdx = 2; sep();
-        logMsg("info", "<strong>STEP 3 — Live SerpApi Search</strong>");
+        logMsg("info", "<strong>STEP 3 — Live SerpApi Search + Canonical Hash</strong>");
         const searchQuery = "site:opencode.ai/go GLM-5.3-Flash usage limits";
         logMsg("req", "GET https://serpapi.com/search.json");
         logMsg("dim", "engine: google_light | no_cache: true");
         logMsg("dim", "q: " + searchQuery);
         const serpResult = await serpSearch(env.SERPAPI_API_KEY, searchQuery);
         if (!serpResult.searchId) { logMsg("err", "SerpApi failed: " + (serpResult.error || "no search ID")); throw new Error("SerpApi failed"); }
+        // Canonical request hash (deterministic, reproducible)
+        const canonicalObj = { engine: "google_light", q: searchQuery.trim().replace(/\s+/g, " "), params: { no_cache: "true" } };
+        const requestHashVal = await sha256(JSON.stringify(canonicalObj));
         logMsg("res", "200 OK (" + serpResult.latencyMs + "ms)");
         logMsg("ok", "search_id: " + serpResult.searchId);
         logMsg("ok", "status: " + serpResult.status);
+        logMsg("ok", "canonical_hash: sha256:" + requestHashVal.slice(0, 32) + "...");
+        logMsg("dim", "deterministic: same query + params → same hash. Reproducible via Search Archive.");
+        logMsg("info", "observed_at: " + new Date().toISOString());
         logMsg("info", "results: " + serpResult.resultCount + " organic results");
         logMsg("info", "official: " + (serpResult.officialResult?.link || "none"));
         if (serpResult.raw?.top_results) {
@@ -456,7 +547,7 @@ export default {
             logMsg("dim", "      " + r.link);
           });
         }
-        steps.push({ title: "Live SerpApi Search", body: '<span class="api">SERPAPI LIVE SEARCH</span>\nengine: google_light | no_cache: true\nsearch_id: <span class="ok">' + serpResult.searchId + '</span>\nlatency: ' + serpResult.latencyMs + 'ms\nresults: ' + serpResult.resultCount + '\nofficial: ' + (serpResult.officialResult?.link || "none"), done: true });
+        steps.push({ title: "Live SerpApi Search + Canonical Hash", body: '<span class="api">SERPAPI LIVE SEARCH</span>\nengine: google_light | no_cache: true\nsearch_id: <span class="ok">' + serpResult.searchId + '</span>\ncanonical_hash: sha256:' + requestHashVal.slice(0, 32) + '...\nobserved_at: ' + new Date().toISOString() + '\nlatency: ' + serpResult.latencyMs + 'ms\nresults: ' + serpResult.resultCount + '\nofficial: ' + (serpResult.officialResult?.link || "none"), done: true });
 
         // ── Step 4: Source fetch + content hash ──
         stepIdx = 3; sep();
@@ -589,7 +680,7 @@ export default {
       }
     }
 
-    if (url.pathname === "/api/demo/payload") {
+    if (url.pathname === "/api/payload") {
       try {
         if (!env.SERPAPI_API_KEY) return new Response(JSON.stringify({ error: "SERPAPI_API_KEY not configured" }), { headers: { "Content-Type": "application/json" } });
         const query = "site:opencode.ai/go GLM-5.3-Flash usage limits";
@@ -636,6 +727,40 @@ export default {
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { headers: { "Content-Type": "application/json" } });
       }
+    }
+
+    if (url.pathname === "/api/agents" && request.method === "POST") {
+      // Build live market data from our verified models
+      let liveMarket = "## Live Market Data (from LiveLLM — verified, content-addressed)\n";
+      liveMarket += "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free |\n";
+      liveMarket += "|----------|-------|----------|-----------|--------|---------|------|\n";
+      for (const m of MODELS) {
+        const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
+        liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " |\n";
+      }
+
+      const results = {};
+      for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
+        const prompt = agentPrompt(persona.persona, STALE_MARKET);
+        const llmResult = await callLLM(env.OPENCODE_API_KEY, prompt);
+        let decision;
+        try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
+        results[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
+      }
+
+      // Now run with live data
+      const liveResults = {};
+      for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
+        const prompt = agentPrompt(persona.persona, liveMarket);
+        const llmResult = await callLLM(env.OPENCODE_API_KEY, prompt);
+        let decision;
+        try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
+        liveResults[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
+      }
+
+      return new Response(JSON.stringify({ stale: results, live: liveResults, live_market: liveMarket }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
     }
 
     return new Response("not found", { status: 404 });
