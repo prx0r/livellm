@@ -18,3 +18,4 @@ refs/agentdeals/
 refs/cloudprice-mcp/
 refs/infracost/
 .wrangler/
+demo-logs/
