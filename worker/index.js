@@ -273,7 +273,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 <div class="hero" id="hero">
   <h1>The agent's math was correct.<br>Its <span class="hl">market state</span> was wrong.</h1>
   <p>Same model. Same workload. Same agent. Only the market data changed.</p>
-  <button class="btn btn-g" id="run-btn" onclick="runDemo()" style="margin-top:1.5rem">Run Demo</button>
+  <button class="btn btn-g" id="run-btn" onclick="runStory()" style="margin-top:1.5rem">Run Demo</button>
 </div>
 
 <div class="tabs" id="tabs-bar" style="display:none">
@@ -287,9 +287,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 <div class="panel on" id="p0">
   <div id="story-area">
     <div style="text-align:center;padding:3rem 0">
-      <h2 style="font-size:1.3rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">An agent needs to route 240 code reviews/day</h2>
-      <p style="font-size:.88rem;color:#94a3b8;max-width:500px;margin:0 auto 1.5rem">Budget: $50/mo. Current model: Claude Sonnet 4. Is it enough? Watch what happens when market data changes.</p>
-      <button class="btn btn-g" id="story-btn" onclick="runStory()">Run Story</button>
+      <p style="font-size:.88rem;color:#94a3b8;max-width:500px;margin:0 auto">Click "Run Demo" to see the agent's journey from stale market data to verified live state.</p>
     </div>
   </div>
 </div>
@@ -363,10 +361,12 @@ function logSep(){log('dim','─────────────────
 function showTab(i,el){document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('on',j===i)});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});el.classList.add('on');}
 
 async function runStory(){
-  var btn=document.getElementById('story-btn');
+  var btn=document.getElementById('run-btn');
   btn.disabled=true;btn.textContent='Running...';
+  document.getElementById('hero').style.display='none';
+  document.getElementById('tabs-bar').style.display='flex';
   var area=document.getElementById('story-area');
-  area.innerHTML='<div style="text-align:center;padding:2rem;color:#64748b">Agent is reasoning about its workload...</div>';
+  area.innerHTML='<div style="text-align:center;padding:2rem;color:#64748b">Running live SerpApi search...</div>';
   try{
     var r=await fetch('/api/story',{method:'POST',headers:{'Content-Type':'application/json'}});
     var d=await r.json();
@@ -447,7 +447,7 @@ async function runStory(){
   }catch(e){
     area.innerHTML='<div style="color:#f87171;padding:2rem">Error: '+e.message+'</div>';
   }
-  btn.disabled=false;btn.textContent='Run Story';
+  btn.disabled=false;btn.textContent='Run Demo';
 }
 
 async function runAgents(){
