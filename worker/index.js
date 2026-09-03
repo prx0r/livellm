@@ -216,6 +216,8 @@ function renderStep(num,title,bodyHtml,active,done){
   return '<div class="step'+(active?' active':'')+(done?' done':'')+'"><div class="step-num">Step '+num+'</div><div class="step-title">'+title+'</div><div class="step-body">'+bodyHtml+'</div></div>';
 }
 
+function delay(ms){return new Promise(function(r){setTimeout(r,ms)});}
+
 async function runDemo(){
   var btn=document.getElementById('run-btn');
   btn.disabled=true;btn.textContent='Running...';
@@ -223,8 +225,8 @@ async function runDemo(){
   document.getElementById('tabs-bar').style.display='flex';
   document.getElementById('steps').innerHTML='';
   document.getElementById('final-box').innerHTML='';
-  document.getElementById('evidence-body').innerHTML='Loading...';
-  document.getElementById('payload-body').innerHTML='Loading...';
+  document.getElementById('evidence-body').innerHTML='Running pipeline...';
+  document.getElementById('payload-body').innerHTML='Waiting for demo...';
 
   // Switch to Live Demo tab
   document.querySelectorAll('.tab').forEach(function(t,j){t.classList.toggle('on',j===0)});
@@ -232,45 +234,44 @@ async function runDemo(){
 
   try{
     var r=await fetch('/api/demo/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:'opencode-glm-capacity',required_requests:2500,window_hours:5})});
-    var reader=r.body.getReader();
-    var decoder=new TextDecoder();
-    var buffer='';
+    var run=await r.json();
+    if(run.error){
+      document.getElementById('steps').innerHTML=renderStep(1,'Error','<span class="err">'+run.error+'</span>',true,false);
+      btn.disabled=false;btn.textContent='Run Demo';return;
+    }
 
-    while(true){
-      var chunk=await reader.read();
-      if(chunk.done)break;
-      buffer+=decoder.decode(chunk,{stream:true});
-      var lines=buffer.split('\n');
-      buffer=lines.pop();
-      for(var i=0;i<lines.length;i++){
-        var line=lines[i].trim();
-        if(!line||line.startsWith(':'))continue;
-        if(line.indexOf('data: ')!==0)continue;
-        var raw=line.slice(6);
-        try{
-          var evt=JSON.parse(raw);
-          if(evt.type==='step'){
-            var div=document.createElement('div');
-            div.innerHTML=renderStep(evt.num,evt.title,evt.body,evt.active,evt.done);
-            var stepEl=div.firstChild;
-            document.getElementById('steps').appendChild(stepEl);
-            document.getElementById('steps').scrollTop=document.getElementById('steps').scrollHeight;
-          }else if(evt.type==='done'){
-            document.getElementById('final-box').innerHTML='<div class="final"><h2>'+evt.headline+'</h2><p>'+evt.detail+'</p></div>';
-            document.getElementById('evidence-body').innerHTML='<pre>'+JSON.stringify(evt.evidence,null,2)+'</pre>';
-            document.getElementById('payload-body').textContent=evt.payload||'No payload captured.';
-            btn.disabled=false;btn.textContent='Run Demo';
-          }else if(evt.type==='error'){
-            document.getElementById('steps').innerHTML=renderStep(1,'Error','<span class="err">'+evt.message+'</span>',true,false);
-            btn.disabled=false;btn.textContent='Run Demo';
-          }
-        }catch(e){}
-      }
+    // Stream steps one by one
+    var steps=run.steps||[];
+    for(var i=0;i<steps.length;i++){
+      var s=steps[i];
+      var div=document.createElement('div');
+      div.innerHTML=renderStep(i+1,s.title,s.body,i===steps.length-1,s.done);
+      var stepEl=div.firstChild;
+      document.getElementById('steps').appendChild(stepEl);
+      document.getElementById('steps').scrollTop=document.getElementById('steps').scrollHeight;
+      await delay(350);
+    }
+
+    // Final result
+    if(run.final){
+      document.getElementById('final-box').innerHTML='<div class="final"><h2>'+run.final.headline+'</h2><p>'+run.final.detail+'</p></div>';
+    }
+
+    // Evidence
+    if(run.evidence){
+      document.getElementById('evidence-body').innerHTML='<pre>'+JSON.stringify(run.evidence,null,2)+'</pre>';
+    }
+
+    // Payload
+    if(run.payload){
+      document.getElementById('payload-body').textContent=run.payload;
+    }else{
+      document.getElementById('payload-body').textContent='No payload captured.';
     }
   }catch(e){
     document.getElementById('steps').innerHTML=renderStep(1,'Error','<span class="err">'+e.message+'</span>',true,false);
-    btn.disabled=false;btn.textContent='Run Demo';
   }
+  btn.disabled=false;btn.textContent='Run Demo';
 }
 </script>
 </body>
@@ -285,137 +286,98 @@ export default {
     if (url.pathname === "/") return new Response(PAGE, { headers: { "Content-Type": "text/html;charset=utf-8" } });
 
     if (url.pathname === "/api/demo/run" && request.method === "POST") {
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          function send(obj) {
-            controller.enqueue(encoder.encode("data: " + JSON.stringify(obj) + "\n\n"));
-          }
+      const steps = [];
+      try {
+        // Step 1: Baseline
+        steps.push({ title: "1. Baseline State", body: '<span class="sys">Known fact from docs:</span>\nGLM-5.3-Flash on OpenCode Go: ~1,580 requests per 5 hours\n<span class="sys">Required:</span> 2,500 requests\n<span class="err">1,580 &lt; 2,500 → INSUFFICIENT</span>', done: true });
 
-          try {
-            // Step 1: Baseline
-            send({ type: "step", num: 1, title: "1. Baseline State", body: '<span class="sys">Known fact from docs:</span>\nGLM-5.3-Flash on OpenCode Go: ~1,580 requests per 5 hours\n<span class="sys">Required:</span> 2,500 requests\n<span class="err">1,580 < 2,500 → INSUFFICIENT</span>', active: true, done: true });
+        // Step 2: Baseline routing call
+        const baselinePrompt = routingPrompt(BASELINE_CAPACITY, "baseline docs estimate");
+        const baselineLLM = await callLLM(env.OPENCODE_API_KEY, baselinePrompt);
+        let baselineDecision;
+        try { baselineDecision = JSON.parse(baselineLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { baselineDecision = { decision: "PARSE_ERROR", reason: baselineLLM.response }; }
+        const baselineValid = baselineDecision.decision === (BASELINE_CAPACITY >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
+        steps.push({ title: "2. Baseline Agent Decision", body: '<span class="sys">MiMo v2.5 (' + baselineLLM.latencyMs + 'ms):</span>\n<span class="' + (baselineDecision.decision === "BUY_FALLBACK" ? "err" : "ok") + '">Decision: ' + baselineDecision.decision + '</span>\nReason: ' + (baselineDecision.reason || "—") + '\n<span class="sys">Deterministic check: ' + REQUIRED_REQUESTS + ' <= ' + BASELINE_CAPACITY + ' = ' + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + ' → ' + (baselineValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
 
-            // Step 2: Baseline routing call
-            send({ type: "step", num: 2, title: "2. Baseline Agent Decision", body: '<span class="sys">Calling MiMo v2.5 via OpenCode Go...</span>', active: true, done: false });
-            const baselinePrompt = routingPrompt(BASELINE_CAPACITY, "baseline docs estimate");
-            const baselineLLM = await callLLM(env.OPENCODE_API_KEY, baselinePrompt);
-            let baselineDecision;
-            try { baselineDecision = JSON.parse(baselineLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { baselineDecision = { decision: "PARSE_ERROR", reason: baselineLLM.response }; }
-            const baselineValid = baselineDecision.decision === (BASELINE_CAPACITY >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
-            send({ type: "step", num: 2, title: "2. Baseline Agent Decision", body: '<span class="sys">MiMo v2.5 (' + baselineLLM.latencyMs + 'ms):</span>\n<span class="' + (baselineDecision.decision === "BUY_FALLBACK" ? "err" : "ok") + '">Decision: ' + baselineDecision.decision + '</span>\nReason: ' + (baselineDecision.reason || "—") + '\n<span class="sys">Deterministic check: ' + REQUIRED_REQUESTS + ' <= ' + BASELINE_CAPACITY + ' = ' + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + ' → ' + (baselineValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', active: false, done: true });
+        // Step 3: SerpApi search
+        const serpResult = await serpSearch(env.SERPAPI_API_KEY, "site:opencode.ai/go GLM-5.3-Flash usage limits");
+        if (!serpResult.searchId) { steps.push({ title: "3. Live SerpApi Search", body: '<span class="err">SerpApi search failed: ' + (serpResult.error || "no search ID") + '</span>', done: true }); throw new Error("SerpApi failed"); }
+        steps.push({ title: "3. Live SerpApi Search", body: '<span class="api">SERPAPI LIVE SEARCH</span>\nengine: google_light\nno_cache: true\nstatus: ' + serpResult.status + '\nsearch_id: <span class="ok">' + serpResult.searchId + '</span>\nlatency: ' + serpResult.latencyMs + 'ms\nresults: ' + serpResult.resultCount + '\nofficial_result: ' + (serpResult.officialResult?.link || "none found"), done: true });
 
-            // Step 3: SerpApi search
-            send({ type: "step", num: 3, title: "3. Live SerpApi Search", body: '<span class="sys">Searching Google Light (no_cache=true)...</span>', active: true, done: false });
-            const serpResult = await serpSearch(env.SERPAPI_API_KEY, "site:opencode.ai/go GLM-5.3-Flash usage limits");
-            if (!serpResult.searchId) { send({ type: "step", num: 3, title: "3. Live SerpApi Search", body: '<span class="err">SerpApi search failed: ' + (serpResult.error || "no search ID") + '</span>', active: false, done: true }); throw new Error("SerpApi failed"); }
-            send({ type: "step", num: 3, title: "3. Live SerpApi Search", body: '<span class="api">SERPAPI LIVE SEARCH</span>\nengine: google_light\nno_cache: true\nstatus: ' + serpResult.status + '\nsearch_id: <span class="ok">' + serpResult.searchId + '</span>\nlatency: ' + serpResult.latencyMs + 'ms\nresults: ' + serpResult.resultCount + '\nofficial_result: ' + (serpResult.officialResult?.link || "none found"), active: false, done: true });
+        // Step 4: Fetch official source
+        if (!serpResult.officialResult) { steps.push({ title: "4. Official Source", body: '<span class="err">No official opencode.ai result in search</span>', done: true }); throw new Error("No official source"); }
+        const source = await fetchSource(serpResult.officialResult.link);
+        steps.push({ title: "4. Official Source", body: '<span class="ok">Source retrieved</span>\nurl: ' + source.url + '\nstatus: ' + source.status + '\ncontent_hash: ' + source.contentHash.slice(0, 30) + '...\nlatency: ' + source.latencyMs + 'ms\nsnippets found: ' + source.snippets.length, done: true });
 
-            // Step 4: Fetch official source
-            send({ type: "step", num: 4, title: "4. Official Source", body: '<span class="sys">Fetching opencode.ai/go...</span>', active: true, done: false });
-            if (!serpResult.officialResult) { send({ type: "step", num: 4, title: "4. Official Source", body: '<span class="err">No official opencode.ai result in search</span>', active: false, done: true }); throw new Error("No official source"); }
-            const source = await fetchSource(serpResult.officialResult.link);
-            send({ type: "step", num: 4, title: "4. Official Source", body: '<span class="ok">Source retrieved</span>\nurl: ' + source.url + '\nstatus: ' + source.status + '\ncontent_hash: ' + source.contentHash.slice(0, 30) + '...\nlatency: ' + source.latencyMs + 'ms\nsnippets found: ' + source.snippets.length, active: false, done: true });
+        // Step 5: Live extraction
+        const extPrompt = extractionPrompt(source.snippets.join("\n\n"));
+        const extLLM = await callLLM(env.OPENCODE_API_KEY, extPrompt);
+        let extraction;
+        try { extraction = JSON.parse(extLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { extraction = { error: "parse failed", raw: extLLM.response }; }
+        steps.push({ title: "5. Live LLM Extraction", body: '<span class="ok">Extraction complete</span> (' + extLLM.latencyMs + 'ms)\ncapacity_requests_5h: <span class="ok">' + (extraction.capacity_requests_5h || "null") + '</span>\npromotion_multiplier: ' + (extraction.promotion_multiplier || "none") + '\nevidence: "' + (extraction.evidence || "—").slice(0, 100) + '"', done: true });
 
-            // Step 5: Live extraction
-            send({ type: "step", num: 5, title: "5. Live LLM Extraction", body: '<span class="sys">Calling MiMo v2.5 to extract facts from source...</span>', active: true, done: false });
-            const extPrompt = extractionPrompt(source.snippets.join("\n\n"));
-            const extLLM = await callLLM(env.OPENCODE_API_KEY, extPrompt);
-            let extraction;
-            try { extraction = JSON.parse(extLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { extraction = { error: "parse failed", raw: extLLM.response }; }
-            send({ type: "step", num: 5, title: "5. Live LLM Extraction", body: '<span class="ok">Extraction complete</span> (' + extLLM.latencyMs + 'ms)\ncapacity_requests_5h: <span class="ok">' + (extraction.capacity_requests_5h || "null") + '</span>\npromotion_multiplier: ' + (extraction.promotion_multiplier || "none") + '\nevidence: "' + (extraction.evidence || "—").slice(0, 100) + '"', active: false, done: true });
+        // Step 6: Validation
+        const validation = validate(extraction);
+        const checkLines = validation.checks.map(c => '<span class="' + (c.pass ? "ok" : "err") + '">' + (c.pass ? "✓" : "✗") + " " + c.name + "</span>").join("\n");
+        steps.push({ title: "6. Deterministic Validation", body: checkLines + '\n\n<span class="' + (validation.accepted ? "ok" : "err") + '">Result: ' + (validation.accepted ? "ACCEPTED — fact verified" : "REJECTED — fact not verified") + '</span>', done: true });
 
-            // Step 6: Validation
-            send({ type: "step", num: 6, title: "6. Deterministic Validation", body: '<span class="sys">Running validation checks...</span>', active: true, done: false });
-            const validation = validate(extraction);
-            const checkLines = validation.checks.map(c => '<span class="' + (c.pass ? "ok" : "err") + '">' + (c.pass ? "✓" : "✗") + " " + c.name + "</span>").join("\n");
-            send({ type: "step", num: 6, title: "6. Deterministic Validation", body: checkLines + '\n\n<span class="' + (validation.accepted ? "ok" : "err") + '">Result: ' + (validation.accepted ? "ACCEPTED — fact verified" : "REJECTED — fact not verified") + '</span>', active: false, done: true });
+        if (!validation.accepted) { throw new Error("Extraction rejected by validator"); }
 
-            if (!validation.accepted) { throw new Error("Extraction rejected by validator"); }
+        // Step 7: Fresh routing
+        const freshPrompt = routingPrompt(extraction.capacity_requests_5h, "live SerpApi discovery + official source extraction");
+        const freshLLM = await callLLM(env.OPENCODE_API_KEY, freshPrompt);
+        let freshDecision;
+        try { freshDecision = JSON.parse(freshLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { freshDecision = { decision: "PARSE_ERROR", reason: freshLLM.response }; }
+        const freshValid = freshDecision.decision === (extraction.capacity_requests_5h >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
+        steps.push({ title: "7. Fresh Agent Decision", body: '<span class="sys">MiMo v2.5 (' + freshLLM.latencyMs + 'ms):</span>\n<span class="' + (freshDecision.decision === "USE_OPENCODE_GO" ? "ok" : "err") + '">Decision: ' + freshDecision.decision + '</span>\nReason: ' + (freshDecision.reason || "—") + '\n<span class="sys">Deterministic check: ' + REQUIRED_REQUESTS + ' <= ' + extraction.capacity_requests_5h + ' = ' + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + ' → ' + (freshValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
 
-            // Step 7: Fresh routing
-            send({ type: "step", num: 7, title: "7. Fresh Agent Decision", body: '<span class="sys">Calling MiMo v2.5 with live market fact...</span>', active: true, done: false });
-            const freshPrompt = routingPrompt(extraction.capacity_requests_5h, "live SerpApi discovery + official source extraction");
-            const freshLLM = await callLLM(env.OPENCODE_API_KEY, freshPrompt);
-            let freshDecision;
-            try { freshDecision = JSON.parse(freshLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { freshDecision = { decision: "PARSE_ERROR", reason: freshLLM.response }; }
-            const freshValid = freshDecision.decision === (extraction.capacity_requests_5h >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
-            send({ type: "step", num: 7, title: "7. Fresh Agent Decision", body: '<span class="sys">MiMo v2.5 (' + freshLLM.latencyMs + 'ms):</span>\n<span class="' + (freshDecision.decision === "USE_OPENCODE_GO" ? "ok" : "err") + '">Decision: ' + freshDecision.decision + '</span>\nReason: ' + (freshDecision.reason || "—") + '\n<span class="sys">Deterministic check: ' + REQUIRED_REQUESTS + ' <= ' + extraction.capacity_requests_5h + ' = ' + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + ' → ' + (freshValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', active: false, done: true });
+        // Step 8: Verification
+        const routeChanged = baselineDecision.decision !== freshDecision.decision;
+        steps.push({ title: "8. Verification", body: '<span class="sys">Baseline: ' + baselineDecision.decision + '</span>\n<span class="sys">Live:     ' + freshDecision.decision + '</span>\n\n<span class="' + (routeChanged ? "ok" : "err") + '">' + (routeChanged ? "ROUTE CHANGED" : "ROUTE UNCHANGED") + '</span>', done: true });
 
-            // Step 8: Verification
-            send({ type: "step", num: 8, title: "8. Verification", body: '<span class="sys">Comparing before and after...</span>', active: true, done: false });
-            const routeChanged = baselineDecision.decision !== freshDecision.decision;
-            send({ type: "step", num: 8, title: "8. Verification", body: '<span class="sys">Baseline: ' + baselineDecision.decision + '</span>\n<span class="sys">Live:     ' + freshDecision.decision + '</span>\n\n<span class="' + (routeChanged ? "ok" : "err") + '">' + (routeChanged ? "ROUTE CHANGED" : "ROUTE UNCHANGED") + '</span>', active: false, done: true });
+        // Capture payload markdown from SerpApi
+        var payloadMd = "";
+        try {
+          var payloadParams = new URLSearchParams({ q: "site:opencode.ai/go GLM-5.3-Flash usage limits", engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true", output: "md" });
+          var payloadRes = await fetch("https://serpapi.com/search.md?" + payloadParams);
+          if (payloadRes.ok) payloadMd = await payloadRes.text();
+        } catch (e) { payloadMd = "Failed to fetch markdown payload: " + e.message; }
 
-            // Capture payload markdown from SerpApi
-            var payloadMd = "";
-            try {
-              var payloadParams = new URLSearchParams({ q: "site:opencode.ai/go GLM-5.3-Flash usage limits", engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true", output: "md" });
-              var payloadRes = await fetch("https://serpapi.com/search.md?" + payloadParams);
-              if (payloadRes.ok) payloadMd = await payloadRes.text();
-            } catch (e) { payloadMd = "Failed to fetch markdown payload: " + e.message; }
+        // Final
+        var headline = routeChanged ? "ROUTE CHANGED" : "Route Unchanged";
+        var detail = "Same workload (" + REQUIRED_REQUESTS + " requests/" + WINDOW_HOURS + "h). Same model (GLM-5.3-Flash). Same agent (MiMo v2.5). " + (routeChanged ? "Fresh market state changed the decision." : "Market state was already sufficient.");
 
-            // Final
-            var headline = routeChanged ? "ROUTE CHANGED" : "Route Unchanged";
-            var detail = "Same workload (" + REQUIRED_REQUESTS + " requests/" + WINDOW_HOURS + "h). Same model (GLM-5.3-Flash). Same agent (MiMo v2.5). " + (routeChanged ? "Fresh market state changed the decision." : "Market state was already sufficient.");
+        return new Response(JSON.stringify({
+          steps, final: { headline, detail },
+          evidence: {
+            baseline: { capacity_5h: BASELINE_CAPACITY, required: REQUIRED_REQUESTS, sufficient: BASELINE_CAPACITY >= REQUIRED_REQUESTS },
+            baseline_agent: { decision: baselineDecision.decision, reason: baselineDecision.reason, model: baselineLLM.model, latencyMs: baselineLLM.latencyMs },
+            serpapi: serpResult,
+            source: { url: source.url, status: source.status, contentHash: source.contentHash, latencyMs: source.latencyMs },
+            extraction: { ...extraction, model: extLLM.model, latencyMs: extLLM.latencyMs },
+            validation,
+            live_agent: { decision: freshDecision.decision, reason: freshDecision.reason, model: freshLLM.model, latencyMs: freshLLM.latencyMs },
+            verification: { baselineDecision: baselineDecision.decision, liveDecision: freshDecision.decision, routeChanged }
+          },
+          payload: payloadMd,
+          run_id: "run-" + Date.now()
+        }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
 
-            send({
-              type: "done",
-              headline: headline,
-              detail: detail,
-              evidence: {
-                baseline: { capacity_5h: BASELINE_CAPACITY, required: REQUIRED_REQUESTS, sufficient: BASELINE_CAPACITY >= REQUIRED_REQUESTS },
-                baseline_agent: { decision: baselineDecision.decision, reason: baselineDecision.reason, model: baselineLLM.model, latencyMs: baselineLLM.latencyMs },
-                serpapi: serpResult,
-                source: { url: source.url, status: source.status, contentHash: source.contentHash, latencyMs: source.latencyMs },
-                extraction: { ...extraction, model: extLLM.model, latencyMs: extLLM.latencyMs },
-                validation: validation,
-                live_agent: { decision: freshDecision.decision, reason: freshDecision.reason, model: freshLLM.model, latencyMs: freshLLM.latencyMs },
-                verification: { baselineDecision: baselineDecision.decision, liveDecision: freshDecision.decision, routeChanged: routeChanged }
-              },
-              payload: payloadMd,
-              run_id: "run-" + Date.now()
-            });
-
-          } catch (e) {
-            send({ type: "error", message: e.message });
-          }
-
-          controller.close();
-        }
-      });
-
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      } catch (e) {
+        return new Response(JSON.stringify({ steps, error: e.message }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+      }
     }
 
     if (url.pathname === "/api/demo/payload") {
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          try {
-            if (!env.SERPAPI_API_KEY) {
-              controller.enqueue(encoder.encode("data: " + JSON.stringify({ error: "SERPAPI_API_KEY not configured" }) + "\n\n"));
-              controller.close();
-              return;
-            }
-            const params = new URLSearchParams({ q: "site:opencode.ai/go GLM-5.3-Flash usage limits", engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true", output: "md" });
-            const res = await fetch("https://serpapi.com/search.md?" + params);
-            const md = await res.text();
-            controller.enqueue(encoder.encode("data: " + JSON.stringify({ markdown: md }) + "\n\n"));
-          } catch (e) {
-            controller.enqueue(encoder.encode("data: " + JSON.stringify({ error: e.message }) + "\n\n"));
-          }
-          controller.close();
-        }
-      });
-      return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Access-Control-Allow-Origin": "*" } });
+      try {
+        if (!env.SERPAPI_API_KEY) return new Response(JSON.stringify({ error: "SERPAPI_API_KEY not configured" }), { headers: { "Content-Type": "application/json" } });
+        const params = new URLSearchParams({ q: "site:opencode.ai/go GLM-5.3-Flash usage limits", engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true", output: "md" });
+        const res = await fetch("https://serpapi.com/search.md?" + params);
+        const md = await res.text();
+        return new Response(JSON.stringify({ markdown: md }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { headers: { "Content-Type": "application/json" } });
+      }
     }
 
     return new Response("not found", { status: 404 });
