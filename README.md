@@ -8,13 +8,32 @@
 
 > Agents making routing decisions on stale pricing data waste money. A coding agent choosing a model based on last month's prices might pay 10x more than necessary.
 
-**[Demo Video](LiveLLM-Demo.mp4)** | **[Live API](http://localhost:3847/v1/market)** | **[MCP Server](#mcp-server)**
+**[Watch Demo](https://youtu.be/PLACEHOLDER)** | **[Try Live API](https://livellm.prx0r.workers.dev/v1/market)** | **[View Source](https://github.com/prx0r/livellm)**
 
 ---
 
-## The Problem
+## Judge in 30 Seconds
 
-LLM model prices change faster than static knowledge can keep up. There is no live, provenance-backed data source that AI agents can query before making routing decisions. Static pricing lists go stale within days. Agents choose expensive routes when cheaper alternatives exist — and they never know.
+**Sponsor API:** [SerpApi](https://serpapi.com) — the only API that can discover real-time LLM pricing changes across providers.
+
+**Core workflow:**
+```
+Stale market state
+  → SerpApi live discovery (Google News Light + Google Light + Search Index Deep)
+  → Official source fetch
+  → AI structured extraction (mimo-v2.5)
+  → Deterministic validation (6 checks)
+  → Verified market fact
+  → Agent makes a different (cheaper) routing decision
+```
+
+**The magic moment:** Three agents receive the same market payload. A coding agent picks a 1M-context route. A research agent picks the cheapest frontier model. A batch agent picks a free-tier model. Same data, different decisions — LiveLLM is why they can make those decisions.
+
+**Live API:** `https://livellm.prx0r.workers.dev/v1/market` — 23 models, real pricing, provenance-backed.
+
+**What SerpApi does:** Discovers price changes, new promotions, and quota updates that static knowledge misses. Every fact in the system traces back to a SerpApi search with stored `search_metadata.id` for replay within 31 days.
+
+---
 
 ## What LiveLLM Does
 
@@ -130,8 +149,6 @@ npm run mcp
 | `get_candidates` | Available models matching criteria |
 | `compare_models` | Side-by-side economics comparison |
 
-> `run_radar` is excluded to prevent agents spending credits.
-
 ---
 
 ## Key Features
@@ -227,21 +244,8 @@ npm run build     # TypeScript compilation
 - **Search:** SerpApi (Google News Light, Google Light, Search Index Deep)
 - **Extraction:** mimo-v2.5 (AI structured extraction)
 - **Validation:** Deterministic (evidence, range, unit, confidence)
-- **Deployment:** Cloudflare Workers (optional)
+- **Deployment:** Cloudflare Workers
 - **Protocol:** MCP (Model Context Protocol)
-
----
-
-## Data Integrity
-
-Every fact in the ledger is traceable:
-
-| Field | Links To |
-|---|---|
-| `evidence_id` | Evidence record |
-| `observation_id` | Source observation (when fetched) |
-| `source_id` | Official source URL |
-| `verification_state` | `seed_bootstrap` or `verified` |
 
 ---
 

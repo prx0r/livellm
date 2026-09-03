@@ -17,3 +17,4 @@ archive/*.py
 refs/agentdeals/
 refs/cloudprice-mcp/
 refs/infracost/
+.wrangler/
