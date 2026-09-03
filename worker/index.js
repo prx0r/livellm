@@ -587,7 +587,7 @@ export default {
         const contentHash = await sha256(md);
 
         // Build full agent payload with all 26 models
-        let payload = "# LLM Market Data\nUpdated: " + new Date().toISOString().split("T")[0] + "\n\n";
+        let payload = "# LLM Market Data\nUpdated: " + new Date().toISOString() + "\n\n";
         payload += "## Models\n| Provider | Model | Input/1M | Output/1M | Cached | Context | MaxOut | Free | Mod |\n";
         payload += "|----------|-------|----------|-----------|--------|---------|--------|------|-----|\n";
         for (const m of MODELS) {
