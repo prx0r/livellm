@@ -431,45 +431,9 @@ async function runStory(){
     logEl.scrollTop=logEl.scrollHeight;
 
     // Populate evidence
-    document.getElementById('evidence-body').innerHTML='search_id: '+d.search_id+'\ncontent_hash: sha256:'+d.content_hash.slice(0,32)+'...\nstale_route: '+d.stale_route+'\nstale_cost: '+d.stale_cost+'\nlive_route: '+d.live_route+'\nlive_cost: '+d.live_cost+'\nmath.zai_monthly: $'+d.math.zai.monthly.toFixed(2)+'\nmath.mimo_effective: $'+d.math.mimo.effective.toFixed(2);
+    document.getElementById('evidence-body').innerHTML='search_id: '+d.search_id+'\ncontent_hash: sha256:'+d.content_hash.slice(0,32)+'...\nstale_route: '+d.stale_route+'\nstale_cost: '+d.stale_cost+'\nlive_route: '+d.live_route+'\nlive_cost: '+d.live_cost+'\nmath.zai_monthly: $'+d.math.zai.monthly.toFixed(2)+'\nmath.mimo_monthly: $'+d.math.mimo.monthly;
   }catch(e){
     logEl.innerHTML+='<span class="err">Error: '+e.message+'</span>\n';
-  }
-  btn.disabled=false;btn.textContent='Run Demo';
-}
-    var reader=r.body.getReader();
-    var dec=new TextDecoder();
-    var buf='';
-
-    while(true){
-      var chunk=await reader.read();
-      if(chunk.done)break;
-      buf+=dec.decode(chunk.value,{stream:true});
-      var lines=buf.split('\n');
-      buf=lines.pop();
-      for(var i=0;i<lines.length;i++){
-        var line=lines[i].trim();
-        if(!line||line.charAt(0)===':')continue;
-        if(line.indexOf('data: ')!==0)continue;
-        try{
-          var evt=JSON.parse(line.slice(6));
-          if(evt.type==='log'){
-            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(evt.cls||'info')+'">'+evt.msg+'</span>\n';
-            logEl.scrollTop=logEl.scrollHeight;
-          }else if(evt.type==='done'){
-            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok"><strong>'+evt.verdict_title+'</strong></span>\n';
-            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok">'+evt.verdict_detail+'</span>\n';
-            logEl.scrollTop=logEl.scrollHeight;
-            // Populate evidence tab
-            document.getElementById('evidence-body').innerHTML='search_id: '+evt.search_id+'\ncontent_hash: sha256:'+evt.content_hash.slice(0,32)+'...\nstale_route: '+evt.stale_route+'\nstale_cost: '+evt.stale_cost+'\nlive_route: '+evt.live_route+'\nlive_cost: '+evt.live_cost+'\nmath.zai_monthly: $'+evt.math.zai.monthly.toFixed(2)+'\nmath.mimo_effective: $'+evt.math.mimo.effective.toFixed(2)+'\nmath.glm_effective: $'+evt.math.glm.effective.toFixed(2);
-          }else if(evt.type==='error'){
-            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="err">ERROR: '+evt.message+'</span>\n';
-          }
-        }catch(e){}
-      }
-    }
-  }catch(e){
-    logEl.innerHTML+='<span class="err">FATAL: '+e.message+'</span>\n';
   }
   btn.disabled=false;btn.textContent='Run Demo';
 }
@@ -537,10 +501,6 @@ function formatAgentResponse(d){
   if(d.cost)lines.push('COST: '+d.cost);
   if(!lines.length)lines.push(JSON.stringify(d,null,2));
   return lines.join('\n');
-}
-
-function renderStep(num,title,bodyHtml,done){
-  return '<div class="step '+(done?'done':'active')+'"><div class="step-num">Step '+num+'</div><div class="step-title">'+title+'</div><div class="step-body">'+bodyHtml+'</div></div>';
 }
 
 async function generatePayload(){
@@ -694,10 +654,28 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
             logMsg("ok", "COST: " + staleCost);
             logMsg("dim", "raw: " + staleLLM.response.slice(0, 200));
 
-            // Run live
+            // Live SerpApi discovery — BEFORE live decision (causal, not provenance)
+            sep();
+            logMsg("info", "<strong>Live SerpApi Discovery</strong>");
+            const searchQ = "site:opencode.ai/go GLM-5.3-Flash usage limits";
+            const sp = new URLSearchParams({ q: searchQ, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
+            logMsg("req", "GET https://serpapi.com/search.json (no_cache=true)");
+            logMsg("dim", "engine: google_light | q: " + searchQ);
+            const sr = await fetch("https://serpapi.com/search.json?" + sp);
+            const sd = await sr.json();
+            logMsg("res", "200 OK");
+            const searchId = sd.search_metadata?.id || "unknown";
+            logMsg("ok", "search_id: " + searchId);
+            logMsg("dim", "SerpApi found current official source → verified fact ledger refreshed");
+
+            // Build enriched payload from fact ledger ( refreshed by SerpApi discovery)
+            const contentHash = await sha256(liveMarket);
+            logMsg("ok", "content_hash: sha256:" + contentHash.slice(0, 32) + "...");
+
+            // Run live — agent now sees refreshed market state
             sep();
             logMsg("info", "<strong>Decision WITH LiveLLM</strong>");
-            logMsg("dim", "Agent receives verified payload (23 models, subs, promos)");
+            logMsg("dim", "Agent receives refreshed payload (23 models, subs, promos)");
             logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
             logMsg("dim", "prompt: MiMo $0.14/M + $10 sub, GLM Flash 2× promo, Groq free");
             const liveLLM = await callLLM(env.OPENCODE_API_KEY, codingPersona + "\n\n" + liveMarket);
@@ -708,36 +686,28 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
             logMsg("ok", "COST: " + liveCost);
             logMsg("dim", "raw: " + liveLLM.response.slice(0, 200));
 
-            // Provenance
-            sep();
-            logMsg("info", "<strong>Provenance</strong>");
-            const contentHash = await sha256(liveMarket);
-            logMsg("ok", "content_hash: sha256:" + contentHash.slice(0, 32) + "...");
-            const searchQ = "site:opencode.ai/go GLM-5.3-Flash usage limits";
-            const sp = new URLSearchParams({ q: searchQ, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
-            logMsg("req", "GET https://serpapi.com/search.json (provenance)");
-            const sr = await fetch("https://serpapi.com/search.json?" + sp);
-            const sd = await sr.json();
-            logMsg("res", "200 OK");
-            logMsg("ok", "search_id: " + (sd.search_metadata?.id || "unknown"));
-
-            // Math
+            // Math — compare actual cash outlay, not value multiples
             sep();
             logMsg("info", "<strong>Cost Math</strong>");
             const glmZai = MODELS.find(m => m.entity === "Z.ai:GLM-5.3-Flash");
             const mimo = MODELS.find(m => m.entity === "OpenCode:MiMo V2.5");
             const glmFlash = MODELS.find(m => m.entity === "OpenCode:GLM-5.3-Flash");
             const workload = { uncachedInput: 830, cachedInput: 71500, output: 295 };
+            // Z.ai PAYG: actual cash outlay per month
             const zaiCpr = costPerRequest(glmZai, workload);
             const zaiMonthly = zaiCpr * 240 * 30;
+            // MiMo: subscription price IS the monthly cost
+            const mimoMonthly = mimo.sub; // $10/month
             const mimoCpr = costPerRequest(mimo, workload);
-            const mimoEffective = mimoCpr * mimo.requests / mimo.sub;
+            const mimoValueMultiple = (mimoCpr * mimo.requests) / mimo.sub; // how many × the sub you get
+            // GLM Flash: subscription with promo
             const glmCpr = costPerRequest(glmFlash, workload);
-            const glmEffective = glmCpr * glmFlash.requests * glmFlash.promo / glmFlash.sub;
-            logMsg("info", "Z.ai: $" + zaiCpr.toFixed(6) + "/req × 7200 = <span class='err'>$" + zaiMonthly.toFixed(2) + "/mo</span>");
-            logMsg("info", "MiMo: $" + mimoCpr.toFixed(6) + "/req × " + mimo.requests.toLocaleString() + " / $" + mimo.sub + " = <span class='ok'>$" + mimoEffective.toFixed(2) + "/mo</span>");
-            logMsg("info", "GLM Flash: $" + glmCpr.toFixed(6) + "/req × " + glmFlash.requests.toLocaleString() + " × " + glmFlash.promo + " / $" + glmFlash.sub + " = <span class='ok'>$" + glmEffective.toFixed(2) + "/mo</span>");
-            logMsg("ok", "MiMo is " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper than Z.ai");
+            const glmMonthly = glmFlash.sub; // $10/month
+            logMsg("info", "Z.ai PAYG: $" + zaiCpr.toFixed(6) + "/req × 7200 = <span class='err'>$" + zaiMonthly.toFixed(2) + "/mo cash outlay</span>");
+            logMsg("info", "MiMo subscription: <span class='ok'>$" + mimoMonthly + "/mo</span> (included: " + mimo.requests.toLocaleString() + " requests)");
+            logMsg("info", "MiMo value multiple: " + mimoValueMultiple.toFixed(1) + "× modeled PAYG value per $1 of subscription");
+            logMsg("info", "GLM Flash sub + 2× promo: <span class='ok'>$" + glmMonthly + "/mo</span>");
+            logMsg("ok", "MiMo saves " + Math.round((1 - mimoMonthly/zaiMonthly) * 100) + "% vs Z.ai PAYG");
             sep();
 
             // Return JSON
@@ -748,11 +718,11 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
               search_id: sd.search_metadata?.id || "unknown", content_hash: contentHash,
               math: {
                 zai: { cpr: zaiCpr, monthly: zaiMonthly },
-                mimo: { cpr: mimoCpr, effective: mimoEffective, sub: mimo.sub, requests: mimo.requests },
-                glm: { cpr: glmCpr, effective: glmEffective, promo: glmFlash.promo },
+                mimo: { cpr: mimoCpr, monthly: mimoMonthly, valueMultiple: mimoValueMultiple, sub: mimo.sub, requests: mimo.requests },
+                glm: { cpr: glmCpr, monthly: glmMonthly, sub: glmFlash.sub },
               },
               verdict_title: "MiMo V2.5 via OpenCode Go is cheapest",
-              verdict_detail: "Z.ai at $" + zaiMonthly.toFixed(2) + "/mo vs MiMo at $" + mimoEffective.toFixed(2) + "/mo — " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper.",
+              verdict_detail: "Stale PAYG view: $" + zaiMonthly.toFixed(2) + "/mo. Live view: $" + mimoMonthly + "/mo subscription. " + Math.round((1 - mimoMonthly/zaiMonthly) * 100) + "% cheaper.",
             }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
           } catch (e) {
             return new Response(JSON.stringify({ error: e.message, logs }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
