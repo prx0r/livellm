@@ -151,7 +151,7 @@ td:first-child{color:#8b949e;width:160px}
 
 <div class="explain">
 <div class="explain-label">trap 1: stale routing</div>
-Agent uses last month's prices, pays <b>2-5x more</b> than necessary. A coding agent routing to GPT-4o at $2.50/M when DeepSeek V3 does the same job at $0.14/M.
+Agent uses last month's prices, pays <b>2-5x more</b> than necessary. A coding agent routing to Claude Sonnet 4 at $3.00/M when DeepSeek V3 does the same job at $0.14/M.
 </div>
 <div class="explain">
 <div class="explain-label">trap 2: missing promotions</div>
@@ -213,11 +213,11 @@ As agents make billions of API calls daily, <b>x402 (HTTP 402 + crypto)</b> enab
 </div>
 
 <script>
-var MARKET=[{"model": "Claude Haiku 3.5", "provider": "Anthropic", "input": 0.8, "output": 4, "cached": 0.08}, {"model": "Claude Sonnet 4", "provider": "Anthropic", "input": 3, "output": 15, "cached": 0.3}, {"model": "V3", "provider": "DeepSeek", "input": 0.14, "output": 0.28, "cached": 0.014}, {"model": "Gemini 2.5 Flash", "provider": "Google", "input": 0.3, "output": 2.5, "cached": 0.03}, {"model": "Gemini 2.5 Pro", "provider": "Google", "input": 1.25, "output": 10, "cached": 0.315}, {"model": "gpt-oss-120b", "provider": "Groq", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-oss-20b", "provider": "Groq", "input": 0.075, "output": 0.3, "cached": 0.037}, {"model": "Mistral Large 3", "provider": "Mistral", "input": 0.5, "output": 1.5, "cached": 0.15}, {"model": "Mistral Small 4", "provider": "Mistral", "input": 0.15, "output": 0.6, "cached": 0.045}, {"model": "GPT-4o", "provider": "OpenAI", "input": 2.5, "output": 10, "cached": 1.25}, {"model": "GPT-4o mini", "provider": "OpenAI", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "gpt-4.1-nano", "provider": "OpenAI", "input": 0.1, "output": 0.4, "cached": 0.025}];
+var MARKET=[{"model": "Claude Haiku 3.5", "provider": "Anthropic", "input": 0.8, "output": 4, "cached": 0.08}, {"model": "Claude Sonnet 4", "provider": "Anthropic", "input": 3, "output": 15, "cached": 0.3}, {"model": "DeepSeek V3", "provider": "DeepSeek", "input": 0.14, "output": 0.28, "cached": 0.014}, {"model": "Gemini 2.5 Flash", "provider": "Google", "input": 0.3, "output": 2.5, "cached": 0.03}, {"model": "Gemini 2.5 Pro", "provider": "Google", "input": 1.25, "output": 10, "cached": 0.315}, {"model": "Groq gpt-oss-120b", "provider": "Groq", "input": 0.15, "output": 0.6, "cached": 0.075}, {"model": "Groq gpt-oss-20b", "provider": "Groq", "input": 0.075, "output": 0.3, "cached": 0.037}, {"model": "Mistral Large 3", "provider": "Mistral", "input": 0.5, "output": 1.5, "cached": 0.15}, {"model": "Mistral Small 4", "provider": "Mistral", "input": 0.15, "output": 0.6, "cached": 0.045}, {"model": "Llama 3.3 70B", "provider": "Groq", "input": 0.1, "output": 0.1, "cached": 0.01}]
 var AGENTS=[
-  {name:'Coding Agent',icon:' ',desc:'240 code reviews/day | 55K cached tokens | $50/mo budget',w:{uncached:1000,cached:55000,output:200,requests:240},stale:{model:'GPT-4o',input:2.5,output:10,cached:1.25,provider:'OpenAI'}},
+  {name:'Coding Agent',icon:' ',desc:'240 code reviews/day | 55K cached tokens | $50/mo budget',w:{uncached:1000,cached:55000,output:200,requests:240},stale:{model:'Claude Sonnet 4',input:3,output:15,cached:0.3,provider:'Anthropic'}},
   {name:'Research Agent',icon:' ',desc:'500 research summaries/day | Frontier quality | Minimize cost',w:{uncached:5000,cached:0,output:1000,requests:500},stale:{model:'Claude Sonnet 4',input:3,output:15,cached:0,provider:'Anthropic'}},
-  {name:'Batch Classifier',icon:' ',desc:'500 classifications/day | Near-zero budget | Short inputs',w:{uncached:200,cached:0,output:50,requests:500},stale:{model:'GPT-4o mini',input:0.15,output:0.6,cached:0,provider:'OpenAI'}},
+  {name:'Batch Classifier',icon:' ',desc:'500 classifications/day | Near-zero budget | Short inputs',w:{uncached:200,cached:0,output:50,requests:500},stale:{model:'Mistral Small 4',input:0.15,output:0.6,cached:0.045,provider:'Mistral'}},
   {name:'Support Agent',icon:' ',desc:'1000 chat responses/day | Fast replies | $30/mo budget',w:{uncached:500,cached:2000,output:300,requests:1000},stale:{model:'Claude Haiku 3.5',input:0.8,output:4,cached:0.08,provider:'Anthropic'}}
 ];
 var selectedAgent=0;
