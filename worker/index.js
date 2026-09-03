@@ -295,57 +295,54 @@ async function runDemo(){
 
   try{
     var r=await fetch('/api/demo/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:'opencode-glm-capacity',required_requests:2500,window_hours:5})});
-    var reader=r.body.getReader();
-    var dec=new TextDecoder();
-    var buf='';
+    var run=await r.json();
+    if(run.error){
+      log('err','Pipeline error: '+run.error);
+      document.getElementById('steps-area').innerHTML=renderStep(1,'Error','<span class="err">'+run.error+'</span>',false);
+      btn.disabled=false;btn.textContent='Run Demo';return;
+    }
 
-    while(true){
-      var chunk=await reader.read();
-      if(chunk.done)break;
-      buf+=dec.decode(chunk.value,{stream:true});
-      var lines=buf.split('\n');
-      buf=lines.pop();
-      for(var i=0;i<lines.length;i++){
-        var line=lines[i].trim();
-        if(!line||line.charAt(0)===':')continue;
-        if(line.indexOf('data: ')!==0)continue;
-        try{
-          var evt=JSON.parse(line.slice(6));
-          handleEvent(evt);
-        }catch(e){}
+    // Stream steps one by one with activity logs
+    var steps=run.steps||[];
+    var logs=run.logs||[];
+    var logIdx=0;
+
+    for(var si=0;si<steps.length;si++){
+      // Flush associated logs for this step
+      while(logIdx<logs.length && logs[logIdx].step===si){
+        log(logs[logIdx].cls||'info',logs[logIdx].msg||'');
+        logIdx++;
       }
+      logSep();
+
+      // Render step card
+      var div=document.createElement('div');
+      div.innerHTML=renderStep(si+1,steps[si].title,steps[si].body,steps[si].done);
+      document.getElementById('steps-area').appendChild(div.firstChild);
+      document.getElementById('steps-area').scrollTop=document.getElementById('steps-area').scrollHeight;
+      await delay(200);
+    }
+    // Flush remaining logs
+    while(logIdx<logs.length){
+      log(logs[logIdx].cls||'info',logs[logIdx].msg||'');
+      logIdx++;
+    }
+
+    // Final
+    if(run.final){
+      document.getElementById('final-box').innerHTML='<div class="final"><h2>'+run.final.headline+'</h2><p>'+run.final.detail+'</p></div>';
+    }
+    if(run.evidence){
+      document.getElementById('evidence-body').innerHTML='<pre>'+JSON.stringify(run.evidence,null,2)+'</pre>';
+    }
+    if(run.payload){
+      document.getElementById('payload-body').textContent=run.payload;
     }
   }catch(e){
     log('err','FATAL: '+e.message);
     document.getElementById('steps-area').innerHTML=renderStep(1,'Error','<span class="err">'+e.message+'</span>',false);
   }
   btn.disabled=false;btn.textContent='Run Demo';
-}
-
-function handleEvent(evt){
-  switch(evt.type){
-    case 'log':
-      log(evt.cls||'info',evt.msg||'');
-      break;
-    case 'sep':
-      logSep();
-      break;
-    case 'step':
-      var div=document.createElement('div');
-      div.innerHTML=renderStep(evt.num,evt.title,evt.body,evt.done);
-      document.getElementById('steps-area').appendChild(div.firstChild);
-      document.getElementById('steps-area').scrollTop=document.getElementById('steps-area').scrollHeight;
-      break;
-    case 'done':
-      document.getElementById('final-box').innerHTML='<div class="final"><h2>'+evt.headline+'</h2><p>'+evt.detail+'</p></div>';
-      document.getElementById('evidence-body').innerHTML='<pre>'+JSON.stringify(evt.evidence,null,2)+'</pre>';
-      document.getElementById('payload-body').textContent=evt.payload||'No payload captured.';
-      break;
-    case 'error':
-      log('err','ERROR: '+evt.message);
-      document.getElementById('steps-area').innerHTML+=renderStep(0,'Error','<span class="err">'+evt.message+'</span>',false);
-      break;
-  }
 }
 </script>
 </body>
@@ -360,192 +357,175 @@ export default {
     if (url.pathname === "/") return new Response(PAGE, { headers: { "Content-Type": "text/html;charset=utf-8" } });
 
     if (url.pathname === "/api/demo/run" && request.method === "POST") {
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          function send(obj) { controller.enqueue(encoder.encode("data: " + JSON.stringify(obj) + "\n\n")); }
-          function logMsg(cls, msg) { send({ type: "log", cls, msg }); }
-          function sep() { send({ type: "sep" }); }
+      const steps = [];
+      const logs = [];
+      let stepIdx = -1;
+      function logMsg(cls, msg, step) { logs.push({ cls, msg, step: step !== undefined ? step : stepIdx }); }
+      function sep(step) { logs.push({ cls: "dim", msg: "────────────────────────────────────────", step: step !== undefined ? step : stepIdx }); }
 
-          try {
-            // ── Step 1: Baseline ──
-            sep();
-            logMsg("info", "<strong>STEP 1 — Baseline State</strong>");
-            logMsg("dim", "Loading known facts from docs...");
-            logMsg("info", "GLM-5.3-Flash on OpenCode Go: ~1,580 requests per 5 hours");
-            logMsg("info", "Required workload: 2,500 requests / 5 hours");
-            logMsg("err", "1,580 < 2,500 → INSUFFICIENT with current knowledge");
-            send({ type: "step", num: 1, title: "Baseline State", body: '<span class="sys">Known fact:</span> GLM-5.3-Flash: ~1,580 req/5h\n<span class="sys">Required:</span> 2,500 req/5h\n<span class="err">1,580 < 2,500 → INSUFFICIENT</span>', done: true });
+      try {
+        // ── Step 1: Baseline ──
+        stepIdx = 0; sep();
+        logMsg("info", "<strong>STEP 1 — Baseline State</strong>");
+        logMsg("dim", "Loading known facts from docs...");
+        logMsg("info", "GLM-5.3-Flash on OpenCode Go: ~1,580 requests per 5 hours");
+        logMsg("info", "Required workload: 2,500 requests / 5 hours");
+        logMsg("err", "1,580 < 2,500 → INSUFFICIENT with current knowledge");
+        steps.push({ title: "Baseline State", body: '<span class="sys">Known fact:</span> GLM-5.3-Flash: ~1,580 req/5h\n<span class="sys">Required:</span> 2,500 req/5h\n<span class="err">1,580 < 2,500 → INSUFFICIENT</span>', done: true });
 
-            // ── Step 2: Baseline LLM call ──
-            sep();
-            logMsg("info", "<strong>STEP 2 — Baseline Agent Decision (stale data)</strong>");
-            const baselinePrompt = routingPrompt(BASELINE_CAPACITY, "baseline docs estimate");
-            logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-            logMsg("dim", "model: mimo-v2.5 | max_tokens: 4000 | temperature: 0");
-            logMsg("dim", "system: routing agent prompt (" + baselinePrompt.length + " chars)");
-            const baselineLLM = await callLLM(env.OPENCODE_API_KEY, baselinePrompt);
-            logMsg("res", "200 OK (" + baselineLLM.latencyMs + "ms)");
-            let baselineDecision;
-            try { baselineDecision = JSON.parse(baselineLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { baselineDecision = { decision: "PARSE_ERROR", reason: baselineLLM.response }; }
-            logMsg("dim", "raw response: " + baselineLLM.response.slice(0, 200));
-            logMsg("ok", "parsed: " + JSON.stringify(baselineDecision));
-            const baselineValid = baselineDecision.decision === (BASELINE_CAPACITY >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
-            logMsg(baselineValid ? "ok" : "err", "deterministic check: " + REQUIRED_REQUESTS + " <= " + BASELINE_CAPACITY + " = " + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + " → " + (baselineValid ? "CONFIRMED" : "REJECTED"));
-            send({ type: "step", num: 2, title: "Baseline Agent Decision", body: '<span class="sys">MiMo v2.5 (' + baselineLLM.latencyMs + 'ms):</span>\n<span class="' + (baselineDecision.decision === "BUY_FALLBACK" ? "err" : "ok") + '">Decision: ' + baselineDecision.decision + '</span>\nReason: ' + (baselineDecision.reason || "—") + '\n<span class="sys">Check: ' + REQUIRED_REQUESTS + ' <= ' + BASELINE_CAPACITY + ' = ' + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + ' → ' + (baselineValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
+        // ── Step 2: Baseline LLM call ──
+        stepIdx = 1; sep();
+        logMsg("info", "<strong>STEP 2 — Baseline Agent Decision (stale data)</strong>");
+        const baselinePrompt = routingPrompt(BASELINE_CAPACITY, "baseline docs estimate");
+        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+        logMsg("dim", "model: mimo-v2.5 | max_tokens: 4000 | temperature: 0");
+        logMsg("dim", "prompt: " + baselinePrompt.length + " chars");
+        const baselineLLM = await callLLM(env.OPENCODE_API_KEY, baselinePrompt);
+        logMsg("res", "200 OK (" + baselineLLM.latencyMs + "ms)");
+        let baselineDecision;
+        try { baselineDecision = JSON.parse(baselineLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { baselineDecision = { decision: "PARSE_ERROR", reason: baselineLLM.response }; }
+        logMsg("dim", "raw: " + baselineLLM.response.slice(0, 200));
+        logMsg("ok", "parsed: " + JSON.stringify(baselineDecision));
+        const baselineValid = baselineDecision.decision === (BASELINE_CAPACITY >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
+        logMsg(baselineValid ? "ok" : "err", "check: " + REQUIRED_REQUESTS + " <= " + BASELINE_CAPACITY + " = " + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + " → " + (baselineValid ? "CONFIRMED" : "REJECTED"));
+        steps.push({ title: "Baseline Agent Decision", body: '<span class="sys">MiMo v2.5 (' + baselineLLM.latencyMs + 'ms):</span>\n<span class="' + (baselineDecision.decision === "BUY_FALLBACK" ? "err" : "ok") + '">Decision: ' + baselineDecision.decision + '</span>\nReason: ' + (baselineDecision.reason || "—") + '\n<span class="sys">Check: ' + REQUIRED_REQUESTS + ' <= ' + BASELINE_CAPACITY + ' = ' + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + ' → ' + (baselineValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
 
-            // ── Step 3: SerpApi ──
-            sep();
-            logMsg("info", "<strong>STEP 3 — Live SerpApi Search</strong>");
-            const searchQuery = "site:opencode.ai/go GLM-5.3-Flash usage limits";
-            logMsg("req", "GET https://serpapi.com/search.json");
-            logMsg("dim", "engine: google_light | no_cache: true");
-            logMsg("dim", "q: " + searchQuery);
-            const serpResult = await serpSearch(env.SERPAPI_API_KEY, searchQuery);
-            if (!serpResult.searchId) { logMsg("err", "SerpApi failed: " + (serpResult.error || "no search ID")); throw new Error("SerpApi failed"); }
-            logMsg("res", "200 OK (" + serpResult.latencyMs + "ms)");
-            logMsg("ok", "search_id: " + serpResult.searchId);
-            logMsg("ok", "status: " + serpResult.status);
-            logMsg("info", "results: " + serpResult.resultCount + " organic results");
-            logMsg("info", "official_result: " + (serpResult.officialResult?.link || "none"));
-            if (serpResult.raw?.top_results) {
-              serpResult.raw.top_results.forEach(function(r, i) {
-                logMsg("dim", "  [" + (i+1) + "] " + r.title);
-                logMsg("dim", "      " + r.link);
-                logMsg("dim", "      " + (r.snippet || "").slice(0, 120));
-              });
-            }
-            send({ type: "step", num: 3, title: "Live SerpApi Search", body: '<span class="api">SERPAPI LIVE SEARCH</span>\nengine: google_light | no_cache: true\nsearch_id: <span class="ok">' + serpResult.searchId + '</span>\nlatency: ' + serpResult.latencyMs + 'ms\nresults: ' + serpResult.resultCount + '\nofficial: ' + (serpResult.officialResult?.link || "none"), done: true });
-
-            // ── Step 4: Source fetch ──
-            sep();
-            logMsg("info", "<strong>STEP 4 — Fetch Official Source</strong>");
-            if (!serpResult.officialResult) { logMsg("err", "No official opencode.ai result in search results"); throw new Error("No official source"); }
-            logMsg("req", "GET " + serpResult.officialResult.link);
-            logMsg("dim", "User-Agent: LiveLLM/1.0");
-            const source = await fetchSource(serpResult.officialResult.link);
-            logMsg("res", source.status + " OK (" + source.latencyMs + "ms)");
-            logMsg("ok", "content_hash: " + source.contentHash.slice(0, 40) + "...");
-            logMsg("info", "html_size: " + source.htmlSize + " bytes");
-            logMsg("info", "snippets_extracted: " + source.snippets.length);
-            source.snippets.forEach(function(s, i) {
-              logMsg("dim", "  snippet[" + i + "]: " + s.slice(0, 150) + "...");
-            });
-            send({ type: "step", num: 4, title: "Official Source", body: '<span class="ok">Source retrieved</span>\nurl: ' + source.url + '\nstatus: ' + source.status + '\nhash: ' + source.contentHash.slice(0, 30) + '...\nsize: ' + source.htmlSize + ' bytes\nsnippets: ' + source.snippets.length, done: true });
-
-            // ── Step 5: LLM extraction ──
-            sep();
-            logMsg("info", "<strong>STEP 5 — Live LLM Extraction</strong>");
-            const extPrompt = extractionPrompt(source.snippets.join("\n\n"));
-            logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-            logMsg("dim", "model: mimo-v2.5 | extracting facts from source text");
-            logMsg("dim", "prompt_length: " + extPrompt.length + " chars");
-            logMsg("dim", "source_snippets: " + source.snippets.length + " (" + source.snippets.join("\n").length + " chars)");
-            const extLLM = await callLLM(env.OPENCODE_API_KEY, extPrompt);
-            logMsg("res", "200 OK (" + extLLM.latencyMs + "ms)");
-            let extraction;
-            try { extraction = JSON.parse(extLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { extraction = { error: "parse failed", raw: extLLM.response }; }
-            logMsg("dim", "raw response: " + extLLM.response.slice(0, 300));
-            logMsg("ok", "parsed: " + JSON.stringify(extraction));
-            send({ type: "step", num: 5, title: "Live LLM Extraction", body: '<span class="ok">Extraction complete</span> (' + extLLM.latencyMs + 'ms)\ncapacity: <span class="ok">' + (extraction.capacity_requests_5h || "null") + '</span>\npromo: ' + (extraction.promotion_multiplier || "none") + '\nevidence: "' + (extraction.evidence || "—").slice(0, 100) + '"', done: true });
-
-            // ── Step 6: Validation ──
-            sep();
-            logMsg("info", "<strong>STEP 6 — Deterministic Validation</strong>");
-            const validation = validate(extraction);
-            validation.checks.forEach(function(c) {
-              logMsg(c.pass ? "ok" : "err", (c.pass ? "✓" : "✗") + " " + c.name);
-            });
-            logMsg(validation.accepted ? "ok" : "err", "RESULT: " + (validation.accepted ? "ACCEPTED — fact verified" : "REJECTED — fact not verified"));
-            const checkLines = validation.checks.map(c => '<span class="' + (c.pass ? "ok" : "err") + '">' + (c.pass ? "✓" : "✗") + " " + c.name + "</span>").join("\n");
-            send({ type: "step", num: 6, title: "Deterministic Validation", body: checkLines + '\n\n<span class="' + (validation.accepted ? "ok" : "err") + '">Result: ' + (validation.accepted ? "ACCEPTED" : "REJECTED") + '</span>', done: true });
-
-            if (!validation.accepted) { throw new Error("Extraction rejected by validator"); }
-
-            // ── Step 7: Fresh LLM call ──
-            sep();
-            logMsg("info", "<strong>STEP 7 — Fresh Agent Decision (live data)</strong>");
-            const freshPrompt = routingPrompt(extraction.capacity_requests_5h, "live SerpApi discovery + official source extraction");
-            logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-            logMsg("dim", "model: mimo-v2.5 | routing with LIVE market fact");
-            logMsg("dim", "capacity_now: " + extraction.capacity_requests_5h + " req/5h (was " + BASELINE_CAPACITY + ")");
-            const freshLLM = await callLLM(env.OPENCODE_API_KEY, freshPrompt);
-            logMsg("res", "200 OK (" + freshLLM.latencyMs + "ms)");
-            let freshDecision;
-            try { freshDecision = JSON.parse(freshLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { freshDecision = { decision: "PARSE_ERROR", reason: freshLLM.response }; }
-            logMsg("dim", "raw response: " + freshLLM.response.slice(0, 300));
-            logMsg("ok", "parsed: " + JSON.stringify(freshDecision));
-            const freshValid = freshDecision.decision === (extraction.capacity_requests_5h >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
-            logMsg(freshValid ? "ok" : "err", "deterministic check: " + REQUIRED_REQUESTS + " <= " + extraction.capacity_requests_5h + " = " + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + " → " + (freshValid ? "CONFIRMED" : "REJECTED"));
-            send({ type: "step", num: 7, title: "Fresh Agent Decision", body: '<span class="sys">MiMo v2.5 (' + freshLLM.latencyMs + 'ms):</span>\n<span class="' + (freshDecision.decision === "USE_OPENCODE_GO" ? "ok" : "err") + '">Decision: ' + freshDecision.decision + '</span>\nReason: ' + (freshDecision.reason || "—") + '\n<span class="sys">Check: ' + REQUIRED_REQUESTS + ' <= ' + extraction.capacity_requests_5h + ' = ' + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + ' → ' + (freshValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
-
-            // ── Step 8: Verify ──
-            sep();
-            logMsg("info", "<strong>STEP 8 — Verification</strong>");
-            const routeChanged = baselineDecision.decision !== freshDecision.decision;
-            logMsg("info", "baseline: " + baselineDecision.decision);
-            logMsg("info", "live:     " + freshDecision.decision);
-            logMsg(routeChanged ? "ok" : "warn", routeChanged ? "ROUTE CHANGED — fresh market data altered the decision" : "ROUTE UNCHANGED — market state was already sufficient");
-            send({ type: "step", num: 8, title: "Verification", body: '<span class="sys">Baseline: ' + baselineDecision.decision + '</span>\n<span class="sys">Live:     ' + freshDecision.decision + '</span>\n\n<span class="' + (routeChanged ? "ok" : "err") + '">' + (routeChanged ? "ROUTE CHANGED" : "ROUTE UNCHANGED") + '</span>', done: true });
-
-            // ── Agent Payload ──
-            sep();
-            logMsg("info", "<strong>PAYLOAD — Agent Market Data</strong>");
-            logMsg("dim", "Generating compact markdown payload for agent consumption...");
-            const MARKET_DATA = [
-              { p: "OpenCode", m: "MiMo V2.5", i: 0.14, o: 0.28, c: 0.0028, ctx: "1M", free: "—", req: "150,400/$10mo" },
-              { p: "OpenCode", m: "GLM-5.3-Flash", i: 0.15, o: 0.5, c: 0.03, ctx: "128K", free: "1000/day", req: "7,900/$10mo" },
-              { p: "OpenCode", m: "DeepSeek V4 Flash", i: 0.22, o: 0.66, c: 0.007, ctx: "1M", free: "—", req: "37,800/$10mo" },
-              { p: "Z.ai", m: "GLM-5.3-Flash", i: 0.075, o: 0.25, c: 0.015, ctx: "128K", free: "—", req: "—" },
-              { p: "OpenAI", m: "GPT-4o", i: 2.5, o: 10, c: 1.25, ctx: "128K", free: "—", req: "—" },
-              { p: "Anthropic", m: "Claude Sonnet 4", i: 3, o: 15, c: 0.3, ctx: "200K", free: "—", req: "—" },
-              { p: "Anthropic", m: "Claude Haiku 3.5", i: 0.8, o: 4, c: 0.08, ctx: "200K", free: "—", req: "—" },
-              { p: "Google", m: "Gemini 2.5 Flash", i: 0.3, o: 2.5, c: 0.03, ctx: "1M", free: "1500/day", req: "—" },
-              { p: "Groq", m: "gpt-oss-120b", i: 0.15, o: 0.6, c: 0.075, ctx: "131K", free: "14,400/day", req: "—" },
-              { p: "DeepSeek", m: "V3", i: 0.14, o: 0.28, c: 0.014, ctx: "128K", free: "—", req: "—" },
-            ];
-            var payloadMd = "# LLM Market Data\nUpdated: " + new Date().toISOString().split("T")[0] + "\n\n";
-            payloadMd += "## Models\n| Provider | Model | Input/1M | Output/1M | Cached | Context | Free | Requests/sub |\n";
-            payloadMd += "|----------|-------|----------|-----------|--------|---------|------|-------------|\n";
-            for (const row of MARKET_DATA) {
-              payloadMd += "| " + row.p + " | " + row.m + " | $" + row.i + " | $" + row.o + " | $" + row.c + " | " + row.ctx + " | " + row.free + " | " + row.req + " |\n";
-            }
-            payloadMd += "\n---\n_" + MARKET_DATA.length + " models | verified from official pricing pages | content-addressed provenance_";
-            logMsg("ok", "payload generated: " + payloadMd.length + " chars, " + MARKET_DATA.length + " models");
-            logMsg("dim", "token budget: ~" + Math.round(payloadMd.length / 4) + " tokens");
-
-            // ── Done ──
-            sep();
-            var headline = routeChanged ? "ROUTE CHANGED" : "Route Unchanged";
-            var detail = "Same workload (" + REQUIRED_REQUESTS + " requests/" + WINDOW_HOURS + "h). Same model (GLM-5.3-Flash). Same agent (MiMo v2.5). " + (routeChanged ? "Fresh market state changed the decision." : "Market state was already sufficient.");
-            logMsg("ok", "<strong>" + headline + "</strong>");
-            logMsg("ok", detail);
-            logMsg("dim", "run_id: run-" + Date.now());
-
-            send({
-              type: "done",
-              headline, detail,
-              evidence: {
-                baseline: { capacity_5h: BASELINE_CAPACITY, required: REQUIRED_REQUESTS, sufficient: BASELINE_CAPACITY >= REQUIRED_REQUESTS },
-                baseline_agent: { decision: baselineDecision.decision, reason: baselineDecision.reason, model: baselineLLM.model, latencyMs: baselineLLM.latencyMs },
-                serpapi: { searchId: serpResult.searchId, status: serpResult.status, resultCount: serpResult.resultCount, officialResult: serpResult.officialResult?.link, latencyMs: serpResult.latencyMs },
-                source: { url: source.url, status: source.status, contentHash: source.contentHash, latencyMs: source.latencyMs },
-                extraction: { ...extraction, model: extLLM.model, latencyMs: extLLM.latencyMs },
-                validation,
-                live_agent: { decision: freshDecision.decision, reason: freshDecision.reason, model: freshLLM.model, latencyMs: freshLLM.latencyMs },
-                verification: { baselineDecision: baselineDecision.decision, liveDecision: freshDecision.decision, routeChanged }
-              },
-              payload: payloadMd,
-              run_id: "run-" + Date.now()
-            });
-
-          } catch (e) {
-            send({ type: "error", message: e.message });
-          }
-          controller.close();
+        // ── Step 3: SerpApi ──
+        stepIdx = 2; sep();
+        logMsg("info", "<strong>STEP 3 — Live SerpApi Search</strong>");
+        const searchQuery = "site:opencode.ai/go GLM-5.3-Flash usage limits";
+        logMsg("req", "GET https://serpapi.com/search.json");
+        logMsg("dim", "engine: google_light | no_cache: true");
+        logMsg("dim", "q: " + searchQuery);
+        const serpResult = await serpSearch(env.SERPAPI_API_KEY, searchQuery);
+        if (!serpResult.searchId) { logMsg("err", "SerpApi failed: " + (serpResult.error || "no search ID")); throw new Error("SerpApi failed"); }
+        logMsg("res", "200 OK (" + serpResult.latencyMs + "ms)");
+        logMsg("ok", "search_id: " + serpResult.searchId);
+        logMsg("ok", "status: " + serpResult.status);
+        logMsg("info", "results: " + serpResult.resultCount + " organic results");
+        logMsg("info", "official: " + (serpResult.officialResult?.link || "none"));
+        if (serpResult.raw?.top_results) {
+          serpResult.raw.top_results.forEach(function(r, i) {
+            logMsg("dim", "  [" + (i+1) + "] " + r.title);
+            logMsg("dim", "      " + r.link);
+          });
         }
-      });
-      return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive", "Access-Control-Allow-Origin": "*" } });
+        steps.push({ title: "Live SerpApi Search", body: '<span class="api">SERPAPI LIVE SEARCH</span>\nengine: google_light | no_cache: true\nsearch_id: <span class="ok">' + serpResult.searchId + '</span>\nlatency: ' + serpResult.latencyMs + 'ms\nresults: ' + serpResult.resultCount + '\nofficial: ' + (serpResult.officialResult?.link || "none"), done: true });
+
+        // ── Step 4: Source fetch ──
+        stepIdx = 3; sep();
+        logMsg("info", "<strong>STEP 4 — Fetch Official Source</strong>");
+        if (!serpResult.officialResult) { logMsg("err", "No official opencode.ai result in search results"); throw new Error("No official source"); }
+        logMsg("req", "GET " + serpResult.officialResult.link);
+        logMsg("dim", "User-Agent: LiveLLM/1.0");
+        const source = await fetchSource(serpResult.officialResult.link);
+        logMsg("res", source.status + " OK (" + source.latencyMs + "ms)");
+        logMsg("ok", "content_hash: " + source.contentHash.slice(0, 40) + "...");
+        logMsg("info", "html_size: " + source.htmlSize + " bytes | snippets: " + source.snippets.length);
+        steps.push({ title: "Official Source", body: '<span class="ok">Source retrieved</span>\nurl: ' + source.url + '\nstatus: ' + source.status + '\nhash: ' + source.contentHash.slice(0, 30) + '...\nsize: ' + source.htmlSize + ' bytes\nsnippets: ' + source.snippets.length, done: true });
+
+        // ── Step 5: LLM extraction ──
+        stepIdx = 4; sep();
+        logMsg("info", "<strong>STEP 5 — Live LLM Extraction</strong>");
+        const extPrompt = extractionPrompt(source.snippets.join("\n\n"));
+        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+        logMsg("dim", "model: mimo-v2.5 | extracting facts from source");
+        logMsg("dim", "prompt: " + extPrompt.length + " chars | snippets: " + source.snippets.length);
+        const extLLM = await callLLM(env.OPENCODE_API_KEY, extPrompt);
+        logMsg("res", "200 OK (" + extLLM.latencyMs + "ms)");
+        let extraction;
+        try { extraction = JSON.parse(extLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { extraction = { error: "parse failed", raw: extLLM.response }; }
+        logMsg("dim", "raw: " + extLLM.response.slice(0, 300));
+        logMsg("ok", "parsed: " + JSON.stringify(extraction));
+        steps.push({ title: "Live LLM Extraction", body: '<span class="ok">Extraction complete</span> (' + extLLM.latencyMs + 'ms)\ncapacity: <span class="ok">' + (extraction.capacity_requests_5h || "null") + '</span>\npromo: ' + (extraction.promotion_multiplier || "none") + '\nevidence: "' + (extraction.evidence || "—").slice(0, 100) + '"', done: true });
+
+        // ── Step 6: Validation ──
+        stepIdx = 5; sep();
+        logMsg("info", "<strong>STEP 6 — Deterministic Validation</strong>");
+        const validation = validate(extraction);
+        validation.checks.forEach(function(c) {
+          logMsg(c.pass ? "ok" : "err", (c.pass ? "✓" : "✗") + " " + c.name);
+        });
+        logMsg(validation.accepted ? "ok" : "err", "RESULT: " + (validation.accepted ? "ACCEPTED" : "REJECTED"));
+        const checkLines = validation.checks.map(c => '<span class="' + (c.pass ? "ok" : "err") + '">' + (c.pass ? "✓" : "✗") + " " + c.name + "</span>").join("\n");
+        steps.push({ title: "Deterministic Validation", body: checkLines + '\n\n<span class="' + (validation.accepted ? "ok" : "err") + '">Result: ' + (validation.accepted ? "ACCEPTED" : "REJECTED") + '</span>', done: true });
+
+        if (!validation.accepted) { throw new Error("Extraction rejected by validator"); }
+
+        // ── Step 7: Fresh LLM call ──
+        stepIdx = 6; sep();
+        logMsg("info", "<strong>STEP 7 — Fresh Agent Decision (live data)</strong>");
+        const freshPrompt = routingPrompt(extraction.capacity_requests_5h, "live SerpApi discovery + official source extraction");
+        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+        logMsg("dim", "model: mimo-v2.5 | routing with LIVE market fact");
+        logMsg("dim", "capacity: " + extraction.capacity_requests_5h + " req/5h (was " + BASELINE_CAPACITY + ")");
+        const freshLLM = await callLLM(env.OPENCODE_API_KEY, freshPrompt);
+        logMsg("res", "200 OK (" + freshLLM.latencyMs + "ms)");
+        let freshDecision;
+        try { freshDecision = JSON.parse(freshLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { freshDecision = { decision: "PARSE_ERROR", reason: freshLLM.response }; }
+        logMsg("dim", "raw: " + freshLLM.response.slice(0, 300));
+        logMsg("ok", "parsed: " + JSON.stringify(freshDecision));
+        const freshValid = freshDecision.decision === (extraction.capacity_requests_5h >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
+        logMsg(freshValid ? "ok" : "err", "check: " + REQUIRED_REQUESTS + " <= " + extraction.capacity_requests_5h + " = " + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + " → " + (freshValid ? "CONFIRMED" : "REJECTED"));
+        steps.push({ title: "Fresh Agent Decision", body: '<span class="sys">MiMo v2.5 (' + freshLLM.latencyMs + 'ms):</span>\n<span class="' + (freshDecision.decision === "USE_OPENCODE_GO" ? "ok" : "err") + '">Decision: ' + freshDecision.decision + '</span>\nReason: ' + (freshDecision.reason || "—") + '\n<span class="sys">Check: ' + REQUIRED_REQUESTS + ' <= ' + extraction.capacity_requests_5h + ' = ' + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + ' → ' + (freshValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
+
+        // ── Step 8: Verify ──
+        stepIdx = 7; sep();
+        logMsg("info", "<strong>STEP 8 — Verification</strong>");
+        const routeChanged = baselineDecision.decision !== freshDecision.decision;
+        logMsg("info", "baseline: " + baselineDecision.decision);
+        logMsg("info", "live:     " + freshDecision.decision);
+        logMsg(routeChanged ? "ok" : "warn", routeChanged ? "ROUTE CHANGED" : "ROUTE UNCHANGED");
+        steps.push({ title: "Verification", body: '<span class="sys">Baseline: ' + baselineDecision.decision + '</span>\n<span class="sys">Live:     ' + freshDecision.decision + '</span>\n\n<span class="' + (routeChanged ? "ok" : "err") + '">' + (routeChanged ? "ROUTE CHANGED" : "ROUTE UNCHANGED") + '</span>', done: true });
+
+        // ── Agent Payload ──
+        stepIdx = -1; sep(-1);
+        logMsg("info", "<strong>PAYLOAD — Agent Market Data</strong>", -1);
+        const MARKET_DATA = [
+          { p: "OpenCode", m: "MiMo V2.5", i: 0.14, o: 0.28, c: 0.0028, ctx: "1M", free: "—", req: "150,400/$10mo" },
+          { p: "OpenCode", m: "GLM-5.3-Flash", i: 0.15, o: 0.5, c: 0.03, ctx: "128K", free: "1000/day", req: "7,900/$10mo" },
+          { p: "OpenCode", m: "DeepSeek V4 Flash", i: 0.22, o: 0.66, c: 0.007, ctx: "1M", free: "—", req: "37,800/$10mo" },
+          { p: "Z.ai", m: "GLM-5.3-Flash", i: 0.075, o: 0.25, c: 0.015, ctx: "128K", free: "—", req: "—" },
+          { p: "OpenAI", m: "GPT-4o", i: 2.5, o: 10, c: 1.25, ctx: "128K", free: "—", req: "—" },
+          { p: "Anthropic", m: "Claude Sonnet 4", i: 3, o: 15, c: 0.3, ctx: "200K", free: "—", req: "—" },
+          { p: "Anthropic", m: "Claude Haiku 3.5", i: 0.8, o: 4, c: 0.08, ctx: "200K", free: "—", req: "—" },
+          { p: "Google", m: "Gemini 2.5 Flash", i: 0.3, o: 2.5, c: 0.03, ctx: "1M", free: "1500/day", req: "—" },
+          { p: "Groq", m: "gpt-oss-120b", i: 0.15, o: 0.6, c: 0.075, ctx: "131K", free: "14,400/day", req: "—" },
+          { p: "DeepSeek", m: "V3", i: 0.14, o: 0.28, c: 0.014, ctx: "128K", free: "—", req: "—" },
+        ];
+        var payloadMd = "# LLM Market Data\nUpdated: " + new Date().toISOString().split("T")[0] + "\n\n";
+        payloadMd += "## Models\n| Provider | Model | Input/1M | Output/1M | Cached | Context | Free | Requests/sub |\n";
+        payloadMd += "|----------|-------|----------|-----------|--------|---------|------|-------------|\n";
+        for (const row of MARKET_DATA) {
+          payloadMd += "| " + row.p + " | " + row.m + " | $" + row.i + " | $" + row.o + " | $" + row.c + " | " + row.ctx + " | " + row.free + " | " + row.req + " |\n";
+        }
+        payloadMd += "\n---\n_" + MARKET_DATA.length + " models | verified from official pricing pages | content-addressed provenance_";
+        logMsg("ok", "payload: " + payloadMd.length + " chars, ~" + Math.round(payloadMd.length / 4) + " tokens", -1);
+
+        // ── Done ──
+        var headline = routeChanged ? "ROUTE CHANGED" : "Route Unchanged";
+        var detail = "Same workload (" + REQUIRED_REQUESTS + " requests/" + WINDOW_HOURS + "h). Same model (GLM-5.3-Flash). Same agent (MiMo v2.5). " + (routeChanged ? "Fresh market state changed the decision." : "Market state was already sufficient.");
+
+        return new Response(JSON.stringify({
+          steps, logs,
+          final: { headline, detail },
+          evidence: {
+            baseline: { capacity_5h: BASELINE_CAPACITY, required: REQUIRED_REQUESTS, sufficient: BASELINE_CAPACITY >= REQUIRED_REQUESTS },
+            baseline_agent: { decision: baselineDecision.decision, reason: baselineDecision.reason, model: baselineLLM.model, latencyMs: baselineLLM.latencyMs },
+            serpapi: { searchId: serpResult.searchId, status: serpResult.status, resultCount: serpResult.resultCount, officialResult: serpResult.officialResult?.link, latencyMs: serpResult.latencyMs },
+            source: { url: source.url, status: source.status, contentHash: source.contentHash, latencyMs: source.latencyMs },
+            extraction: { ...extraction, model: extLLM.model, latencyMs: extLLM.latencyMs },
+            validation,
+            live_agent: { decision: freshDecision.decision, reason: freshDecision.reason, model: freshLLM.model, latencyMs: freshLLM.latencyMs },
+            verification: { baselineDecision: baselineDecision.decision, liveDecision: freshDecision.decision, routeChanged }
+          },
+          payload: payloadMd,
+          run_id: "run-" + Date.now()
+        }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+
+      } catch (e) {
+        return new Response(JSON.stringify({ steps, logs, error: e.message }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+      }
     }
 
     if (url.pathname === "/api/demo/payload") {
