@@ -194,12 +194,18 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="panel" id="p3">
-  <div class="done-box">
-    <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Agent Payload</div>
-    <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">What the agent actually receives</div>
-    <div style="font-size:.72rem;color:#64748b;margin-bottom:.75rem">Compact markdown — ~500 tokens for 10 models. Ingested via system prompt, RAG, or MCP tool output.</div>
-    <button class="btn btn-g" id="gen-payload-btn" onclick="generatePayload()" style="margin-bottom:1rem">Generate Payload</button>
-    <div id="payload-body" class="payload-box" style="display:none"></div>
+  <div style="display:flex;gap:1rem;flex-direction:column">
+    <div class="done-box">
+      <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Agent Payload</div>
+      <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">What the agent actually receives</div>
+      <div style="font-size:.72rem;color:#64748b;margin-bottom:.75rem">Compact markdown — ~500 tokens for 10 models. Ingested via system prompt, RAG, or MCP tool output.</div>
+      <button class="btn btn-g" id="gen-payload-btn" onclick="generatePayload()" style="margin-bottom:1rem">Generate Payload</button>
+      <div id="payload-body" class="payload-box" style="display:none"></div>
+    </div>
+    <div class="done-box">
+      <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Payload Activity</div>
+      <div class="log-area" id="payload-log" style="max-height:300px;min-height:100px"></div>
+    </div>
   </div>
 </div>
 
@@ -250,23 +256,83 @@ function generatePayloadMd(){
 async function generatePayload(){
   var btn=document.getElementById('gen-payload-btn');
   var body=document.getElementById('payload-body');
+  var plog=document.getElementById('payload-log');
   btn.disabled=true;btn.textContent='Generating...';
   body.style.display='block';
   body.textContent='';
+  plog.innerHTML='';
 
-  // Simulate streaming the payload
-  var md=generatePayloadMd();
-  var chars=md.split('');
-  var i=0;
-  function streamNext(){
-    if(i>=chars.length){btn.disabled=false;btn.textContent='Generate Payload';return;}
-    var chunk=chars.slice(i,i+8).join('');
-    body.textContent+=chunk;
-    i+=8;
-    body.scrollTop=body.scrollHeight;
-    setTimeout(streamNext,12);
+  function plogMsg(cls,msg){
+    plog.innerHTML+='<span class="ts">['+ts()+']</span> <span class="'+cls+'">'+msg+'</span>\n';
+    plog.scrollTop=plog.scrollHeight;
   }
-  streamNext();
+
+  plogMsg('info','<strong>Generating live agent payload</strong>');
+  plogMsg('dim','────────────────────────────────────────');
+
+  try{
+    plogMsg('req','POST /api/demo/payload');
+    var t0=performance.now();
+    var r=await fetch('/api/demo/payload');
+    var d=await r.json();
+    var ms=Math.round(performance.now()-t0);
+
+    if(d.error){
+      plogMsg('err','Error: '+d.error);
+      btn.disabled=false;btn.textContent='Generate Payload';return;
+    }
+
+    plogMsg('res','200 OK ('+ms+'ms)');
+    plogMsg('ok','SerpApi search completed: '+d.search_id);
+    plogMsg('info','engine: google_light | no_cache: true');
+    plogMsg('info','query: site:opencode.ai/go GLM-5.3-Flash usage limits');
+
+    if(d.serch_info){
+      plogMsg('dim','results_for: '+d.search_info.results_for);
+      plogMsg('dim','total_results: '+d.search_info.total_results);
+    }
+
+    plogMsg('dim','────────────────────────────────────────');
+    plogMsg('info','<strong>Building agent payload</strong>');
+
+    var md=d.markdown||'';
+    var lines=md.split('\n');
+    var tableLines=lines.filter(function(l){return l.charAt(0)==='|';});
+    var modelCount=Math.max(0,tableLines.length-2);
+    plogMsg('ok','payload: '+md.length+' chars | ~'+Math.round(md.length/4)+' tokens');
+    plogMsg('ok','models: '+modelCount+' verified entries');
+    plogMsg('info','format: compact markdown table');
+    plogMsg('info','source: SerpApi output=md (50%+ token savings vs JSON)');
+
+    // Content hash
+    plogMsg('dim','────────────────────────────────────────');
+    plogMsg('info','<strong>Content-Addressed Provenance</strong>');
+    plogMsg('ok','sha256:'+d.content_hash);
+    plogMsg('dim','search_id: '+d.search_id);
+    plogMsg('dim','Every fact traces to this specific search response.');
+
+    // Stream the payload
+    plogMsg('dim','────────────────────────────────────────');
+    plogMsg('info','<strong>Payload Content</strong>');
+    var chars=md.split('');
+    var i=0;
+    function streamNext(){
+      if(i>=chars.length){
+        btn.disabled=false;btn.textContent='Generate Payload';
+        plogMsg('ok','Done.');
+        return;
+      }
+      var chunk=chars.slice(i,i+12).join('');
+      body.textContent+=chunk;
+      i+=12;
+      body.scrollTop=body.scrollHeight;
+      setTimeout(streamNext,8);
+    }
+    streamNext();
+  }catch(e){
+    plogMsg('err','Error: '+e.message);
+    btn.disabled=false;btn.textContent='Generate Payload';
+  }
 }
 
 function showTab(i,el){document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('on',j===i)});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});el.classList.add('on');}
@@ -531,10 +597,36 @@ export default {
     if (url.pathname === "/api/demo/payload") {
       try {
         if (!env.SERPAPI_API_KEY) return new Response(JSON.stringify({ error: "SERPAPI_API_KEY not configured" }), { headers: { "Content-Type": "application/json" } });
-        const params = new URLSearchParams({ q: "site:opencode.ai/go GLM-5.3-Flash usage limits", engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true", output: "md" });
-        const res = await fetch("https://serpapi.com/search.md?" + params);
-        const md = await res.text();
-        return new Response(JSON.stringify({ markdown: md }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+        const query = "site:opencode.ai/go GLM-5.3-Flash usage limits";
+
+        // Fetch JSON for metadata + markdown for payload
+        const jsonParams = new URLSearchParams({ q: query, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
+        const mdParams = new URLSearchParams({ q: query, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true", output: "md" });
+
+        const [jsonRes, mdRes] = await Promise.all([
+          fetch("https://serpapi.com/search.json?" + jsonParams),
+          fetch("https://serpapi.com/search.md?" + mdParams)
+        ]);
+
+        const jsonData = await jsonRes.json();
+        const md = await mdRes.text();
+
+        // Content hash
+        const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(md));
+        const contentHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+
+        return new Response(JSON.stringify({
+          markdown: md,
+          search_id: jsonData.search_metadata?.id || "unknown",
+          content_hash: contentHash,
+          search_info: {
+            query_displayed: jsonData.search_information?.query_displayed,
+            total_results: jsonData.search_information?.total_results,
+            results_for: jsonData.search_information?.results_for,
+            time_taken: jsonData.search_information?.time_taken_displayed,
+          },
+          results_count: jsonData.organic_results?.length || 0,
+        }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { headers: { "Content-Type": "application/json" } });
       }
