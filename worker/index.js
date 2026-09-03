@@ -279,8 +279,8 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 
 <div class="tabs" id="tabs-bar" style="display:none">
   <button class="tab on" onclick="showTab(0,this)">Demo</button>
-  <button class="tab" onclick="showTab(1,this)">Demo 2</button>
-  <button class="tab" onclick="showTab(2,this)">Evidence</button>
+  <button class="tab" onclick="showTab(1,this)">Evidence</button>
+  <button class="tab" onclick="showTab(2,this)">Demo 2</button>
   <button class="tab" onclick="showTab(3,this)">Payload</button>
 </div>
 
@@ -291,16 +291,6 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="panel" id="p1">
-  <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center">
-    <button class="btn btn-g" id="agents-btn" onclick="runAgents()">Run Agent Comparison</button>
-    <span style="font-size:.72rem;color:#64748b">Same workload. Stale data vs LiveLLM. See the difference.</span>
-  </div>
-  <div id="agents-area" style="display:grid;gap:1rem">
-    <div style="text-align:center;color:#64748b;padding:2rem;font-size:.78rem">Click "Run Agent Comparison"</div>
-  </div>
-</div>
-
-<div class="panel" id="p2">
   <div class="done-box">
     <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Evidence Trail</div>
     <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">Provenance for this run</div>
@@ -308,18 +298,13 @@ code,.mono{font-family:'JetBrains Mono',monospace}
   </div>
 </div>
 
-<div class="panel" id="p3">
-    <table style="width:100%;border-collapse:collapse;font-size:.72rem;margin-top:.75rem">
-      <thead><tr><th style="text-align:left;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:6px 8px;border-bottom:1px solid #334155;font-weight:600">Endpoint</th><th style="text-align:left;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:6px 8px;border-bottom:1px solid #334155;font-weight:600">Method</th><th style="text-align:left;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:6px 8px;border-bottom:1px solid #334155;font-weight:600">Returns</th></tr></thead>
-      <tbody>
-        <tr><td style="padding:6px 8px;border-bottom:1px solid #1e293b">/v1/market</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">GET</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">Full market snapshot — 26 models, routes, promotions, capabilities</td></tr>
-        <tr><td style="padding:6px 8px;border-bottom:1px solid #1e293b">/v1/models/:model</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">GET</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">Detailed model facts — all 46 fields, verification state, evidence IDs</td></tr>
-        <tr><td style="padding:6px 8px;border-bottom:1px solid #1e293b">/v1/economics/:model</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">GET</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">Cost-per-request + subscription multiple for agent workloads</td></tr>
-        <tr><td style="padding:6px 8px;border-bottom:1px solid #1e293b">/v1/changes</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">GET</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">Temporal fact supersession — before/after with bitemporal tracking</td></tr>
-        <tr><td style="padding:6px 8px;border-bottom:1px solid #1e293b">/v1/evidence/:id</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">GET</td><td style="padding:6px 8px;border-bottom:1px solid #1e293b">Content-addressed provenance — SHA-256 hash, search ID, source URL</td></tr>
-      </tbody>
-    </table>
-    <div style="margin-top:1rem;font-size:.78rem;color:#64748b">26 models | 9 providers | 46 fact fields | 6-step validation | cost economics | temporal supersession | content-addressed provenance</div>
+<div class="panel" id="p2">
+  <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center">
+    <button class="btn btn-g" id="agents-btn" onclick="runAgents()">Run Agent Comparison</button>
+    <span style="font-size:.72rem;color:#64748b">Same workload. Stale data vs LiveLLM. See the difference.</span>
+  </div>
+  <div id="agents-area" style="display:grid;gap:1rem">
+    <div style="text-align:center;color:#64748b;padding:2rem;font-size:.78rem">Click "Run Agent Comparison"</div>
   </div>
 </div>
 
