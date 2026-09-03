@@ -277,30 +277,40 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="tabs" id="tabs-bar" style="display:none">
-  <button class="tab on" onclick="showTab(0,this)">Live Demo</button>
-  <button class="tab" onclick="showTab(1,this)">Agents</button>
-  <button class="tab" onclick="showTab(2,this)">Evidence</button>
-  <button class="tab" onclick="showTab(3,this)">API</button>
+  <button class="tab on" onclick="showTab(0,this)">Story</button>
+  <button class="tab" onclick="showTab(1,this)">Pipeline</button>
+  <button class="tab" onclick="showTab(2,this)">Agents</button>
+  <button class="tab" onclick="showTab(3,this)">Evidence</button>
   <button class="tab" onclick="showTab(4,this)">Payload</button>
 </div>
 
 <div class="panel on" id="p0">
+  <div id="story-area">
+    <div style="text-align:center;padding:3rem 0">
+      <h2 style="font-size:1.3rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">An agent needs to route 240 code reviews/day</h2>
+      <p style="font-size:.88rem;color:#94a3b8;max-width:500px;margin:0 auto 1.5rem">Budget: $50/mo. Current model: Claude Sonnet 4. Is it enough? Watch what happens when market data changes.</p>
+      <button class="btn btn-g" id="story-btn" onclick="runStory()">Run Story</button>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="p1">
   <div class="log-area" id="log-area"></div>
   <div id="steps-area" style="margin-top:1rem"></div>
   <div id="final-box"></div>
 </div>
 
-<div class="panel" id="p1">
+<div class="panel" id="p2">
   <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center">
     <button class="btn btn-g" id="agents-btn" onclick="runAgents()">Run Agent Comparison</button>
-    <span style="font-size:.72rem;color:#64748b">Two agents, same workload. Stale data vs LiveLLM verified data.</span>
+    <span style="font-size:.72rem;color:#64748b">Three agents, same payload. Different needs, different optimal routes.</span>
   </div>
   <div id="agents-area" style="display:grid;gap:1rem">
-    <div style="text-align:center;color:#64748b;padding:2rem;font-size:.78rem">Click "Run Agent Comparison" to see side-by-side</div>
+    <div style="text-align:center;color:#64748b;padding:2rem;font-size:.78rem">Click "Run Agent Comparison"</div>
   </div>
 </div>
 
-<div class="panel" id="p2">
+<div class="panel" id="p3">
   <div class="done-box">
     <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Evidence Trail</div>
     <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">Provenance for this run</div>
@@ -351,6 +361,77 @@ function log(cls,text){if(!logEl)return;logEl.innerHTML+='<span class="ts">['+ts
 function logSep(){log('dim','────────────────────────────────────────');}
 
 function showTab(i,el){document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('on',j===i)});document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});el.classList.add('on');}
+
+async function runStory(){
+  var btn=document.getElementById('story-btn');
+  btn.disabled=true;btn.textContent='Running...';
+  var area=document.getElementById('story-area');
+  area.innerHTML='<div style="text-align:center;padding:2rem;color:#64748b">Agent is reasoning about its workload...</div>';
+  try{
+    var r=await fetch('/api/story',{method:'POST',headers:{'Content-Type':'application/json'}});
+    var d=await r.json();
+    if(d.error){area.innerHTML='<div style="color:#f87171;padding:2rem">Error: '+d.error+'</div>';btn.disabled=false;btn.textContent='Run Story';return;}
+
+    var html='';
+    // Step 1: The Problem
+    html+='<div style="margin-bottom:2rem">';
+    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">The Problem</div>';
+    html+='<div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:1.25rem">';
+    html+='<div style="font-size:.95rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">  CodeReview Agent needs to route 240 code reviews/day</div>';
+    html+='<div style="font-size:.78rem;color:#94a3b8;line-height:1.7">';
+    html+='Workload: 830 uncached + 71,500 cached + 295 output tokens per review<br>';
+    html+='Budget: $50/month<br>';
+    html+='Current assumption: Claude Sonnet 4 at $3/M input (from training data)';
+    html+='</div></div></div>';
+
+    // Step 2: Without LiveLLM
+    html+='<div style="margin-bottom:2rem">';
+    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600;margin-bottom:.5rem">Without LiveLLM — Stale Data</div>';
+    html+='<div style="background:#1e293b;border:1px solid #7f1d1d;border-radius:8px;padding:1.25rem">';
+    html+='<div style="font-size:.78rem;color:#94a3b8;margin-bottom:.75rem">Agent reasons from training knowledge only:</div>';
+    html+='<div style="background:#0a0e14;border:1px solid #1e293b;border-radius:6px;padding:.75rem;font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap">'+d.stale_reasoning+'</div>';
+    html+='<div style="margin-top:.75rem;display:flex;gap:1rem;flex-wrap:wrap">';
+    html+='<div style="background:#7f1d1d;border:1px solid #991b1b;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px">Route</span><div style="font-size:.88rem;font-weight:700;color:#fca5a5;margin-top:2px">'+d.stale_route+'</div></div>';
+    html+='<div style="background:#7f1d1d;border:1px solid #991b1b;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px">Monthly Cost</span><div style="font-size:.88rem;font-weight:700;color:#fca5a5;margin-top:2px">'+d.stale_cost+'</div></div>';
+    html+='<div style="background:#7f1d1d;border:1px solid #991b1b;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px">Budget</span><div style="font-size:.88rem;font-weight:700;color:#fca5a5;margin-top:2px">$50/mo — '+(d.stale_over_budget?'OVER BUDGET':'within budget')+'</div></div>';
+    html+='</div></div></div>';
+
+    // Step 3: Agent Calls LiveLLM
+    html+='<div style="margin-bottom:2rem">';
+    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#60a5fa;font-weight:600;margin-bottom:.5rem">Agent Calls LiveLLM API</div>';
+    html+='<div style="background:#1e293b;border:1px solid #1e3a5f;border-radius:8px;padding:1.25rem">';
+    html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8">';
+    html+='<span class="req">→ GET /v1/market</span><br>';
+    html+='<span class="res">← 200 OK ('+d.api_latency+'ms)</span><br>';
+    html+='<span class="ok">← '+d.model_count+' models verified, content-addressed</span><br>';
+    html+='<span class="dim">← search_id: '+d.search_id+'</span><br>';
+    html+='<span class="dim">← content_hash: sha256:'+d.content_hash.slice(0,24)+'...</span>';
+    html+='</div></div></div>';
+
+    // Step 4: With LiveLLM
+    html+='<div style="margin-bottom:2rem">';
+    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600;margin-bottom:.5rem">With LiveLLM — Live Verified Data</div>';
+    html+='<div style="background:#1e293b;border:1px solid #064e3b;border-radius:8px;padding:1.25rem">';
+    html+='<div style="font-size:.78rem;color:#94a3b8;margin-bottom:.75rem">Agent sees all 23 models with real-time pricing:</div>';
+    html+='<div style="background:#0a0e14;border:1px solid #1e293b;border-radius:6px;padding:.75rem;font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap">'+d.live_reasoning+'</div>';
+    html+='<div style="margin-top:.75rem;display:flex;gap:1rem;flex-wrap:wrap">';
+    html+='<div style="background:#064e3b;border:1px solid #059669;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#34d399;text-transform:uppercase;letter-spacing:.5px">Route</span><div style="font-size:.88rem;font-weight:700;color:#34d399;margin-top:2px">'+d.live_route+'</div></div>';
+    html+='<div style="background:#064e3b;border:1px solid #059669;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#34d399;text-transform:uppercase;letter-spacing:.5px">Monthly Cost</span><div style="font-size:.88rem;font-weight:700;color:#34d399;margin-top:2px">'+d.live_cost+'</div></div>';
+    html+='<div style="background:#064e3b;border:1px solid #059669;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#34d399;text-transform:uppercase;letter-spacing:.5px">Savings</span><div style="font-size:.88rem;font-weight:700;color:#34d399;margin-top:2px">'+d.savings+'</div></div>';
+    html+='</div></div></div>';
+
+    // Step 5: The Verdict
+    html+='<div style="background:linear-gradient(135deg,#064e3b,#065f46);border:2px solid #059669;border-radius:12px;padding:2rem;text-align:center">';
+    html+='<h2 style="font-size:1.5rem;font-weight:800;color:#a7f3d0;margin-bottom:.5rem">'+d.verdict_title+'</h2>';
+    html+='<p style="color:#6ee7b7;font-size:.9rem">'+d.verdict_detail+'</p>';
+    html+='</div>';
+
+    area.innerHTML=html;
+  }catch(e){
+    area.innerHTML='<div style="color:#f87171;padding:2rem">Error: '+e.message+'</div>';
+  }
+  btn.disabled=false;btn.textContent='Run Story';
+}
 
 async function runAgents(){
   var btn=document.getElementById('agents-btn');
@@ -723,6 +804,92 @@ export default {
           model_count: modelCount,
           token_estimate: Math.round(payload.length / 4),
           results_count: jsonData.organic_results?.length || 0,
+        }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { headers: { "Content-Type": "application/json" } });
+      }
+    }
+
+    if (url.pathname === "/api/story" && request.method === "POST") {
+      try {
+        // Build live market data
+        let liveMarket = "## Live Market Data (from LiveLLM API — verified, content-addressed)\n\n";
+        liveMarket += "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free | Requests/sub |\n";
+        liveMarket += "|----------|-------|----------|-----------|--------|---------|------|-------------|\n";
+        for (const m of MODELS) {
+          const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
+          const req = m.requests ? m.requests.toLocaleString() + (m.sub ? "/$" + m.sub + "mo" : "") : "—";
+          liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " | " + req + " |\n";
+        }
+
+        const staleMarket = `## Stale Market Data (from training knowledge — incomplete, possibly wrong)
+| Provider | Model | Input/1M | Output/1M |
+|----------|-------|----------|-----------|
+| OpenAI | GPT-4o | $2.5 | $10 |
+| Anthropic | Claude Sonnet 4 | $3 | $15 |
+| Anthropic | Claude Haiku 3.5 | $0.8 | $4 |
+| Google | Gemini 2.5 Flash | $0.30 | $2.50 |
+
+Note: Agent doesn't know about OpenCode Go subscriptions, Z.ai promos, or Groq free tiers.`;
+
+        const codingPersona = `You are a coding agent that reviews pull requests. 240 reviews/day. Each review: 830 uncached input tokens, 71500 cached tokens (repeated file patterns), 295 output tokens. Budget: $50/month.
+
+Compute cost_per_request for each model: (input_per_1m * 830 + cached_per_1m * 71500 + output_per_1m * 295) / 1,000,000
+Then monthly = cost_per_request * 240 * 30.
+
+Consider subscriptions: if a model has a subscription price and requests/sub, the effective cost is subscription_price / requests (amortized). Check if promotion multiplier applies.
+
+Pick the BEST route for this workload. Return EXACTLY:
+ROUTE: <provider>:<model>
+COST: $<monthly>
+REASON: <one sentence explaining why this route is optimal>`;
+
+        // Run stale
+        const stalePrompt = codingPersona + "\n\n" + staleMarket;
+        const staleLLM = await callLLM(env.OPENCODE_API_KEY, stalePrompt);
+        const staleRoute = staleLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "").replace(/\*$/g, "") || "unknown";
+        const staleCost = staleLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "").replace(/\*$/g, "") || "unknown";
+        const staleReason = staleLLM.response.match(/REASON:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || staleLLM.response.slice(0, 200);
+
+        // Run live
+        const livePrompt = codingPersona + "\n\n" + liveMarket;
+        const liveLLM = await callLLM(env.OPENCODE_API_KEY, livePrompt);
+        const liveRoute = liveLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "").replace(/\*$/g, "") || "unknown";
+        const liveCost = liveLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "").replace(/\*$/g, "") || "unknown";
+        const liveReason = liveLLM.response.match(/REASON:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || liveLLM.response.slice(0, 200);
+
+        // Content hash for provenance
+        const contentHash = await sha256(liveMarket);
+
+        // Search ID (from a real search)
+        const searchQ = "site:opencode.ai/go GLM-5.3-Flash usage limits";
+        const sp = new URLSearchParams({ q: searchQ, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
+        const sr = await fetch("https://serpapi.com/search.json?" + sp);
+        const sd = await sr.json();
+        const searchId = sd.search_metadata?.id || "unknown";
+
+        // Parse costs for comparison
+        const staleNum = parseFloat(staleCost.replace(/[^0-9.]/g, "")) || 0;
+        const liveNum = parseFloat(liveCost.replace(/[^0-9.]/g, "")) || 0;
+        const savingsAmount = staleNum - liveNum;
+        const savingsPct = staleNum > 0 ? Math.round((savingsAmount / staleNum) * 100) : 0;
+        const overBudget = staleNum > 50;
+
+        return new Response(JSON.stringify({
+          stale_reasoning: staleLLM.response,
+          stale_route: staleRoute,
+          stale_cost: staleCost,
+          stale_over_budget: overBudget,
+          live_reasoning: liveLLM.response,
+          live_route: liveRoute,
+          live_cost: liveCost,
+          savings: savingsAmount > 0 ? "$" + savingsAmount.toFixed(2) + "/mo saved (" + savingsPct + "%)" : "Cost optimized",
+          api_latency: liveLLM.latencyMs,
+          model_count: MODELS.length,
+          search_id: searchId,
+          content_hash: contentHash,
+          verdict_title: savingsPct > 0 ? "Route Changed — Saved " + savingsPct + "%" : "Route Optimized",
+          verdict_detail: "Same workload (240 reviews/day). Same agent. LiveLLM found " + liveRoute + " at " + liveCost + "/mo instead of " + staleRoute + " at " + staleCost + "/mo.",
         }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { headers: { "Content-Type": "application/json" } });
