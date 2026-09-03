@@ -409,11 +409,34 @@ async function runStory(){
   document.getElementById('hero').style.display='none';
   document.getElementById('tabs-bar').style.display='flex';
   var logEl=document.getElementById('story-log');
-  logEl.innerHTML='<div style="text-align:center;padding:2rem"><div style="display:inline-block;width:20px;height:20px;border:2px solid #334155;border-top-color:#059669;border-radius:50%;animation:spin .6s linear infinite"></div><div style="font-size:.72rem;color:#64748b;margin-top:.5rem">Connecting to LiveLLM...</div></div>';
+  // Loading animation immediately
+  logEl.innerHTML='<div style="padding:1rem"><div style="display:inline-block;width:18px;height:18px;border:2px solid #334155;border-top-color:#059669;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle"></div> <span style="font-size:.78rem;color:#64748b">Connecting to LiveLLM...</span></div>';
 
   try{
     var r=await fetch('/api/story',{method:'POST',headers:{'Content-Type':'application/json'}});
+    var d=await r.json();
+    if(d.error){logEl.innerHTML='<span class="err">'+d.error+'</span>';btn.disabled=false;btn.textContent='Run Demo';return;}
+
+    // Render logs with delays for streaming effect
     logEl.innerHTML='';
+    var logs=d.logs||[];
+    for(var i=0;i<logs.length;i++){
+      logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(logs[i].cls||'info')+'">'+logs[i].msg+'</span>\n';
+      logEl.scrollTop=logEl.scrollHeight;
+      await new Promise(function(r){setTimeout(r,40)});
+    }
+    // Final verdict
+    logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok"><strong>'+d.verdict_title+'</strong></span>\n';
+    logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok">'+d.verdict_detail+'</span>\n';
+    logEl.scrollTop=logEl.scrollHeight;
+
+    // Populate evidence
+    document.getElementById('evidence-body').innerHTML='search_id: '+d.search_id+'\ncontent_hash: sha256:'+d.content_hash.slice(0,32)+'...\nstale_route: '+d.stale_route+'\nstale_cost: '+d.stale_cost+'\nlive_route: '+d.live_route+'\nlive_cost: '+d.live_cost+'\nmath.zai_monthly: $'+d.math.zai.monthly.toFixed(2)+'\nmath.mimo_effective: $'+d.math.mimo.effective.toFixed(2);
+  }catch(e){
+    logEl.innerHTML+='<span class="err">Error: '+e.message+'</span>\n';
+  }
+  btn.disabled=false;btn.textContent='Run Demo';
+}
     var reader=r.body.getReader();
     var dec=new TextDecoder();
     var buf='';
@@ -455,47 +478,41 @@ async function runAgents(){
   var btn=document.getElementById('agents-btn');
   btn.disabled=true;btn.textContent='Running...';
   var area=document.getElementById('agents-area');
-  area.innerHTML='<div style="text-align:center;padding:2rem"><div style="display:inline-block;width:20px;height:20px;border:2px solid #334155;border-top-color:#059669;border-radius:50%;animation:spin .6s linear infinite"></div><div style="font-size:.72rem;color:#64748b;margin-top:.5rem">Running 6 LLM calls...</div></div>';
+  area.innerHTML='<div style="padding:1rem"><div style="display:inline-block;width:18px;height:18px;border:2px solid #334155;border-top-color:#059669;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle"></div> <span style="font-size:.78rem;color:#64748b">Running 6 LLM calls...</span></div>';
   try{
     var r=await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'}});
+    var d=await r.json();
     area.innerHTML='<div class="log-area" id="agents-log" style="max-height:200px;margin-bottom:1rem"></div><div id="agents-results"></div>';
     var logEl=document.getElementById('agents-log');
-    var reader=r.body.getReader();
-    var dec=new TextDecoder();
-    var buf='';
-    while(true){
-      var chunk=await reader.read();
-      if(chunk.done)break;
-      buf+=dec.decode(chunk.value,{stream:true});
-      var lines=buf.split('\n');
-      buf=lines.pop();
-      for(var i=0;i<lines.length;i++){
-        var line=lines[i].trim();
-        if(!line||line.charAt(0)===':')continue;
-        if(line.indexOf('data: ')!==0)continue;
-        try{
-          var evt=JSON.parse(line.slice(6));
-          if(evt.type==='log'){
-            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(evt.cls||'info')+'">'+evt.msg+'</span>\n';
-            logEl.scrollTop=logEl.scrollHeight;
-          }else if(evt.type==='done'){
-            // Render results
-            var resEl=document.getElementById('agents-results');
-            var html='';
-            for(var id in evt.stale){
-              var s=evt.stale[id], l=evt.live[id];
-              html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
-              html+='<div class="done-box" style="border-color:#f87171">';
-              html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600">'+s.icon+' '+s.name+' — Stale</div>';
-              html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(s.decision)+'</div>';
-              html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+s.latencyMs+'ms | '+s.model+'</div>';
-              html+='</div>';
-              html+='<div class="done-box" style="border-color:#059669">';
-              html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600">'+l.icon+' '+l.name+' — Live</div>';
-              html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(l.decision)+'</div>';
-              html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+l.latencyMs+'ms | '+l.model+'</div>';
-              html+='</div></div>';
-            }
+    var logs=d.logs||[];
+    for(var i=0;i<logs.length;i++){
+      logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(logs[i].cls||'info')+'">'+logs[i].msg+'</span>\n';
+      logEl.scrollTop=logEl.scrollHeight;
+      await new Promise(function(r){setTimeout(r,40)});
+    }
+    // Render results
+    var resEl=document.getElementById('agents-results');
+    var html='';
+    for(var id in d.stale){
+      var s=d.stale[id], l=d.live[id];
+      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
+      html+='<div class="done-box" style="border-color:#f87171">';
+      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600">'+s.icon+' '+s.name+' — Stale</div>';
+      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(s.decision)+'</div>';
+      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+s.latencyMs+'ms | '+s.model+'</div>';
+      html+='</div>';
+      html+='<div class="done-box" style="border-color:#059669">';
+      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600">'+l.icon+' '+l.name+' — Live</div>';
+      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(l.decision)+'</div>';
+      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+l.latencyMs+'ms | '+l.model+'</div>';
+      html+='</div></div>';
+    }
+    resEl.innerHTML=html;
+  }catch(e){
+    area.innerHTML='<span class="err">Error: '+e.message+'</span>';
+  }
+  btn.disabled=false;btn.textContent='Run Agent Comparison';
+}
             resEl.innerHTML=html;
           }
         }catch(e){}
@@ -630,19 +647,15 @@ export default {
     }
 
     if (url.pathname === "/api/story" && request.method === "POST") {
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          function send(obj) { controller.enqueue(encoder.encode("data: " + JSON.stringify(obj) + "\n\n")); }
-          function log(cls, msg) { send({ type: "log", cls, msg }); }
-          function sep() { send({ type: "log", cls: "dim", msg: "────────────────────────────────────────" }); }
-
-          try {
-            log("info", "<strong>LiveLLM — running live market discovery</strong>");
+      const logs = [];
+      function logMsg(cls, msg) { logs.push({ cls, msg }); }
+      function sep() { logs.push({ cls: "dim", msg: "────────────────────────────────────────" }); }
+      try {
+            logMsg("info", "<strong>LiveLLM — running live market discovery</strong>");
             sep();
 
             // Build live market data
-            log("info", "Building agent market payload from verified fact ledger...");
+            logMsg("info", "Building agent market payload from verified fact ledger...");
             let liveMarket = "## Live Market Data\n\n";
             liveMarket += "| Provider | Model | Input/1M | Output/1M | Cached | Sub | Requests | Effective |\n";
             liveMarket += "|----------|-------|----------|-----------|--------|-----|----------|-----------|\n";
@@ -653,13 +666,13 @@ export default {
               const eff = m.sub && m.requests ? (m.promo ? (cpr * m.requests * m.promo / m.sub).toFixed(1) + "×" : (cpr * m.requests / m.sub).toFixed(1) + "×") : "$" + (cpr * 240 * 30).toFixed(2) + "/mo";
               liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + sub + " | " + req + " | " + eff + " |\n";
             }
-            log("ok", MODELS.length + " models loaded from fact ledger");
+            logMsg("ok", MODELS.length + " models loaded from fact ledger");
 
             // Stale data
             sep();
-            log("info", "<strong>Stale data (from OpenRouter/LiteLLM)</strong>");
+            logMsg("info", "<strong>Stale data (from OpenRouter/LiteLLM)</strong>");
             const staleMarket = "Z.ai GLM-5.3-Flash $0.075/M | DeepSeek V3 $0.14/M | gpt-4.1-nano $0.10/M | GPT-4o mini $0.15/M | Groq gpt-oss-20b $0.075/M | Mistral Small $0.15/M";
-            log("ok", "6 PAYG models — subscriptions invisible");
+            logMsg("ok", "6 PAYG models — subscriptions invisible");
 
             const codingPersona = `You are a coding agent. 240 reviews/day. 830 uncached + 71500 cached + 295 output tokens. Budget: $50/mo.
 PAYG: (input*830 + cached*71500 + output*295)/1M * 240 * 30
@@ -668,49 +681,49 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
 
             // Run stale
             sep();
-            log("info", "<strong>Decision WITHOUT LiveLLM</strong>");
-            log("dim", "Agent receives stale price list as text prompt");
-            log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-            log("dim", "prompt: Z.ai $0.075/M, DeepSeek $0.14/M, Groq $0.075/M");
-            log("dim", "prompt missing: subscriptions, MiMo V2.5, promos, free tiers");
+            logMsg("info", "<strong>Decision WITHOUT LiveLLM</strong>");
+            logMsg("dim", "Agent receives stale price list as text prompt");
+            logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+            logMsg("dim", "prompt: Z.ai $0.075/M, DeepSeek $0.14/M, Groq $0.075/M");
+            logMsg("dim", "prompt missing: subscriptions, MiMo V2.5, promos, free tiers");
             const staleLLM = await callLLM(env.OPENCODE_API_KEY, codingPersona + "\n\n" + staleMarket);
-            log("res", "200 OK (" + staleLLM.latencyMs + "ms)");
+            logMsg("res", "200 OK (" + staleLLM.latencyMs + "ms)");
             const staleRoute = staleLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
             const staleCost = staleLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
-            log("ok", "ROUTE: " + staleRoute);
-            log("ok", "COST: " + staleCost);
-            log("dim", "raw: " + staleLLM.response.slice(0, 200));
+            logMsg("ok", "ROUTE: " + staleRoute);
+            logMsg("ok", "COST: " + staleCost);
+            logMsg("dim", "raw: " + staleLLM.response.slice(0, 200));
 
             // Run live
             sep();
-            log("info", "<strong>Decision WITH LiveLLM</strong>");
-            log("dim", "Agent receives verified payload (23 models, subs, promos)");
-            log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-            log("dim", "prompt: MiMo $0.14/M + $10 sub, GLM Flash 2× promo, Groq free");
+            logMsg("info", "<strong>Decision WITH LiveLLM</strong>");
+            logMsg("dim", "Agent receives verified payload (23 models, subs, promos)");
+            logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+            logMsg("dim", "prompt: MiMo $0.14/M + $10 sub, GLM Flash 2× promo, Groq free");
             const liveLLM = await callLLM(env.OPENCODE_API_KEY, codingPersona + "\n\n" + liveMarket);
-            log("res", "200 OK (" + liveLLM.latencyMs + "ms)");
+            logMsg("res", "200 OK (" + liveLLM.latencyMs + "ms)");
             const liveRoute = liveLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
             const liveCost = liveLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
-            log("ok", "ROUTE: " + liveRoute);
-            log("ok", "COST: " + liveCost);
-            log("dim", "raw: " + liveLLM.response.slice(0, 200));
+            logMsg("ok", "ROUTE: " + liveRoute);
+            logMsg("ok", "COST: " + liveCost);
+            logMsg("dim", "raw: " + liveLLM.response.slice(0, 200));
 
             // Provenance
             sep();
-            log("info", "<strong>Provenance</strong>");
+            logMsg("info", "<strong>Provenance</strong>");
             const contentHash = await sha256(liveMarket);
-            log("ok", "content_hash: sha256:" + contentHash.slice(0, 32) + "...");
+            logMsg("ok", "content_hash: sha256:" + contentHash.slice(0, 32) + "...");
             const searchQ = "site:opencode.ai/go GLM-5.3-Flash usage limits";
             const sp = new URLSearchParams({ q: searchQ, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
-            log("req", "GET https://serpapi.com/search.json (provenance)");
+            logMsg("req", "GET https://serpapi.com/search.json (provenance)");
             const sr = await fetch("https://serpapi.com/search.json?" + sp);
             const sd = await sr.json();
-            log("res", "200 OK");
-            log("ok", "search_id: " + (sd.search_metadata?.id || "unknown"));
+            logMsg("res", "200 OK");
+            logMsg("ok", "search_id: " + (sd.search_metadata?.id || "unknown"));
 
             // Math
             sep();
-            log("info", "<strong>Cost Math</strong>");
+            logMsg("info", "<strong>Cost Math</strong>");
             const glmZai = MODELS.find(m => m.entity === "Z.ai:GLM-5.3-Flash");
             const mimo = MODELS.find(m => m.entity === "OpenCode:MiMo V2.5");
             const glmFlash = MODELS.find(m => m.entity === "OpenCode:GLM-5.3-Flash");
@@ -721,15 +734,15 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
             const mimoEffective = mimoCpr * mimo.requests / mimo.sub;
             const glmCpr = costPerRequest(glmFlash, workload);
             const glmEffective = glmCpr * glmFlash.requests * glmFlash.promo / glmFlash.sub;
-            log("info", "Z.ai: $" + zaiCpr.toFixed(6) + "/req × 7200 = <span class='err'>$" + zaiMonthly.toFixed(2) + "/mo</span>");
-            log("info", "MiMo: $" + mimoCpr.toFixed(6) + "/req × " + mimo.requests.toLocaleString() + " / $" + mimo.sub + " = <span class='ok'>$" + mimoEffective.toFixed(2) + "/mo</span>");
-            log("info", "GLM Flash: $" + glmCpr.toFixed(6) + "/req × " + glmFlash.requests.toLocaleString() + " × " + glmFlash.promo + " / $" + glmFlash.sub + " = <span class='ok'>$" + glmEffective.toFixed(2) + "/mo</span>");
-            log("ok", "MiMo is " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper than Z.ai");
+            logMsg("info", "Z.ai: $" + zaiCpr.toFixed(6) + "/req × 7200 = <span class='err'>$" + zaiMonthly.toFixed(2) + "/mo</span>");
+            logMsg("info", "MiMo: $" + mimoCpr.toFixed(6) + "/req × " + mimo.requests.toLocaleString() + " / $" + mimo.sub + " = <span class='ok'>$" + mimoEffective.toFixed(2) + "/mo</span>");
+            logMsg("info", "GLM Flash: $" + glmCpr.toFixed(6) + "/req × " + glmFlash.requests.toLocaleString() + " × " + glmFlash.promo + " / $" + glmFlash.sub + " = <span class='ok'>$" + glmEffective.toFixed(2) + "/mo</span>");
+            logMsg("ok", "MiMo is " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper than Z.ai");
             sep();
 
-            // Send final result
-            send({
-              type: "done",
+            // Return JSON
+            return new Response(JSON.stringify({
+              logs,
               stale_route: staleRoute, stale_cost: staleCost, stale_reasoning: staleLLM.response,
               live_route: liveRoute, live_cost: liveCost, live_reasoning: liveLLM.response,
               search_id: sd.search_metadata?.id || "unknown", content_hash: contentHash,
@@ -740,69 +753,57 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
               },
               verdict_title: "MiMo V2.5 via OpenCode Go is cheapest",
               verdict_detail: "Z.ai at $" + zaiMonthly.toFixed(2) + "/mo vs MiMo at $" + mimoEffective.toFixed(2) + "/mo — " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper.",
-            });
+            }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
           } catch (e) {
-            send({ type: "error", message: e.message });
+            return new Response(JSON.stringify({ error: e.message, logs }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
           }
-          controller.close();
-        }
-      });
-      return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive", "Access-Control-Allow-Origin": "*" } });
     }
 
     if (url.pathname === "/api/agents" && request.method === "POST") {
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        async start(controller) {
-          function send(obj) { controller.enqueue(encoder.encode("data: " + JSON.stringify(obj) + "\n\n")); }
-          function log(cls, msg) { send({ type: "log", cls, msg }); }
-          function sep() { send({ type: "log", cls: "dim", msg: "────────────────────────────────────────" }); }
+      const logs = [];
+      function logMsg(cls, msg) { logs.push({ cls, msg }); }
+      function sep() { logs.push({ cls: "dim", msg: "────────────────────────────────────────" }); }
+      try {
+        logMsg("info", "<strong>Running 3 agents — stale vs live data</strong>");
+        sep();
 
-          try {
-            log("info", "<strong>Running 3 agents — stale vs live data</strong>");
-            sep();
-
-            let liveMarket = "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free |\n";
-            liveMarket += "|----------|-------|----------|-----------|--------|---------|------|\n";
-            for (const m of MODELS) {
-              const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
-              liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " |\n";
-            }
-
-            const results = {};
-            for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
-              log("info", "<strong>" + persona.icon + " " + persona.name + " — stale</strong>");
-              log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-              const llmResult = await callLLM(env.OPENCODE_API_KEY, agentPrompt(persona.persona, STALE_MARKET));
-              log("res", "200 OK (" + llmResult.latencyMs + "ms)");
-              let decision;
-              try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
-              results[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
-              log("ok", "decided: " + JSON.stringify(decision).slice(0, 120));
-            }
-
-            sep();
-            const liveResults = {};
-            for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
-              log("info", "<strong>" + persona.icon + " " + persona.name + " — live</strong>");
-              log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-              const llmResult = await callLLM(env.OPENCODE_API_KEY, agentPrompt(persona.persona, liveMarket));
-              log("res", "200 OK (" + llmResult.latencyMs + "ms)");
-              let decision;
-              try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
-              liveResults[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
-              log("ok", "decided: " + JSON.stringify(decision).slice(0, 120));
-            }
-
-            sep();
-            send({ type: "done", stale: results, live: liveResults });
-          } catch (e) {
-            send({ type: "error", message: e.message });
-          }
-          controller.close();
+        let liveMarket = "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free |\n";
+        liveMarket += "|----------|-------|----------|-----------|--------|---------|------|\n";
+        for (const m of MODELS) {
+          const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
+          liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " |\n";
         }
-      });
-      return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive", "Access-Control-Allow-Origin": "*" } });
+
+        const results = {};
+        for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
+          logMsg("info", "<strong>" + persona.icon + " " + persona.name + " — stale</strong>");
+          logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+          const llmResult = await callLLM(env.OPENCODE_API_KEY, agentPrompt(persona.persona, STALE_MARKET));
+          logMsg("res", "200 OK (" + llmResult.latencyMs + "ms)");
+          let decision;
+          try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
+          results[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
+          logMsg("ok", "decided: " + JSON.stringify(decision).slice(0, 120));
+        }
+
+        sep();
+        const liveResults = {};
+        for (const [id, persona] of Object.entries(AGENT_PERSONAS)) {
+          logMsg("info", "<strong>" + persona.icon + " " + persona.name + " — live</strong>");
+          logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+          const llmResult = await callLLM(env.OPENCODE_API_KEY, agentPrompt(persona.persona, liveMarket));
+          logMsg("res", "200 OK (" + llmResult.latencyMs + "ms)");
+          let decision;
+          try { decision = JSON.parse(llmResult.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { decision = { raw: llmResult.response }; }
+          liveResults[id] = { ...persona, decision, latencyMs: llmResult.latencyMs, model: llmResult.model };
+          logMsg("ok", "decided: " + JSON.stringify(decision).slice(0, 120));
+        }
+
+        sep();
+        return new Response(JSON.stringify({ logs, stale: results, live: liveResults }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message, logs }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
+      }
     }
 
     return new Response("not found", { status: 404 });
