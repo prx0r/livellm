@@ -210,7 +210,7 @@ var logEl;
 function ts(){return new Date().toISOString().slice(11,23)}
 function log(cls,text){if(!logEl)return;logEl.innerHTML+='<span class="ts">['+ts()+']</span> <span class="'+cls+'">'+text+'</span>\n';logEl.scrollTop=logEl.scrollHeight;}
 function logReq(method,url){log('req','→ '+method+' '+url);}
-function logRes(status,ms,body preview){log('res','← '+status+' ('+ms+'ms) '+(preview||''));}
+function logRes(status,ms,preview){log('res','← '+status+' ('+ms+'ms) '+(preview||''));}
 function logSep(){log('dim','────────────────────────────────────────');}
 
 // ─── Agent Payload Market Data ──────────────────────────────────
