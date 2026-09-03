@@ -459,23 +459,6 @@ async function runAgents(){
   }
   btn.disabled=false;btn.textContent='Run Agent Comparison';
 }
-      html+='<div style="font-size:.65rem;color:#64748b;margin:.4rem 0">'+s.workload+'</div>';
-      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(s.decision)+'</div>';
-      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+s.latencyMs+'ms | '+s.model+'</div>';
-      html+='</div>';
-      html+='<div class="done-box" style="border-color:#059669">';
-      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600">'+l.icon+' '+l.name+' — Live</div>';
-      html+='<div style="font-size:.65rem;color:#64748b;margin:.4rem 0">'+l.workload+'</div>';
-      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(l.decision)+'</div>';
-      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+l.latencyMs+'ms | '+l.model+'</div>';
-      html+='</div></div>';
-    }
-    area.innerHTML=html;
-  }catch(e){
-    area.innerHTML='<div style="grid-column:1/-1;color:#f87171">Error: '+e.message+'</div>';
-  }
-  btn.disabled=false;btn.textContent='Run Agent Comparison';
-}
 
 function formatAgentResponse(d){
   if(!d)return '<span class="err">No response</span>';
