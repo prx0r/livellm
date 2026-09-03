@@ -286,9 +286,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 
 <div class="panel on" id="p0">
   <div id="story-area">
-    <div style="text-align:center;padding:3rem 0">
-      <p style="font-size:.88rem;color:#94a3b8;max-width:500px;margin:0 auto">Click "Run Demo" to see the agent's journey from stale market data to verified live state.</p>
-    </div>
+    <div class="log-area" id="story-log" style="min-height:400px"></div>
   </div>
 </div>
 
@@ -365,98 +363,42 @@ async function runStory(){
   btn.disabled=true;btn.textContent='Running...';
   document.getElementById('hero').style.display='none';
   document.getElementById('tabs-bar').style.display='flex';
-  var area=document.getElementById('story-area');
-  area.innerHTML='<div style="text-align:center;padding:2rem;color:#64748b">Running live SerpApi search...</div>';
+  var logEl=document.getElementById('story-log');
+  logEl.innerHTML='';
+
   try{
     var r=await fetch('/api/story',{method:'POST',headers:{'Content-Type':'application/json'}});
-    var d=await r.json();
-    if(d.error){area.innerHTML='<div style="color:#f87171;padding:2rem">Error: '+d.error+'</div>';btn.disabled=false;btn.textContent='Run Demo';return;}
+    var reader=r.body.getReader();
+    var dec=new TextDecoder();
+    var buf='';
 
-    // Stream logs
-    var logs=d.logs||[];
-    area.innerHTML='<div class="log-area" id="story-log" style="max-height:300px;margin-bottom:1.5rem"></div>';
-    var logEl=document.getElementById('story-log');
-    for(var li=0;li<logs.length;li++){
-      logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(logs[li].cls||'info')+'">'+logs[li].msg+'</span>\n';
-      logEl.scrollTop=logEl.scrollHeight;
-      await new Promise(function(r){setTimeout(r,30)});
+    while(true){
+      var chunk=await reader.read();
+      if(chunk.done)break;
+      buf+=dec.decode(chunk.value,{stream:true});
+      var lines=buf.split('\n');
+      buf=lines.pop();
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i].trim();
+        if(!line||line.charAt(0)===':')continue;
+        if(line.indexOf('data: ')!==0)continue;
+        try{
+          var evt=JSON.parse(line.slice(6));
+          if(evt.type==='log'){
+            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(evt.cls||'info')+'">'+evt.msg+'</span>\n';
+            logEl.scrollTop=logEl.scrollHeight;
+          }else if(evt.type==='done'){
+            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok"><strong>'+evt.verdict_title+'</strong></span>\n';
+            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="ok">'+evt.verdict_detail+'</span>\n';
+            logEl.scrollTop=logEl.scrollHeight;
+          }else if(evt.type==='error'){
+            logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="err">ERROR: '+evt.message+'</span>\n';
+          }
+        }catch(e){}
+      }
     }
-    await new Promise(function(r){setTimeout(r,300)});
-
-    var html='';
-    // Step 1: The Problem
-    html+='<div style="margin-bottom:2rem">';
-    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">The Problem</div>';
-    html+='<div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:1.25rem">';
-    html+='<div style="font-size:.95rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">  CodeReview Agent needs to route 240 code reviews/day</div>';
-    html+='<div style="font-size:.78rem;color:#94a3b8;line-height:1.7">';
-    html+='Workload: 830 uncached + 71,500 cached + 295 output tokens per review<br>';
-    html+='Budget: $50/month<br>';
-    html+='Current assumption: Claude Sonnet 4 at $3/M input (from training data)';
-    html+='</div></div></div>';
-
-    // Step 2: Without LiveLLM
-    html+='<div style="margin-bottom:2rem">';
-    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600;margin-bottom:.5rem">Without LiveLLM — Stale Data</div>';
-    html+='<div style="background:#1e293b;border:1px solid #7f1d1d;border-radius:8px;padding:1.25rem">';
-    html+='<div style="font-size:.78rem;color:#94a3b8;margin-bottom:.75rem">Agent reasons from training knowledge only:</div>';
-    html+='<div style="background:#0a0e14;border:1px solid #1e293b;border-radius:6px;padding:.75rem;font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap">'+d.stale_reasoning+'</div>';
-    html+='<div style="margin-top:.75rem;display:flex;gap:1rem;flex-wrap:wrap">';
-    html+='<div style="background:#7f1d1d;border:1px solid #991b1b;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px">Route</span><div style="font-size:.88rem;font-weight:700;color:#fca5a5;margin-top:2px">'+d.stale_route+'</div></div>';
-    html+='<div style="background:#7f1d1d;border:1px solid #991b1b;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px">Monthly Cost</span><div style="font-size:.88rem;font-weight:700;color:#fca5a5;margin-top:2px">'+d.stale_cost+'</div></div>';
-    html+='<div style="background:#7f1d1d;border:1px solid #991b1b;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#fca5a5;text-transform:uppercase;letter-spacing:.5px">Budget</span><div style="font-size:.88rem;font-weight:700;color:#fca5a5;margin-top:2px">$50/mo — '+(d.stale_over_budget?'OVER BUDGET':'within budget')+'</div></div>';
-    html+='</div></div></div>';
-
-    // Step 3: Agent Calls LiveLLM
-    html+='<div style="margin-bottom:2rem">';
-    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#60a5fa;font-weight:600;margin-bottom:.5rem">Agent Calls LiveLLM API</div>';
-    html+='<div style="background:#1e293b;border:1px solid #1e3a5f;border-radius:8px;padding:1.25rem">';
-    html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8">';
-    html+='<span class="req">→ GET /v1/market</span><br>';
-    html+='<span class="res">← 200 OK ('+d.api_latency+'ms)</span><br>';
-    html+='<span class="ok">← '+d.model_count+' models verified, content-addressed</span><br>';
-    html+='<span class="dim">← search_id: '+d.search_id+'</span><br>';
-    html+='<span class="dim">← content_hash: sha256:'+d.content_hash.slice(0,24)+'...</span>';
-    html+='</div></div></div>';
-
-    // Step 4: With LiveLLM
-    html+='<div style="margin-bottom:2rem">';
-    html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600;margin-bottom:.5rem">With LiveLLM — Live Verified Data</div>';
-    html+='<div style="background:#1e293b;border:1px solid #064e3b;border-radius:8px;padding:1.25rem">';
-    html+='<div style="font-size:.78rem;color:#94a3b8;margin-bottom:.75rem">Agent sees all 23 models with real-time pricing:</div>';
-    html+='<div style="background:#0a0e14;border:1px solid #1e293b;border-radius:6px;padding:.75rem;font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap">'+d.live_reasoning+'</div>';
-    html+='<div style="margin-top:.75rem;display:flex;gap:1rem;flex-wrap:wrap">';
-    html+='<div style="background:#064e3b;border:1px solid #059669;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#34d399;text-transform:uppercase;letter-spacing:.5px">Route</span><div style="font-size:.88rem;font-weight:700;color:#34d399;margin-top:2px">'+d.live_route+'</div></div>';
-    html+='<div style="background:#064e3b;border:1px solid #059669;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#34d399;text-transform:uppercase;letter-spacing:.5px">Monthly Cost</span><div style="font-size:.88rem;font-weight:700;color:#34d399;margin-top:2px">'+d.live_cost+'</div></div>';
-    html+='<div style="background:#064e3b;border:1px solid #059669;border-radius:6px;padding:.5rem .75rem"><span style="font-size:.55rem;color:#34d399;text-transform:uppercase;letter-spacing:.5px">Savings</span><div style="font-size:.88rem;font-weight:700;color:#34d399;margin-top:2px">'+d.savings+'</div></div>';
-    html+='</div></div></div>';
-
-    // Step 5: The Math
-    if(d.math){
-      html+='<div style="margin-bottom:2rem">';
-      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">The Math — Cost Per Request</div>';
-      html+='<div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:1.25rem;font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.8;color:#94a3b8">';
-      html+='<span class="dim">Formula: (input×830 + cached×71500 + output×295) / 1,000,000</span>\n\n';
-      html+='<span class="err">Z.ai GLM-5.3-Flash (PAYG):</span>\n';
-      html+='  ($'+d.math.zai.input+'/M × 830 + $'+d.math.zai.output+'/M × 295) / 1M = <span class="err">$'+d.math.zai.cpr.toFixed(6)+'/req</span>\n';
-      html+='  Monthly: $'+d.math.zai.cpr.toFixed(6)+' × 240 × 30 = <span class="err">$'+d.math.zai.monthly.toFixed(2)+'/mo</span>\n\n';
-      html+='<span class="ok">OpenCode MiMo V2.5 (subscription):</span>\n';
-      html+='  ($'+d.math.mimo.input+'/M × 830 + $'+d.math.mimo.cached+'/M × 71500 + $'+d.math.mimo.output+'/M × 295) / 1M = <span class="ok">$'+d.math.mimo.cpr.toFixed(6)+'/req</span>\n';
-      html+='  Effective: $'+d.math.mimo.cpr.toFixed(6)+' × '+d.math.mimo.requests.toLocaleString()+' req / $'+d.math.mimo.sub+' = <span class="ok">$'+d.math.mimo.effective.toFixed(2)+'/mo</span>\n\n';
-      html+='<span class="ok">OpenCode GLM-5.3-Flash (sub + 2× promo):</span>\n';
-      html+='  Effective: $'+d.math.glm.cpr.toFixed(6)+' × '+d.math.glm.requests.toLocaleString()+' × '+d.math.glm.promo+' / $'+d.math.glm.sub+' = <span class="ok">$'+d.math.glm.effective.toFixed(2)+'/mo</span>';
-      html+='</div></div>';
-    }
-
-    // Step 6: The Verdict
-    html+='<div style="background:linear-gradient(135deg,#064e3b,#065f46);border:2px solid #059669;border-radius:12px;padding:2rem;text-align:center">';
-    html+='<h2 style="font-size:1.5rem;font-weight:800;color:#a7f3d0;margin-bottom:.5rem">'+d.verdict_title+'</h2>';
-    html+='<p style="color:#6ee7b7;font-size:.9rem">'+d.verdict_detail+'</p>';
-    html+='</div>';
-
-    area.innerHTML=html;
   }catch(e){
-    area.innerHTML='<div style="color:#f87171;padding:2rem">Error: '+e.message+'</div>';
+    logEl.innerHTML+='<span class="err">FATAL: '+e.message+'</span>\n';
   }
   btn.disabled=false;btn.textContent='Run Demo';
 }
@@ -839,145 +781,121 @@ export default {
     }
 
     if (url.pathname === "/api/story" && request.method === "POST") {
-      const logs = [];
-      function logMsg(cls, msg) { logs.push({ cls, msg }); }
-      try {
-        logMsg("info", "<strong>LiveLLM — running live market discovery</strong>");
-        logMsg("dim", "────────────────────────────────────────");
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          function send(obj) { controller.enqueue(encoder.encode("data: " + JSON.stringify(obj) + "\n\n")); }
+          function log(cls, msg) { send({ type: "log", cls, msg }); }
+          function sep() { send({ type: "log", cls: "dim", msg: "────────────────────────────────────────" }); }
 
-        // Build live market data with full economics
-        logMsg("info", "Building agent market payload from verified fact ledger...");
-        let liveMarket = "## Live Market Data (from LiveLLM API — verified, content-addressed)\n\n";
-        liveMarket += "| Provider | Model | Input/1M | Output/1M | Cached | Context | Free | Sub | Requests/sub | Effective $/req |\n";
-        liveMarket += "|----------|-------|----------|-----------|--------|---------|------|-----|-------------|----------------|\n";
-        for (const m of MODELS) {
-          const free = m.freeQuota ? m.freeQuota + "/" + m.freePeriod : "—";
-          const sub = m.sub ? "$" + m.sub + "/mo" : "—";
-          const req = m.requests ? m.requests.toLocaleString() : "—";
-          const cpr = costPerRequest(m, { uncachedInput: 830, cachedInput: 71500, output: 295 });
-          const eff = m.sub && m.requests ? (m.promo ? "$" + (cpr * m.requests * m.promo / m.sub).toFixed(1) + "×" : "$" + (cpr * m.requests / m.sub).toFixed(1) + "×") : "$" + (cpr * 240 * 30).toFixed(2) + "/mo";
-          liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + (m.context/1000) + "K | " + free + " | " + sub + " | " + req + " | " + eff + " |\n";
+          try {
+            log("info", "<strong>LiveLLM — running live market discovery</strong>");
+            sep();
+
+            // Build live market data
+            log("info", "Building agent market payload from verified fact ledger...");
+            let liveMarket = "## Live Market Data\n\n";
+            liveMarket += "| Provider | Model | Input/1M | Output/1M | Cached | Sub | Requests | Effective |\n";
+            liveMarket += "|----------|-------|----------|-----------|--------|-----|----------|-----------|\n";
+            for (const m of MODELS) {
+              const sub = m.sub ? "$" + m.sub + "/mo" : "—";
+              const req = m.requests ? m.requests.toLocaleString() : "—";
+              const cpr = costPerRequest(m, { uncachedInput: 830, cachedInput: 71500, output: 295 });
+              const eff = m.sub && m.requests ? (m.promo ? (cpr * m.requests * m.promo / m.sub).toFixed(1) + "×" : (cpr * m.requests / m.sub).toFixed(1) + "×") : "$" + (cpr * 240 * 30).toFixed(2) + "/mo";
+              liveMarket += "| " + m.provider + " | " + m.name + " | $" + m.input + " | $" + m.output + " | $" + m.cached + " | " + sub + " | " + req + " | " + eff + " |\n";
+            }
+            log("ok", MODELS.length + " models loaded from fact ledger");
+
+            // Stale data
+            sep();
+            log("info", "<strong>Stale data (from OpenRouter/LiteLLM)</strong>");
+            const staleMarket = "Z.ai GLM-5.3-Flash $0.075/M | DeepSeek V3 $0.14/M | gpt-4.1-nano $0.10/M | GPT-4o mini $0.15/M | Groq gpt-oss-20b $0.075/M | Mistral Small $0.15/M";
+            log("ok", "6 PAYG models — subscriptions invisible");
+
+            const codingPersona = `You are a coding agent. 240 reviews/day. 830 uncached + 71500 cached + 295 output tokens. Budget: $50/mo.
+PAYG: (input*830 + cached*71500 + output*295)/1M * 240 * 30
+Sub: cost_per_request * requests / subscription_price
+CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <one sentence>`;
+
+            // Run stale
+            sep();
+            log("info", "<strong>Agent WITHOUT LiveLLM (stale data)</strong>");
+            log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+            log("dim", "model: mimo-v2.5 | sees only PAYG prices from OpenRouter");
+            const staleLLM = await callLLM(env.OPENCODE_API_KEY, codingPersona + "\n\n" + staleMarket);
+            log("res", "200 OK (" + staleLLM.latencyMs + "ms)");
+            const staleRoute = staleLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
+            const staleCost = staleLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
+            log("ok", "ROUTE: " + staleRoute);
+            log("ok", "COST: " + staleCost);
+            log("dim", "raw: " + staleLLM.response.slice(0, 200));
+
+            // Run live
+            sep();
+            log("info", "<strong>Agent WITH LiveLLM (live verified data)</strong>");
+            log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
+            log("dim", "model: mimo-v2.5 | sees 23 models + subscriptions + promos");
+            const liveLLM = await callLLM(env.OPENCODE_API_KEY, codingPersona + "\n\n" + liveMarket);
+            log("res", "200 OK (" + liveLLM.latencyMs + "ms)");
+            const liveRoute = liveLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
+            const liveCost = liveLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
+            log("ok", "ROUTE: " + liveRoute);
+            log("ok", "COST: " + liveCost);
+            log("dim", "raw: " + liveLLM.response.slice(0, 200));
+
+            // Provenance
+            sep();
+            log("info", "<strong>Provenance</strong>");
+            const contentHash = await sha256(liveMarket);
+            log("ok", "content_hash: sha256:" + contentHash.slice(0, 32) + "...");
+            const searchQ = "site:opencode.ai/go GLM-5.3-Flash usage limits";
+            const sp = new URLSearchParams({ q: searchQ, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
+            log("req", "GET https://serpapi.com/search.json (provenance)");
+            const sr = await fetch("https://serpapi.com/search.json?" + sp);
+            const sd = await sr.json();
+            log("res", "200 OK");
+            log("ok", "search_id: " + (sd.search_metadata?.id || "unknown"));
+
+            // Math
+            sep();
+            log("info", "<strong>Cost Math</strong>");
+            const glmZai = MODELS.find(m => m.entity === "Z.ai:GLM-5.3-Flash");
+            const mimo = MODELS.find(m => m.entity === "OpenCode:MiMo V2.5");
+            const glmFlash = MODELS.find(m => m.entity === "OpenCode:GLM-5.3-Flash");
+            const workload = { uncachedInput: 830, cachedInput: 71500, output: 295 };
+            const zaiCpr = costPerRequest(glmZai, workload);
+            const zaiMonthly = zaiCpr * 240 * 30;
+            const mimoCpr = costPerRequest(mimo, workload);
+            const mimoEffective = mimoCpr * mimo.requests / mimo.sub;
+            const glmCpr = costPerRequest(glmFlash, workload);
+            const glmEffective = glmCpr * glmFlash.requests * glmFlash.promo / glmFlash.sub;
+            log("info", "Z.ai: $" + zaiCpr.toFixed(6) + "/req × 7200 = <span class='err'>$" + zaiMonthly.toFixed(2) + "/mo</span>");
+            log("info", "MiMo: $" + mimoCpr.toFixed(6) + "/req × " + mimo.requests.toLocaleString() + " / $" + mimo.sub + " = <span class='ok'>$" + mimoEffective.toFixed(2) + "/mo</span>");
+            log("info", "GLM Flash: $" + glmCpr.toFixed(6) + "/req × " + glmFlash.requests.toLocaleString() + " × " + glmFlash.promo + " / $" + glmFlash.sub + " = <span class='ok'>$" + glmEffective.toFixed(2) + "/mo</span>");
+            log("ok", "MiMo is " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper than Z.ai");
+            sep();
+
+            // Send final result
+            send({
+              type: "done",
+              stale_route: staleRoute, stale_cost: staleCost, stale_reasoning: staleLLM.response,
+              live_route: liveRoute, live_cost: liveCost, live_reasoning: liveLLM.response,
+              search_id: sd.search_metadata?.id || "unknown", content_hash: contentHash,
+              math: {
+                zai: { cpr: zaiCpr, monthly: zaiMonthly },
+                mimo: { cpr: mimoCpr, effective: mimoEffective, sub: mimo.sub, requests: mimo.requests },
+                glm: { cpr: glmCpr, effective: glmEffective, promo: glmFlash.promo },
+              },
+              verdict_title: "MiMo V2.5 via OpenCode Go is cheapest",
+              verdict_detail: "Z.ai at $" + zaiMonthly.toFixed(2) + "/mo vs MiMo at $" + mimoEffective.toFixed(2) + "/mo — " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper.",
+            });
+          } catch (e) {
+            send({ type: "error", message: e.message });
+          }
+          controller.close();
         }
-        logMsg("ok", MODELS.length + " models loaded from fact ledger");
-
-        // Stale data
-        logMsg("dim", "────────────────────────────────────────");
-        logMsg("info", "<strong>Agent stale data (from OpenRouter/LiteLLM)</strong>");
-        const staleMarket = `## Stale Market Data (from OpenRouter/LiteLLM — PAYG prices only)
-| Provider | Model | Input/1M | Output/1M | Context |
-|----------|-------|----------|-----------|---------|
-| Z.ai | GLM-5.3-Flash | $0.075 | $0.25 | 128K |
-| DeepSeek | V3 | $0.14 | $0.28 | 128K |
-| OpenAI | gpt-4.1-nano | $0.10 | $0.40 | 1M |
-| OpenAI | GPT-4o mini | $0.15 | $0.60 | 128K |
-| Groq | gpt-oss-20b | $0.075 | $0.30 | 128K |
-| Mistral | Mistral Small 4 | $0.15 | $0.60 | 256K |
-
-Note: Agent sees Z.ai GLM-5.3-Flash at $0.075/M as the cheapest option.
-Agent does NOT know about OpenCode Go subscriptions, MiMo V2.5, or promotion multipliers.`;
-        logMsg("ok", "6 PAYG models visible, subscriptions hidden");
-
-        const codingPersona = `You are a coding agent that reviews pull requests. 240 reviews/day. Each review: 830 uncached input tokens, 71500 cached tokens (repeated file patterns across reviews), 295 output tokens. Budget: $50/month.
-
-For PAYG models, compute: (input_per_1m * 830 + cached_per_1m * 71500 + output_per_1m * 295) / 1,000,000 * 240 * 30
-
-For subscription models, the effective monthly cost is: cost_per_request * requests_per_subscription / subscription_price (how many times you get your money back). If the multiple is > 1, the subscription is worth it.
-
-You want the CHEAPEST coding model. Pick the BEST route. Return EXACTLY:
-ROUTE: <provider>:<model>
-COST: $<monthly cost or effective cost>
-REASON: <one sentence>`;
-
-        // Run stale
-        logMsg("dim", "────────────────────────────────────────");
-        logMsg("info", "<strong>Agent decision WITHOUT LiveLLM (stale data)</strong>");
-        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-        logMsg("dim", "model: mimo-v2.5 | agent sees only PAYG prices from OpenRouter");
-        const stalePrompt = codingPersona + "\n\n" + staleMarket;
-        const staleLLM = await callLLM(env.OPENCODE_API_KEY, stalePrompt);
-        logMsg("res", "200 OK (" + staleLLM.latencyMs + "ms)");
-        const staleRoute = staleLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
-        const staleCost = staleLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
-        const staleReason = staleLLM.response.match(/REASON:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || staleLLM.response.slice(0, 200);
-        logMsg("dim", "raw: " + staleLLM.response.slice(0, 300));
-        logMsg("ok", "ROUTE: " + staleRoute);
-        logMsg("ok", "COST: " + staleCost);
-        logMsg("ok", "REASON: " + staleReason);
-
-        // Run live
-        logMsg("dim", "────────────────────────────────────────");
-        logMsg("info", "<strong>Agent decision WITH LiveLLM (live verified data)</strong>");
-        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-        logMsg("dim", "model: mimo-v2.5 | agent sees 23 verified models + subscriptions");
-        const livePrompt = codingPersona + "\n\n" + liveMarket;
-        const liveLLM = await callLLM(env.OPENCODE_API_KEY, livePrompt);
-        logMsg("res", "200 OK (" + liveLLM.latencyMs + "ms)");
-        const liveRoute = liveLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
-        const liveCost = liveLLM.response.match(/COST:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
-        const liveReason = liveLLM.response.match(/REASON:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || liveLLM.response.slice(0, 200);
-        logMsg("dim", "raw: " + liveLLM.response.slice(0, 300));
-        logMsg("ok", "ROUTE: " + liveRoute);
-        logMsg("ok", "COST: " + liveCost);
-        logMsg("ok", "REASON: " + liveReason);
-
-        // Content hash
-        logMsg("dim", "────────────────────────────────────────");
-        logMsg("info", "<strong>Provenance</strong>");
-        const contentHash = await sha256(liveMarket);
-        logMsg("ok", "content_hash: sha256:" + contentHash.slice(0, 32) + "...");
-
-        // Search ID
-        logMsg("req", "GET https://serpapi.com/search.json (provenance)");
-        const searchQ = "site:opencode.ai/go GLM-5.3-Flash usage limits";
-        const sp = new URLSearchParams({ q: searchQ, engine: "google_light", api_key: env.SERPAPI_API_KEY, no_cache: "true" });
-        const sr = await fetch("https://serpapi.com/search.json?" + sp);
-        const sd = await sr.json();
-        const searchId = sd.search_metadata?.id || "unknown";
-        logMsg("res", "200 OK");
-        logMsg("ok", "search_id: " + searchId);
-        logMsg("dim", "Every fact traces to this search. Reproducible via Search Archive.");
-
-        // Math
-        logMsg("dim", "────────────────────────────────────────");
-        logMsg("info", "<strong>Cost Math</strong>");
-        const glmZai = MODELS.find(m => m.entity === "Z.ai:GLM-5.3-Flash");
-        const mimo = MODELS.find(m => m.entity === "OpenCode:MiMo V2.5");
-        const glmFlash = MODELS.find(m => m.entity === "OpenCode:GLM-5.3-Flash");
-        const workload = { uncachedInput: 830, cachedInput: 71500, output: 295 };
-        const zaiCpr = costPerRequest(glmZai, workload);
-        const zaiMonthly = zaiCpr * 240 * 30;
-        const mimoCpr = costPerRequest(mimo, workload);
-        const mimoEffective = mimoCpr * mimo.requests / mimo.sub;
-        const glmCpr = costPerRequest(glmFlash, workload);
-        const glmEffective = glmCpr * glmFlash.requests * glmFlash.promo / glmFlash.sub;
-        logMsg("info", "Z.ai GLM-5.3-Flash: $" + zaiCpr.toFixed(6) + "/req × 7200 = $" + zaiMonthly.toFixed(2) + "/mo");
-        logMsg("info", "MiMo V2.5: $" + mimoCpr.toFixed(6) + "/req × " + mimo.requests.toLocaleString() + " / $" + mimo.sub + " = $" + mimoEffective.toFixed(2) + "/mo");
-        logMsg("info", "GLM-5.3-Flash: $" + glmCpr.toFixed(6) + "/req × " + glmFlash.requests.toLocaleString() + " × " + glmFlash.promo + " / $" + glmFlash.sub + " = $" + glmEffective.toFixed(2) + "/mo");
-        logMsg("ok", "MiMo V2.5 is " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper than Z.ai");
-
-        return new Response(JSON.stringify({
-          logs,
-          stale_reasoning: staleLLM.response,
-          stale_route: staleRoute,
-          stale_cost: staleCost,
-          live_reasoning: liveLLM.response,
-          live_route: liveRoute,
-          live_cost: liveCost,
-          api_latency: liveLLM.latencyMs,
-          model_count: MODELS.length,
-          search_id: searchId,
-          content_hash: contentHash,
-          math: {
-            zai: { model: "Z.ai GLM-5.3-Flash", input: glmZai.input, output: glmZai.output, cpr: zaiCpr, monthly: zaiMonthly },
-            mimo: { model: "OpenCode MiMo V2.5", input: mimo.input, output: mimo.output, cpr: mimoCpr, sub: mimo.sub, requests: mimo.requests, effective: mimoEffective },
-            glm: { model: "OpenCode GLM-5.3-Flash", input: glmFlash.input, output: glmFlash.output, cpr: glmCpr, sub: glmFlash.sub, requests: glmFlash.requests, promo: glmFlash.promo, effective: glmEffective },
-          },
-          verdict_title: "MiMo V2.5 via OpenCode Go is cheapest",
-          verdict_detail: "Z.ai GLM-5.3-Flash looks cheapest at $" + zaiMonthly.toFixed(2) + "/mo PAYG. But OpenCode Go MiMo V2.5 at $" + mimoEffective.toFixed(2) + "/mo effective (amortized from $" + mimo.sub + "/mo sub) is " + Math.round((1 - mimoEffective/zaiMonthly) * 100) + "% cheaper. The subscription wasn't visible in stale data.",
-        }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
-      } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { headers: { "Content-Type": "application/json" } });
-      }
+      });
+      return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive", "Access-Control-Allow-Origin": "*" } });
     }
 
     if (url.pathname === "/api/agents" && request.method === "POST") {
