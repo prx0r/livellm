@@ -8,7 +8,7 @@
 
 > Agents making routing decisions on stale pricing data waste money. A coding agent choosing a model based on last month's prices might pay 10x more than necessary.
 
-**[Watch Demo](https://youtu.be/PLACEHOLDER)** | **[Try Live API](https://livellm.prx0r.workers.dev/v1/market)** | **[View Source](https://github.com/prx0r/livellm)**
+**[Watch Demo](https://youtu.be/5KxrFb-XFyg)** | **[Try Live API](https://livellm.prx0r.workers.dev/v1/market)** | **[View Source](https://github.com/prx0r/livellm)**
 
 ---
 
