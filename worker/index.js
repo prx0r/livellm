@@ -349,8 +349,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 <div class="tabs" id="tabs-bar" style="display:none">
   <button class="tab on" onclick="showTab(0,this)">Demo</button>
   <button class="tab" onclick="showTab(1,this)">Evidence</button>
-  <button class="tab" onclick="showTab(2,this)">Demo 2</button>
-  <button class="tab" onclick="showTab(3,this)">Payload</button>
+  <button class="tab" onclick="showTab(2,this)">Payload</button>
 </div>
 
 <div class="panel on" id="p0">
@@ -368,16 +367,6 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="panel" id="p2">
-  <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center">
-    <button class="btn btn-g" id="agents-btn" onclick="runAgents()">Run Agent Comparison</button>
-    <span style="font-size:.72rem;color:#64748b">Same workload. Stale data vs LiveLLM. See the difference.</span>
-  </div>
-  <div id="agents-area" style="display:grid;gap:1rem">
-    <div style="text-align:center;color:#64748b;padding:2rem;font-size:.78rem">Click "Run Agent Comparison"</div>
-  </div>
-</div>
-
-<div class="panel" id="p3">
   <div style="display:flex;gap:1rem;flex-direction:column">
     <div class="done-box">
       <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Agent Payload</div>
@@ -436,71 +425,6 @@ async function runStory(){
     logEl.innerHTML+='<span class="err">Error: '+e.message+'</span>\n';
   }
   btn.disabled=false;btn.textContent='Run Demo';
-}
-
-async function runAgents(){
-  var btn=document.getElementById('agents-btn');
-  btn.disabled=true;btn.textContent='Running...';
-  var area=document.getElementById('agents-area');
-  area.innerHTML='<div style="padding:1rem"><div style="display:inline-block;width:18px;height:18px;border:2px solid #334155;border-top-color:#059669;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle"></div> <span style="font-size:.78rem;color:#64748b">Running 6 LLM calls...</span></div>';
-  try{
-    var r=await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'}});
-    var d=await r.json();
-    area.innerHTML='<div class="log-area" id="agents-log" style="max-height:200px;margin-bottom:1rem"></div><div id="agents-results"></div>';
-    var logEl=document.getElementById('agents-log');
-    var logs=d.logs||[];
-    for(var i=0;i<logs.length;i++){
-      logEl.innerHTML+='<span class="ts">['+new Date().toISOString().slice(11,23)+']</span> <span class="'+(logs[i].cls||'info')+'">'+logs[i].msg+'</span>\n';
-      logEl.scrollTop=logEl.scrollHeight;
-      await new Promise(function(r){setTimeout(r,40)});
-    }
-    // Render results
-    var resEl=document.getElementById('agents-results');
-    var html='';
-    for(var id in d.stale){
-      var s=d.stale[id], l=d.live[id];
-      html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
-      html+='<div class="done-box" style="border-color:#f87171">';
-      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#f87171;font-weight:600">'+s.icon+' '+s.name+' — Stale</div>';
-      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(s.decision)+'</div>';
-      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+s.latencyMs+'ms | '+s.model+'</div>';
-      html+='</div>';
-      html+='<div class="done-box" style="border-color:#059669">';
-      html+='<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#059669;font-weight:600">'+l.icon+' '+l.name+' — Live</div>';
-      html+='<div style="font-family:JetBrains Mono,monospace;font-size:.65rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;margin-top:.5rem">'+formatAgentResponse(l.decision)+'</div>';
-      html+='<div style="font-size:.55rem;color:#484f58;margin-top:.4rem">'+l.latencyMs+'ms | '+l.model+'</div>';
-      html+='</div></div>';
-    }
-    resEl.innerHTML=html;
-  }catch(e){
-    area.innerHTML='<span class="err">Error: '+e.message+'</span>';
-  }
-  btn.disabled=false;btn.textContent='Run Agent Comparison';
-}
-            resEl.innerHTML=html;
-          }
-        }catch(e){}
-      }
-    }
-  }catch(e){
-    logEl.innerHTML+='<span class="err">Error: '+e.message+'</span>\n';
-  }
-  btn.disabled=false;btn.textContent='Run Agent Comparison';
-}
-
-function formatAgentResponse(d){
-  if(!d)return '<span class="err">No response</span>';
-  if(d.raw)return d.raw.slice(0,500);
-  var lines=[];
-  if(d.ROUTE)lines.push('ROUTE: '+d.ROUTE);
-  if(d.COST)lines.push('COST: '+d.COST);
-  if(d.REASON)lines.push('REASON: '+d.REASON);
-  if(d.decision)lines.push('DECISION: '+d.decision);
-  if(d.reason)lines.push('REASON: '+d.reason);
-  if(d.route)lines.push('ROUTE: '+d.route);
-  if(d.cost)lines.push('COST: '+d.cost);
-  if(!lines.length)lines.push(JSON.stringify(d,null,2));
-  return lines.join('\n');
 }
 
 async function generatePayload(){
