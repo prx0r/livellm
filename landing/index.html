@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiveLLM — Verified Economic Intelligence for Autonomous Agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:#fafafa;color:#111;line-height:1.6;-webkit-font-smoothing:antialiased}
+code,.mono{font-family:'JetBrains Mono',monospace}
+
+nav{position:fixed;top:0;left:0;right:0;background:rgba(250,250,250,.95);backdrop-filter:blur(12px);border-bottom:1px solid #eee;z-index:100;padding:0 2rem}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;height:48px;gap:2rem}
+.nav-inner a{font-size:.8rem;color:#666;text-decoration:none;font-weight:500}
+.nav-inner a:hover{color:#111}
+.nav-brand{font-weight:700;font-size:.9rem;color:#111}
+
+.hero{padding:120px 2rem 80px;text-align:center}
+.hero h1{font-size:3rem;font-weight:800;letter-spacing:-.04em;line-height:1.1;max-width:700px;margin:0 auto}
+.hero .tag{display:inline-block;background:#f0fdf4;color:#166534;font-size:.75rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:20px}
+.hero p{font-size:1.15rem;color:#555;max-width:620px;margin:20px auto 0;line-height:1.7}
+.hero-cta{display:flex;gap:12px;justify-content:center;margin-top:32px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:.875rem;font-weight:600;text-decoration:none;transition:all .15s}
+.btn-primary{background:#111;color:#fff}.btn-primary:hover{background:#333}
+.btn-outline{background:transparent;color:#111;border:1px solid #ddd}.btn-outline:hover{border-color:#111}
+
+section{padding:80px 2rem}
+.section-inner{max-width:1000px;margin:0 auto}
+.section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:#999;font-weight:600;margin-bottom:8px}
+.section-title{font-size:2rem;font-weight:700;letter-spacing:-.03em;margin-bottom:12px}
+.section-desc{font-size:1rem;color:#555;max-width:600px;line-height:1.7}
+.bg-dark{background:#0a0a0f;color:#fff}
+.bg-dark .section-desc{color:#999}
+.bg-dark .section-label{color:#666}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:32px}
+.card{background:#fff;border:1px solid #eee;border-radius:12px;padding:24px}
+.card h3{font-size:1rem;font-weight:600;margin-bottom:8px}
+.card p{font-size:.875rem;color:#666;line-height:1.6}
+.card .icon{font-size:1.5rem;margin-bottom:12px}
+
+.pipeline{display:flex;gap:0;margin-top:40px;overflow-x:auto}
+.pipe-step{flex:1;min-width:120px;background:#fff;border:1px solid #eee;padding:16px 12px;text-align:center}
+.pipe-step:first-child{border-radius:12px 0 0 12px}
+.pipe-step:last-child{border-radius:0 12px 12px 0}
+.pipe-step+.pipe-step{border-left:none}
+.pipe-num{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:#999;font-weight:600}
+.pipe-title{font-size:.8rem;font-weight:600;margin-top:4px}
+.pipe-desc{font-size:.7rem;color:#666;margin-top:4px;line-height:1.4}
+.pipe-step.highlight{border-color:#166534;background:#f0fdf4}
+
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #eee;border-radius:12px;overflow:hidden;margin-top:32px}
+.metric{border-right:1px solid #eee;text-align:center;padding:24px 16px}
+.metric:last-child{border-right:none}
+.metric .num{font-size:2rem;font-weight:700;letter-spacing:-.03em}
+.metric .label{font-size:.75rem;color:#666;margin-top:4px}
+
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px}
+.vs-box{background:#fff;border:1px solid #eee;border-radius:12px;padding:24px}
+.vs-box .label{font-size:.6875rem;text-transform:uppercase;letter-spacing:.1em;color:#999;font-weight:600}
+.vs-box .value{font-size:1.3rem;font-weight:700;margin-top:8px;font-family:'JetBrains Mono',monospace}
+.vs-box .meta{font-size:.8rem;color:#666;margin-top:8px;line-height:1.5}
+.vs-box.bad{border-color:#fecaca;background:#fef2f2}.vs-box.bad .value{color:#991b1b}
+.vs-box.good{border-color:#bbf7d0;background:#f0fdf4}.vs-box.good .value{color:#166534}
+
+.trap-table{width:100%;border-collapse:collapse;margin-top:24px;font-size:.875rem}
+.trap-table th{text-align:left;font-size:.6875rem;text-transform:uppercase;letter-spacing:.1em;color:#999;padding:8px 12px;border-bottom:2px solid #eee;font-weight:600}
+.trap-table td{padding:12px;border-bottom:1px solid #f0f0f0}
+.trap-table td:first-child{font-weight:500;color:#666}
+
+.serpapi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+.serpapi-item{background:#fff;border:1px solid #eee;border-radius:8px;padding:16px;display:flex;align-items:flex-start;gap:12px}
+.serpapi-item .dot{width:8px;height:8px;border-radius:50%;background:#166534;margin-top:6px;flex-shrink:0}
+.serpapi-item h4{font-size:.875rem;font-weight:600;margin-bottom:4px}
+.serpapi-item p{font-size:.8rem;color:#666;line-height:1.5}
+
+footer{padding:40px 2rem;border-top:1px solid #eee;text-align:center;font-size:.8rem;color:#999}
+footer a{color:#666}
+
+@media(max-width:700px){
+  .hero h1{font-size:2rem}
+  .metric-grid{grid-template-columns:1fr 1fr}
+  .vs{grid-template-columns:1fr}
+  .serpapi-grid{grid-template-columns:1fr}
+  .pipeline{flex-direction:column}
+  .pipe-step{border-radius:0!important;border-left:1px solid #eee!important}
+  .pipe-step:first-child{border-radius:12px 12px 0 0!important}
+  .pipe-step:last-child{border-radius:0 0 12px 12px!important}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="nav-inner">
+  <span class="nav-brand">LiveLLM</span>
+  <a href="#problem">Problem</a>
+  <a href="#how">How it works</a>
+  <a href="#serpapi">SerpApi</a>
+  <a href="#traps">Five Traps</a>
+  <a href="https://livellm.tradesprior.workers.dev/" target="_blank" style="color:#166534">Live Demo &rarr;</a>
+</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="tag">DevNetwork Hackathon 2026</div>
+  <h1>The live truth layer between an agent's budget and the market it spends in</h1>
+  <p>Budget-aware AI agents still make wrong decisions because their price assumptions are stale. LiveLLM turns live web changes into verified economic state before the agent spends money.</p>
+  <div class="hero-cta">
+    <a href="https://livellm.tradesprior.workers.dev/" target="_blank" class="btn btn-primary">Try the Live Demo</a>
+    <a href="#how" class="btn btn-outline">How it works</a>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section id="problem">
+<div class="section-inner">
+  <div class="section-label">The Problem</div>
+  <div class="section-title">The agent's math was correct. Its economic state was wrong.</div>
+  <div class="section-desc">An autonomous agent finds a $15 bounty. It computes its projected cost using web search prices. The arithmetic checks out at every step. But the input assumptions are stale &mdash; and neither the agent nor a human reviewer can validate them.</div>
+
+  <div class="vs">
+    <div class="vs-box bad">
+      <div class="label">Without LiveLLM</div>
+      <div class="value">$0.075/M input</div>
+      <div class="meta">Agent found GLM-5.3-Flash at Z.ai PAYG price. Looks cheaper than MiMo at $0.14/M. Picks GLM. <strong>Wrong model, wrong context window.</strong></div>
+    </div>
+    <div class="vs-box good">
+      <div class="label">With LiveLLM</div>
+      <div class="value">$0.023/M input</div>
+      <div class="meta">MiMo V2.5 amortized via OpenCode Go subscription ($60/mo usage for $10/mo fee). <strong>2.1&times; cheaper with 8&times; more context.</strong></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee">
+<div class="section-inner">
+  <div class="section-label">How It Works</div>
+  <div class="section-title">From live web to verified fact to agent decision</div>
+  <div class="section-desc">Every fact in the ledger traces back to a SerpApi search ID, an official source URL, an AI extraction, and a deterministic validation record.</div>
+
+  <div class="pipeline">
+    <div class="pipe-step highlight">
+      <div class="pipe-num">Step 1</div>
+      <div class="pipe-title">SerpApi Discovery</div>
+      <div class="pipe-desc">Google Light, News Light, Search Index Deep detect pricing changes</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 2</div>
+      <div class="pipe-title">Official Source</div>
+      <div class="pipe-desc">Follow to provider's own pricing page, not scraped results</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 3</div>
+      <div class="pipe-title">AI Extraction</div>
+      <div class="pipe-desc">Structured facts: input price, promo multiplier, expiry date</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-num">Step 4</div>
+      <div class="pipe-title">Validation</div>
+      <div class="pipe-desc">Deterministic check: evidence quote, range, unit, entity</div>
+    </div>
+    <div class="pipe-step highlight">
+      <div class="pipe-num">Step 5</div>
+      <div class="pipe-title">Fact Ledger</div>
+      <div class="pipe-desc">Temporal facts with provenance. Old facts superseded, never overwritten.</div>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric"><div class="num">368</div><div class="label">Active Facts</div></div>
+    <div class="metric"><div class="num">23</div><div class="label">Entities Tracked</div></div>
+    <div class="metric"><div class="num">2</div><div class="label">Active Promotions</div></div>
+    <div class="metric"><div class="num">76</div><div class="label">Tests Passing</div></div>
+  </div>
+</div>
+</section>
+
+<!-- SERPAPI -->
+<section id="serpapi">
+<div class="section-inner">
+  <div class="section-label">SerpApi Integration</div>
+  <div class="section-title">Not just search &mdash; verified discovery</div>
+  <div class="section-desc">SerpApi is the discovery layer. We use fast Light searches for known signals and Search Index deep mode to explore unknown providers. Every observation keeps the search ID as provenance.</div>
+
+  <div class="serpapi-grid">
+    <div class="serpapi-item">
+      <div class="dot"></div>
+      <div><h4>Google News Light</h4><p>Event detection. Fast, low-cost searches for known pricing terms and provider announcements.</p></div>
+    </div>
+    <div class="serpapi-item">
+      <div class="dot"></div>
+      <div><h4>Google Light</h4><p>Official source resolution. Follows search results to provider pricing pages for evidence extraction.</p></div>
+    </div>
+    <div class="serpapi-item">
+      <div class="dot"></div>
+      <div><h4>Search Index Deep</h4><p>Unknown-source discovery. Explores 3B+ indexed pages to find new providers and offers we weren't looking for.</p></div>
+    </div>
+    <div class="serpapi-item">
+      <div class="dot"></div>
+      <div><h4>JSON Restrictor</h4><p>Reduces response payload by 94-99%. Only the fields we need, cutting agent token costs.</p></div>
+    </div>
+    <div class="serpapi-item">
+      <div class="dot"></div>
+      <div><h4>Search Metadata ID</h4><p>Every search keeps its ID for reproducibility. Search Archive retrieves the exact response for 31 days.</p></div>
+    </div>
+    <div class="serpapi-item">
+      <div class="dot"></div>
+      <div><h4>Account API</h4><p>Free quota governor. Checks searches left before spending. Enforces a reserve to prevent exhaustion.</p></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- FIVE TRAPS -->
+<section id="traps" style="background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee">
+<div class="section-inner">
+  <div class="section-label">The Five Pricing Traps</div>
+  <div class="section-title">The advertised price is never the actual decision-relevant economic state</div>
+
+  <table class="trap-table">
+    <thead><tr><th>Trap</th><th>LLM</th><th>Compute</th><th>Tools</th></tr></thead>
+    <tbody>
+      <tr><td>Nominal &ne; Effective</td><td>Go subscriptions</td><td>Reserved GPU</td><td>Monthly credits</td></tr>
+      <tr><td>Time-Dependent</td><td>Peak/off-peak</td><td>Spot market</td><td>Promotions</td></tr>
+      <tr><td>Route-Dependent</td><td>Z.ai vs OpenCode</td><td>Host/region</td><td>API plan</td></tr>
+      <tr><td>State-Dependent</td><td>Quota left</td><td>Credits left</td><td>Credits left</td></tr>
+      <tr><td>Source Disagreement</td><td>OpenCode locales</td><td>API vs landing</td><td>Docs vs pricing</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:24px;padding:20px;background:#f0f8ff;border:1px solid #d0e0f0;border-radius:8px">
+    <p style="font-size:.9rem;color:#334155">CloudPrice tracks compute prices. AgentDeals tracks free tiers. Neither tells you what <strong>your</strong> next request actually costs given your subscription, your quota, your promotion.</p>
+    <p style="font-size:1rem;margin-top:8px;font-weight:700;color:#166534">LiveLLM does.</p>
+  </div>
+</div>
+</section>
+
+<!-- CLOSE -->
+<section style="padding:60px 2rem;text-align:center">
+<div class="section-inner">
+  <div class="section-title" style="max-width:600px;margin:0 auto">LiveLLM is the verified economic state layer for autonomous agents</div>
+  <p style="font-size:1rem;color:#555;max-width:500px;margin:12px auto 0">We discover via SerpApi, validate against official sources, and serve provenance-backed facts. The math works &mdash; we reproduce OpenCode's own published numbers.</p>
+  <div class="hero-cta" style="margin-top:24px">
+    <a href="https://livellm.tradesprior.workers.dev/" target="_blank" class="btn btn-primary">Try the Live Demo</a>
+  </div>
+</div>
+</section>
+
+<footer>
+  LiveLLM &mdash; Verified Economic Intelligence for Autonomous Agents &middot; DevNetwork Hackathon 2026
+</footer>
+
+</body>
+</html>
