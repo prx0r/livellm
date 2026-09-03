@@ -266,6 +266,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 .done-box pre{white-space:pre-wrap;font-size:.7rem;color:#94a3b8;margin:0}
 .payload-box{background:#0f172a;border:1px solid #1e293b;border-radius:6px;padding:1rem;margin-top:.75rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.7;color:#94a3b8;white-space:pre-wrap;max-height:70vh;overflow-y:auto}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -277,11 +278,10 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="tabs" id="tabs-bar" style="display:none">
-  <button class="tab on" onclick="showTab(0,this)">Story</button>
-  <button class="tab" onclick="showTab(1,this)">Pipeline</button>
-  <button class="tab" onclick="showTab(2,this)">Agents</button>
-  <button class="tab" onclick="showTab(3,this)">Evidence</button>
-  <button class="tab" onclick="showTab(4,this)">Payload</button>
+  <button class="tab on" onclick="showTab(0,this)">Demo</button>
+  <button class="tab" onclick="showTab(1,this)">Demo 2</button>
+  <button class="tab" onclick="showTab(2,this)">Evidence</button>
+  <button class="tab" onclick="showTab(3,this)">Payload</button>
 </div>
 
 <div class="panel on" id="p0">
@@ -291,22 +291,16 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="panel" id="p1">
-  <div class="log-area" id="log-area"></div>
-  <div id="steps-area" style="margin-top:1rem"></div>
-  <div id="final-box"></div>
-</div>
-
-<div class="panel" id="p2">
   <div style="display:flex;gap:1rem;margin-bottom:1rem;align-items:center">
     <button class="btn btn-g" id="agents-btn" onclick="runAgents()">Run Agent Comparison</button>
-    <span style="font-size:.72rem;color:#64748b">Three agents, same payload. Different needs, different optimal routes.</span>
+    <span style="font-size:.72rem;color:#64748b">Same workload. Stale data vs LiveLLM. See the difference.</span>
   </div>
   <div id="agents-area" style="display:grid;gap:1rem">
     <div style="text-align:center;color:#64748b;padding:2rem;font-size:.78rem">Click "Run Agent Comparison"</div>
   </div>
 </div>
 
-<div class="panel" id="p3">
+<div class="panel" id="p2">
   <div class="done-box">
     <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Evidence Trail</div>
     <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">Provenance for this run</div>
@@ -315,9 +309,6 @@ code,.mono{font-family:'JetBrains Mono',monospace}
 </div>
 
 <div class="panel" id="p3">
-  <div class="done-box">
-    <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">API Reference</div>
-    <div style="font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.5rem">The product underneath the demo</div>
     <table style="width:100%;border-collapse:collapse;font-size:.72rem;margin-top:.75rem">
       <thead><tr><th style="text-align:left;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:6px 8px;border-bottom:1px solid #334155;font-weight:600">Endpoint</th><th style="text-align:left;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:6px 8px;border-bottom:1px solid #334155;font-weight:600">Method</th><th style="text-align:left;font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:6px 8px;border-bottom:1px solid #334155;font-weight:600">Returns</th></tr></thead>
       <tbody>
@@ -332,7 +323,7 @@ code,.mono{font-family:'JetBrains Mono',monospace}
   </div>
 </div>
 
-<div class="panel" id="p4">
+<div class="panel" id="p3">
   <div style="display:flex;gap:1rem;flex-direction:column">
     <div class="done-box">
       <div style="font-size:.55rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;margin-bottom:.5rem">Agent Payload</div>
@@ -364,10 +355,11 @@ async function runStory(){
   document.getElementById('hero').style.display='none';
   document.getElementById('tabs-bar').style.display='flex';
   var logEl=document.getElementById('story-log');
-  logEl.innerHTML='';
+  logEl.innerHTML='<div style="text-align:center;padding:2rem"><div style="display:inline-block;width:20px;height:20px;border:2px solid #334155;border-top-color:#059669;border-radius:50%;animation:spin .6s linear infinite"></div><div style="font-size:.72rem;color:#64748b;margin-top:.5rem">Connecting to LiveLLM...</div></div>';
 
   try{
     var r=await fetch('/api/story',{method:'POST',headers:{'Content-Type':'application/json'}});
+    logEl.innerHTML='';
     var reader=r.body.getReader();
     var dec=new TextDecoder();
     var buf='';
@@ -409,10 +401,11 @@ async function runAgents(){
   var btn=document.getElementById('agents-btn');
   btn.disabled=true;btn.textContent='Running...';
   var area=document.getElementById('agents-area');
-  area.innerHTML='<div class="log-area" id="agents-log" style="max-height:200px;margin-bottom:1rem"></div><div id="agents-results"></div>';
-  var logEl=document.getElementById('agents-log');
+  area.innerHTML='<div style="text-align:center;padding:2rem"><div style="display:inline-block;width:20px;height:20px;border:2px solid #334155;border-top-color:#059669;border-radius:50%;animation:spin .6s linear infinite"></div><div style="font-size:.72rem;color:#64748b;margin-top:.5rem">Running 6 LLM calls...</div></div>';
   try{
     var r=await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'}});
+    area.innerHTML='<div class="log-area" id="agents-log" style="max-height:200px;margin-bottom:1rem"></div><div id="agents-results"></div>';
+    var logEl=document.getElementById('agents-log');
     var reader=r.body.getReader();
     var dec=new TextDecoder();
     var buf='';
@@ -512,45 +505,6 @@ async function generatePayload(){
   }catch(e){pl('err','Error: '+e.message);btn.disabled=false;btn.textContent='Generate Payload';}
 }
 
-async function runDemo(){
-  var btn=document.getElementById('run-btn');
-  btn.disabled=true;btn.textContent='Running...';
-  document.getElementById('hero').style.display='none';
-  document.getElementById('tabs-bar').style.display='flex';
-  document.getElementById('steps-area').innerHTML='';
-  document.getElementById('final-box').innerHTML='';
-  document.getElementById('evidence-body').innerHTML='Running pipeline...';
-  document.getElementById('payload-body').innerHTML='Waiting for demo...';
-  logEl=document.getElementById('log-area');
-  logEl.innerHTML='';
-  document.querySelectorAll('.tab').forEach(function(t,j){t.classList.toggle('on',j===0)});
-  document.querySelectorAll('.panel').forEach(function(p,j){p.classList.toggle('on',j===0)});
-  log('info','<strong>LiveLLM Demo — full infrastructure pipeline</strong>');
-  logSep();
-
-  try{
-    var r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:'opencode-glm-capacity',required_requests:2500,window_hours:5})});
-    var run=await r.json();
-    if(run.error){log('err','Pipeline error: '+run.error);document.getElementById('steps-area').innerHTML=renderStep(1,'Error','<span class="err">'+run.error+'</span>',false);btn.disabled=false;btn.textContent='Run Demo';return;}
-
-    var steps=run.steps||[];var logs=run.logs||[];var logIdx=0;
-    for(var si=0;si<steps.length;si++){
-      while(logIdx<logs.length&&logs[logIdx].step===si){log(logs[logIdx].cls||'info',logs[logIdx].msg||'');logIdx++;}
-      logSep();
-      var div=document.createElement('div');
-      div.innerHTML=renderStep(si+1,steps[si].title,steps[si].body,steps[si].done);
-      document.getElementById('steps-area').appendChild(div.firstChild);
-      document.getElementById('steps-area').scrollTop=document.getElementById('steps-area').scrollHeight;
-      await new Promise(function(r){setTimeout(r,200)});
-    }
-    while(logIdx<logs.length){log(logs[logIdx].cls||'info',logs[logIdx].msg||'');logIdx++;}
-
-    if(run.final){document.getElementById('final-box').innerHTML='<div class="final"><h2>'+run.final.headline+'</h2><p>'+run.final.detail+'</p></div>';}
-    if(run.evidence){document.getElementById('evidence-body').innerHTML='<pre>'+JSON.stringify(run.evidence,null,2)+'</pre>';}
-    if(run.payload){document.getElementById('payload-body').textContent=run.payload;}
-  }catch(e){log('err','FATAL: '+e.message);document.getElementById('steps-area').innerHTML=renderStep(1,'Error','<span class="err">'+e.message+'</span>',false);}
-  btn.disabled=false;btn.textContent='Run Demo';
-}
 </script>
 </body>
 </html>`;
@@ -562,199 +516,6 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type" } });
 
     if (url.pathname === "/") return new Response(PAGE, { headers: { "Content-Type": "text/html;charset=utf-8" } });
-
-    if (url.pathname === "/api/run" && request.method === "POST") {
-      const steps = [];
-      const logs = [];
-      let stepIdx = -1;
-      function logMsg(cls, msg, step) { logs.push({ cls, msg, step: step !== undefined ? step : stepIdx }); }
-      function sep(step) { logs.push({ cls: "dim", msg: "────────────────────────────────────────", step: step !== undefined ? step : stepIdx }); }
-
-      try {
-        // ── Step 1: Baseline ──
-        stepIdx = 0; sep();
-        logMsg("info", "<strong>STEP 1 — Baseline State</strong>");
-        logMsg("dim", "Loading known facts from docs...");
-        logMsg("info", "GLM-5.3-Flash on OpenCode Go: ~1,580 requests per 5 hours");
-        logMsg("info", "Required workload: 2,500 requests / 5 hours");
-        logMsg("err", "1,580 < 2,500 → INSUFFICIENT with current knowledge");
-        steps.push({ title: "Baseline State", body: '<span class="sys">Known fact:</span> GLM-5.3-Flash: ~1,580 req/5h\n<span class="sys">Required:</span> 2,500 req/5h\n<span class="err">1,580 < 2,500 → INSUFFICIENT</span>', done: true });
-
-        // ── Step 2: Baseline LLM call ──
-        stepIdx = 1; sep();
-        logMsg("info", "<strong>STEP 2 — Baseline Agent Decision (stale data)</strong>");
-        const baselinePrompt = routingPrompt(BASELINE_CAPACITY, "baseline docs estimate");
-        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-        logMsg("dim", "model: mimo-v2.5 | max_tokens: 4000 | temperature: 0");
-        logMsg("dim", "prompt: " + baselinePrompt.length + " chars");
-        const baselineLLM = await callLLM(env.OPENCODE_API_KEY, baselinePrompt);
-        logMsg("res", "200 OK (" + baselineLLM.latencyMs + "ms)");
-        let baselineDecision;
-        try { baselineDecision = JSON.parse(baselineLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { baselineDecision = { decision: "PARSE_ERROR", reason: baselineLLM.response }; }
-        logMsg("dim", "raw: " + baselineLLM.response.slice(0, 200));
-        logMsg("ok", "parsed: " + JSON.stringify(baselineDecision));
-        const baselineValid = baselineDecision.decision === (BASELINE_CAPACITY >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
-        logMsg(baselineValid ? "ok" : "err", "check: " + REQUIRED_REQUESTS + " <= " + BASELINE_CAPACITY + " = " + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + " → " + (baselineValid ? "CONFIRMED" : "REJECTED"));
-        steps.push({ title: "Baseline Agent Decision", body: '<span class="sys">MiMo v2.5 (' + baselineLLM.latencyMs + 'ms):</span>\n<span class="' + (baselineDecision.decision === "BUY_FALLBACK" ? "err" : "ok") + '">Decision: ' + baselineDecision.decision + '</span>\nReason: ' + (baselineDecision.reason || "—") + '\n<span class="sys">Check: ' + REQUIRED_REQUESTS + ' <= ' + BASELINE_CAPACITY + ' = ' + (REQUIRED_REQUESTS <= BASELINE_CAPACITY) + ' → ' + (baselineValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
-
-        // ── Step 3: SerpApi + canonical request hash ──
-        stepIdx = 2; sep();
-        logMsg("info", "<strong>STEP 3 — Live SerpApi Search + Canonical Hash</strong>");
-        const searchQuery = "site:opencode.ai/go GLM-5.3-Flash usage limits";
-        logMsg("req", "GET https://serpapi.com/search.json");
-        logMsg("dim", "engine: google_light | no_cache: true");
-        logMsg("dim", "q: " + searchQuery);
-        const serpResult = await serpSearch(env.SERPAPI_API_KEY, searchQuery);
-        if (!serpResult.searchId) { logMsg("err", "SerpApi failed: " + (serpResult.error || "no search ID")); throw new Error("SerpApi failed"); }
-        // Canonical request hash (deterministic, reproducible)
-        const canonicalObj = { engine: "google_light", q: searchQuery.trim().replace(/\s+/g, " "), params: { no_cache: "true" } };
-        const requestHashVal = await sha256(JSON.stringify(canonicalObj));
-        logMsg("res", "200 OK (" + serpResult.latencyMs + "ms)");
-        logMsg("ok", "search_id: " + serpResult.searchId);
-        logMsg("ok", "status: " + serpResult.status);
-        logMsg("ok", "canonical_hash: sha256:" + requestHashVal.slice(0, 32) + "...");
-        logMsg("dim", "deterministic: same query + params → same hash. Reproducible via Search Archive.");
-        logMsg("info", "observed_at: " + new Date().toISOString());
-        logMsg("info", "results: " + serpResult.resultCount + " organic results");
-        logMsg("info", "official: " + (serpResult.officialResult?.link || "none"));
-        if (serpResult.raw?.top_results) {
-          serpResult.raw.top_results.forEach(function(r, i) {
-            logMsg("dim", "  [" + (i+1) + "] " + r.title);
-            logMsg("dim", "      " + r.link);
-          });
-        }
-        steps.push({ title: "Live SerpApi Search + Canonical Hash", body: '<span class="api">SERPAPI LIVE SEARCH</span>\nengine: google_light | no_cache: true\nsearch_id: <span class="ok">' + serpResult.searchId + '</span>\ncanonical_hash: sha256:' + requestHashVal.slice(0, 32) + '...\nobserved_at: ' + new Date().toISOString() + '\nlatency: ' + serpResult.latencyMs + 'ms\nresults: ' + serpResult.resultCount + '\nofficial: ' + (serpResult.officialResult?.link || "none"), done: true });
-
-        // ── Step 4: Source fetch + content hash ──
-        stepIdx = 3; sep();
-        logMsg("info", "<strong>STEP 4 — Fetch Official Source + Content Hash</strong>");
-        if (!serpResult.officialResult) { logMsg("err", "No official opencode.ai result in search results"); throw new Error("No official source"); }
-        logMsg("req", "GET " + serpResult.officialResult.link);
-        logMsg("dim", "User-Agent: LiveLLM/1.0");
-        const source = await fetchSource(serpResult.officialResult.link);
-        logMsg("res", source.status + " OK (" + source.latencyMs + "ms)");
-        logMsg("ok", "content_hash: sha256:" + source.contentHash.slice(0, 40) + "...");
-        logMsg("ok", "html_size: " + source.htmlSize + " bytes | snippets: " + source.snippets.length);
-        logMsg("dim", "Every fact extracted traces to this content-addressed source.");
-        steps.push({ title: "Official Source + Content Hash", body: '<span class="ok">Source retrieved</span>\nurl: ' + source.url + '\nstatus: ' + source.status + '\ncontent_hash: sha256:' + source.contentHash.slice(0, 32) + '...\nsize: ' + source.htmlSize + ' bytes\nsnippets: ' + source.snippets.length, done: true });
-
-        // ── Step 5: LLM extraction ──
-        stepIdx = 4; sep();
-        logMsg("info", "<strong>STEP 5 — Live LLM Extraction</strong>");
-        const extPrompt = extractionPrompt(source.snippets.join("\n\n"));
-        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-        logMsg("dim", "model: mimo-v2.5 | extracting facts from source");
-        logMsg("dim", "prompt: " + extPrompt.length + " chars | snippets: " + source.snippets.length);
-        const extLLM = await callLLM(env.OPENCODE_API_KEY, extPrompt);
-        logMsg("res", "200 OK (" + extLLM.latencyMs + "ms)");
-        let extraction;
-        try { extraction = JSON.parse(extLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { extraction = { error: "parse failed", raw: extLLM.response }; }
-        logMsg("dim", "raw: " + extLLM.response.slice(0, 300));
-        logMsg("ok", "parsed: " + JSON.stringify(extraction));
-        steps.push({ title: "Live LLM Extraction", body: '<span class="ok">Extraction complete</span> (' + extLLM.latencyMs + 'ms)\ncapacity: <span class="ok">' + (extraction.capacity_requests_5h || "null") + '</span>\npromo: ' + (extraction.promotion_multiplier || "none") + '\nevidence: "' + (extraction.evidence || "—").slice(0, 100) + '"', done: true });
-
-        // ── Step 6: 6-Step Validation ──
-        stepIdx = 5; sep();
-        logMsg("info", "<strong>STEP 6 — 6-Step Deterministic Validation</strong>");
-        logMsg("dim", "LLM proposes facts. Code validates them.");
-        const v1 = validateFact("request_limit_5h", extraction.capacity_requests_5h, "requests/5h", source.snippets.join("\n"));
-        const v2 = validateFact("promotion_multiplier", extraction.promotion_multiplier, "multiplier", source.snippets.join("\n"));
-        logMsg(v1.checks[0].pass ? "ok" : "err", "1. evidence_quote_present: " + (v1.checks[0].pass ? "PASS" : "FAIL"));
-        logMsg(v1.checks[1].pass ? "ok" : "err", "2. numeric_type: " + (v1.checks[1].pass ? "PASS" : "FAIL") + " (capacity=" + typeof extraction.capacity_requests_5h + ")");
-        logMsg(v1.checks[2].pass ? "ok" : "err", "3. range_check: " + (v1.checks[2].pass ? "PASS" : "FAIL") + " (" + extraction.capacity_requests_5h + " in 0..10000000)");
-        logMsg(v1.checks[3].pass ? "ok" : "err", "4. unit_compatible: " + (v1.checks[3].pass ? "PASS" : "FAIL"));
-        logMsg("ok", "5. entity_valid: PASS (OpenCode:GLM-5.3-Flash ≥ 3 chars)");
-        logMsg("ok", "6. confidence_threshold: PASS (≥ 0.5)");
-        const allChecks = [...v1.checks, ...v2.checks, { pass: true }, { pass: true }];
-        const validationAccepted = allChecks.every(c => c.pass);
-        logMsg(validationAccepted ? "ok" : "err", "RESULT: " + (validationAccepted ? "ALL 6 CHECKS PASSED — fact verified" : "VALIDATION FAILED"));
-        const checkLines = "✓ evidence_quote_present\n✓ numeric_type (number)\n✓ range_check (0..10M)\n✓ unit_compatible\n✓ entity_valid (≥3 chars)\n✓ confidence_threshold (≥0.5)";
-        steps.push({ title: "6-Step Deterministic Validation", body: '<span class="ok">' + checkLines + '</span>\n\n<span class="ok">Result: ALL 6 CHECKS PASSED</span>', done: true });
-
-        if (!validationAccepted) { throw new Error("Extraction rejected by validator"); }
-
-        // ── Step 7: Cost Economics ──
-        stepIdx = 6; sep();
-        logMsg("info", "<strong>STEP 7 — Cost Economics</strong>");
-        logMsg("dim", "costPerRequest = (input × uncached + cached × cachedIn + output × out) / 1M");
-        const workload = { uncachedInput: 830, cachedInput: 71500, output: 295 };
-        const glmFlash = MODELS.find(m => m.entity === "OpenCode:GLM-5.3-Flash");
-        const cpr = costPerRequest(glmFlash, workload);
-        const subMult = subscriptionMultiple(glmFlash);
-        logMsg("info", "Workload: codingAgentHighCache (830 unc + 71.5K cached + 295 out)");
-        logMsg("ok", "GLM-5.3-Flash cost_per_request: $" + cpr.toFixed(6));
-        logMsg("ok", "Base requests/sub: " + subMult.effectiveRequests.toLocaleString());
-        if (glmFlash.promo) {
-          logMsg("ok", "Promo " + glmFlash.promo + "×: " + subMult.effectiveRequests.toLocaleString() + " → " + (subMult.effectiveRequests * glmFlash.promo).toLocaleString() + " effective");
-        }
-        logMsg("ok", "Simulated monthly: $" + subMult.simulatedMonthly.toFixed(2));
-        logMsg("ok", "Subscription price: $" + subMult.monthlyPrice + "/mo");
-        logMsg("ok", "Effective multiple: " + subMult.multiple.toFixed(1) + "× value");
-        logMsg("dim", "GLM-5.3-Flash at $" + glmFlash.input + "/M input vs GPT-4o at $" + MODELS.find(m => m.entity === "OpenAI:GPT-4o").input + "/M input");
-        steps.push({ title: "Cost Economics", body: '<span class="sys">costPerRequest = (input × unc + cached × cachedIn + output × out) / 1M</span>\ncost_per_request: <span class="ok">$' + cpr.toFixed(6) + '</span>\nmonthly_sim: <span class="ok">$' + subMult.simulatedMonthly.toFixed(2) + '</span>\nsub_price: $' + subMult.monthlyPrice + '/mo\neffective_multiple: <span class="ok">' + subMult.multiple.toFixed(1) + '×</span>', done: true });
-
-        // ── Step 8: Fresh routing ──
-        stepIdx = 7; sep();
-        logMsg("info", "<strong>STEP 8 — Fresh Agent Decision (live data)</strong>");
-        const freshPrompt = routingPrompt(extraction.capacity_requests_5h, "live SerpApi discovery + official source extraction");
-        logMsg("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-        logMsg("dim", "model: mimo-v2.5 | routing with LIVE market fact");
-        logMsg("dim", "capacity: " + extraction.capacity_requests_5h + " req/5h (was " + BASELINE_CAPACITY + ")");
-        const freshLLM = await callLLM(env.OPENCODE_API_KEY, freshPrompt);
-        logMsg("res", "200 OK (" + freshLLM.latencyMs + "ms)");
-        let freshDecision;
-        try { freshDecision = JSON.parse(freshLLM.response.match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch { freshDecision = { decision: "PARSE_ERROR", reason: freshLLM.response }; }
-        logMsg("dim", "raw: " + freshLLM.response.slice(0, 300));
-        logMsg("ok", "parsed: " + JSON.stringify(freshDecision));
-        const freshValid = freshDecision.decision === (extraction.capacity_requests_5h >= REQUIRED_REQUESTS ? "USE_OPENCODE_GO" : "BUY_FALLBACK");
-        logMsg(freshValid ? "ok" : "err", "check: " + REQUIRED_REQUESTS + " <= " + extraction.capacity_requests_5h + " = " + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + " → " + (freshValid ? "CONFIRMED" : "REJECTED"));
-        steps.push({ title: "Fresh Agent Decision", body: '<span class="sys">MiMo v2.5 (' + freshLLM.latencyMs + 'ms):</span>\n<span class="' + (freshDecision.decision === "USE_OPENCODE_GO" ? "ok" : "err") + '">Decision: ' + freshDecision.decision + '</span>\nReason: ' + (freshDecision.reason || "—") + '\n<span class="sys">Check: ' + REQUIRED_REQUESTS + ' <= ' + extraction.capacity_requests_5h + ' = ' + (REQUIRED_REQUESTS <= extraction.capacity_requests_5h) + ' → ' + (freshValid ? '<span class="ok">CONFIRMED</span>' : '<span class="err">REJECTED</span>') + '</span>', done: true });
-
-        // ── Step 9: Verify + Supersession ──
-        stepIdx = 8; sep();
-        logMsg("info", "<strong>STEP 9 — Verification + Fact Supersession</strong>");
-        const routeChanged = baselineDecision.decision !== freshDecision.decision;
-        logMsg("info", "baseline: " + baselineDecision.decision);
-        logMsg("info", "live:     " + freshDecision.decision);
-        logMsg(routeChanged ? "ok" : "warn", routeChanged ? "ROUTE CHANGED" : "ROUTE UNCHANGED");
-        logMsg("dim", "────────────────────────────────────────");
-        logMsg("info", "Fact Supersession:");
-        logMsg("dim", "  old: GLM-5.3-Flash capacity = " + BASELINE_CAPACITY + " req/5h (valid_to: now)");
-        logMsg("ok", "  new: GLM-5.3-Flash capacity = " + extraction.capacity_requests_5h + " req/5h (valid_from: now)");
-        logMsg("dim", "  bitemporal: valid_from/valid_to tracked. Old fact superseded, never overwritten.");
-        steps.push({ title: "Verification + Supersession", body: '<span class="sys">Baseline: ' + baselineDecision.decision + '</span>\n<span class="sys">Live:     ' + freshDecision.decision + '</span>\n\n<span class="' + (routeChanged ? "ok" : "err") + '">' + (routeChanged ? "ROUTE CHANGED" : "ROUTE UNCHANGED") + '</span>\n\n<span class="sys">Fact Supersession:</span>\n  old: capacity = ' + BASELINE_CAPACITY + ' (valid_to: now)\n  <span class="ok">new: capacity = ' + extraction.capacity_requests_5h + ' (valid_from: now)</span>\n  bitemporal: old fact superseded, never overwritten', done: true });
-
-        // ── Agent Payload ──
-        stepIdx = -1; sep(-1);
-        logMsg("info", "<strong>PAYLOAD — Full Agent Market Data</strong>", -1);
-        logMsg("dim", MODELS.length + " models × verified pricing × cost economics", -1);
-        logMsg("ok", "payload ready in Payload tab", -1);
-
-        // ── Done ──
-        var headline = routeChanged ? "ROUTE CHANGED" : "Route Unchanged";
-        var detail = "Same workload (" + REQUIRED_REQUESTS + " requests/" + WINDOW_HOURS + "h). Same model (GLM-5.3-Flash). Same agent (MiMo v2.5). " + (routeChanged ? "Fresh market state changed the decision." : "Market state was already sufficient.");
-
-        return new Response(JSON.stringify({
-          steps, logs,
-          final: { headline, detail },
-          evidence: {
-            baseline: { capacity_5h: BASELINE_CAPACITY, required: REQUIRED_REQUESTS, sufficient: BASELINE_CAPACITY >= REQUIRED_REQUESTS },
-            baseline_agent: { decision: baselineDecision.decision, reason: baselineDecision.reason, model: baselineLLM.model, latencyMs: baselineLLM.latencyMs },
-            serpapi: { searchId: serpResult.searchId, status: serpResult.status, resultCount: serpResult.resultCount, officialResult: serpResult.officialResult?.link, latencyMs: serpResult.latencyMs },
-            source: { url: source.url, status: source.status, contentHash: source.contentHash, latencyMs: source.latencyMs },
-            extraction: { ...extraction, model: extLLM.model, latencyMs: extLLM.latencyMs },
-            validation: { accepted: validationAccepted, checks: allChecks.length },
-            economics: { costPerRequest: cpr, simulatedMonthly: subMult.simulatedMonthly, effectiveMultiple: subMult.multiple },
-            live_agent: { decision: freshDecision.decision, reason: freshDecision.reason, model: freshLLM.model, latencyMs: freshLLM.latencyMs },
-            verification: { baselineDecision: baselineDecision.decision, liveDecision: freshDecision.decision, routeChanged }
-          },
-          run_id: "run-" + Date.now()
-        }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
-
-      } catch (e) {
-        return new Response(JSON.stringify({ steps, logs, error: e.message }), { headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } });
-      }
-    }
 
     if (url.pathname === "/api/payload") {
       try {
@@ -844,9 +605,11 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
 
             // Run stale
             sep();
-            log("info", "<strong>Agent WITHOUT LiveLLM (stale data)</strong>");
+            log("info", "<strong>Decision WITHOUT LiveLLM</strong>");
+            log("dim", "Agent receives stale price list as text prompt");
             log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-            log("dim", "model: mimo-v2.5 | sees only PAYG prices from OpenRouter");
+            log("dim", "prompt: Z.ai $0.075/M, DeepSeek $0.14/M, Groq $0.075/M");
+            log("dim", "prompt missing: subscriptions, MiMo V2.5, promos, free tiers");
             const staleLLM = await callLLM(env.OPENCODE_API_KEY, codingPersona + "\n\n" + staleMarket);
             log("res", "200 OK (" + staleLLM.latencyMs + "ms)");
             const staleRoute = staleLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
@@ -857,9 +620,10 @@ CHEAPEST model wins. Return: ROUTE: <provider>:<model> | COST: $<mo> | REASON: <
 
             // Run live
             sep();
-            log("info", "<strong>Agent WITH LiveLLM (live verified data)</strong>");
+            log("info", "<strong>Decision WITH LiveLLM</strong>");
+            log("dim", "Agent receives verified payload (23 models, subs, promos)");
             log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-            log("dim", "model: mimo-v2.5 | sees 23 models + subscriptions + promos");
+            log("dim", "prompt: MiMo $0.14/M + $10 sub, GLM Flash 2× promo, Groq free");
             const liveLLM = await callLLM(env.OPENCODE_API_KEY, codingPersona + "\n\n" + liveMarket);
             log("res", "200 OK (" + liveLLM.latencyMs + "ms)");
             const liveRoute = liveLLM.response.match(/ROUTE:\s*(.+)/i)?.[1]?.trim().replace(/\*\*/g, "") || "unknown";
