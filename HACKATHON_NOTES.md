@@ -1,174 +1,141 @@
-# LiveLLM — Hackathon Demo Engineering Notes
-
-Refined details for future hackathon submissions.
+# LiveLLM — Presentation Script (2 minutes)
 
 ---
 
-## What was built
+## The Problem (0:00 — 0:20)
 
-A Cloudflare Worker that runs a full agent routing story with live SerpApi integration, streaming activity logs, and deterministic cost math.
+> "Every agent makes economic decisions — which model, which provider, whether to buy capacity. But the market data they reason over is stale.
+>
+> Cursor agents burn budget on Claude Sonnet when DeepSeek does the same job at 1/20th the price. Routers pick GPT-4o when a subscription model would be 10x cheaper. Batch classifiers pay for API calls when free tiers cover their workload.
+>
+> The math is correct. The market state is wrong."
 
-**Live:** https://livellm.tradesprior.workers.dev
-**Repo:** https://github.com/prx0r/livellm
-
----
-
-## Key engineering decisions
-
-### 1. SSE streaming (not batch JSON)
-
-The demo streams activity logs in real-time via Server-Sent Events. Each API call, response, and cost calculation appears as it happens — not after a 30-second loading screen.
-
-**Backend pattern:**
-```js
-const stream = new ReadableStream({
-  async start(controller) {
-    function send(obj) { controller.enqueue(encoder.encode("data: " + JSON.stringify(obj) + "\n\n")); }
-    function log(cls, msg) { send({ type: "log", cls, msg }); }
-
-    // Each step sends logs as it runs
-    log("req", "POST https://opencode.ai/zen/go/v1/chat/completions");
-    const result = await callLLM(apiKey, prompt);
-    log("res", "200 OK (" + result.latencyMs + "ms)");
-    log("ok", "ROUTE: " + route);
-
-    send({ type: "done", ...finalData });
-    controller.close();
-  }
-});
-return new Response(stream, { headers: { "Content-Type": "text/event-stream" } });
-```
-
-**Client pattern:**
-```js
-var reader = r.body.getReader();
-var dec = new TextDecoder();
-var buf = '';
-while (true) {
-  var chunk = await reader.read();
-  if (chunk.done) break;
-  buf += dec.decode(chunk.value, { stream: true });  // ← chunk.value, not chunk!
-  var lines = buf.split('\n');
-  buf = lines.pop();
-  for (var line of lines) {
-    if (line.startsWith('data: ')) {
-      var evt = JSON.parse(line.slice(6));
-      if (evt.type === 'log') renderLog(evt);
-      if (evt.type === 'done') renderResult(evt);
-    }
-  }
-}
-```
-
-**Gotcha:** `decoder.decode(chunk.value)` not `decoder.decode(chunk)`. The `chunk` is `{value: Uint8Array, done: bool}`, not the raw bytes.
-
-### 2. The demo is the story, not the pipeline
-
-Two tabs:
-- **Story** (default) — the 2.5-minute judge narrative: problem → stale → live → savings
-- **Pipeline** — the 9-step infrastructure view for judges who dig deeper
-
-The hero button triggers the story, not the pipeline. The pipeline is supplementary.
-
-### 3. Cost math is pre-computed, not LLM-derived
-
-The LLM makes routing decisions (which model to pick), but the cost math is computed deterministically in the backend:
-
-```js
-costPerRequest = (input * 830 + cached * 71500 + output * 295) / 1_000_000
-effectiveMonthly = costPerRequest * requests / subscriptionPrice
-```
-
-The LLM doesn't do the math — code does. The LLM only picks the route.
-
-### 4. Stale data is realistic, not strawman
-
-The stale market data shows what an agent actually sees from OpenRouter/LiteLLM: PAYG prices only, no subscription info, no promotion multipliers. This is a realistic blind spot, not a rigged comparison.
-
-### 5. Full provenance chain
-
-Every fact traces to:
-- `search_id` — SerpApi search identifier (reproducible via Search Archive)
-- `canonical_hash` — SHA-256 of normalized search params (deterministic)
-- `content_hash` — SHA-256 of source HTML
-- `observed_at` — exact ISO timestamp
+**Show:** Hero text on landing page. The "Without LiveLLM" box: $0.075/M looks cheapest, but it's the wrong model with the wrong context window.
 
 ---
 
-## Video storyboard (2.5 minutes)
+## The Thesis (0:20 — 0:35)
 
-| Time | Action | Screen shows |
-|------|--------|-------------|
-| 0:00 | Page loads | Hero: "The agent's math was correct. Its market state was wrong." |
-| 0:05 | Click **Run Demo** | Story tab activates, logs start streaming |
-| 0:10 | Logs stream | "23 models loaded from fact ledger" |
-| 0:15 | Stale agent call | "→ POST opencode.ai/zen/go/v1/chat/completions" |
-| 0:22 | Stale result | "ROUTE: Z.ai:GLM-5.3-Flash COST: $39.22/mo" |
-| 0:25 | Live agent call | "→ POST opencode.ai/zen/go/v1/chat/completions" |
-| 0:32 | Live result | "ROUTE: OpenCode:MiMo V2.5 COST: $6.00/mo" |
-| 0:35 | Provenance | "search_id: 6a98f... content_hash: sha256:13847..." |
-| 0:40 | Cost math | "Z.ai: $0.001209/req × 7200 = $8.70/mo" |
-| 0:45 | Verdict | "MiMo V2.5 via OpenCode Go is cheapest — 31% cheaper" |
-| 0:50 | Click **Payload** tab | "Generate Payload" button |
-| 0:55 | Click Generate | Real SerpApi call, markdown streams in |
-| 1:05 | Payload visible | 23 models with full pricing table |
-| 1:10 | Click **Pipeline** tab | 9-step infrastructure view |
-| 1:15 | Point at logs | "SerpApi search_id, SHA-256 content hash, 6-step validation" |
-| 1:30 | Click **Agents** tab | "Run Agent Comparison" |
-| 1:35 | Agents stream | 3 agents × 2 conditions = 6 LLM calls streaming |
-| 2:00 | Results appear | Side-by-side stale vs live decisions |
-| 2:15 | Close | "Agents already pay for models. LiveLLM makes the economics they reason over live." |
+> "LiveLLM fixes this. SerpApi discovers changing prices in real time — not from training data, not from cached tables, from the live web. We verify against official sources. The agent gets a compact, provenance-backed payload.
+>
+> Same agent, same workload — different decision."
 
-**What to say:**
-- "This agent's math was correct. Its market state was wrong."
+**Show:** The 5-step pipeline on the landing page. SerpApi → Official Source → AI Extraction → Validation → Fact Ledger.
+
+---
+
+## The Demo (0:35 — 1:10)
+
+> "Watch."
+
+Click **Try the Live Demo** → lands on `/demo` → click **Run Demo**.
+
+Logs stream live:
+- "23 models loaded from fact ledger"
+- Agent receives stale price list: Z.ai $0.075/M, DeepSeek $0.14/M
+- Agent picks Z.ai at $39/mo
+- Agent receives LiveLLM payload: MiMo $0.14/M + $10 sub
+- Agent picks MiMo at $6/mo
+- search_id, content_hash, cost math streaming
+
+> "The agent picked Z.ai from stale data. With LiveLLM, it discovers MiMo via subscription — 85% cheaper. Same model, same workload."
+
+---
+
+## The Evidence (1:10 — 1:25)
+
+Click **Evidence** tab.
+
+> "Every fact traces to a SerpApi search ID, a content hash, a source URL. Not vibes. Verifiable."
+
+**Show:** search_id, content_hash (SHA-256), stale_route, live_route, cost breakdown.
+
+---
+
+## The Agents (1:25 — 1:40)
+
+Click **Demo 2** tab → **Run Agent Comparison**.
+
+> "Three agents, same payload. Coding agent, research agent, batch classifier. Each picks the optimal route for its workload."
+
+**Show:** Side-by-side stale vs live decisions for each agent persona.
+
+---
+
+## The Moat (1:40 — 2:00)
+
+> "The moat: verified economic intelligence compounds. Every search, every verification, every fact builds a dataset that gets more valuable over time.
+>
+> We track 23 models across 9 providers. 368 active facts. Temporal supersession — old facts are never overwritten, they're superseded with timestamps.
+>
+> This dataset is sellable. Model routers, agent frameworks, inference gateways — they all need verified, current economics. LiveLLM is the source of truth.
+>
+> SerpApi discovers. We verify. Agents decide."
+
+---
+
+## Tab Order (matches presentation flow)
+
+| Tab | When | What judges see |
+|-----|------|----------------|
+| **Demo** | 0:35 | Streaming logs, verdict |
+| **Evidence** | 1:10 | Provenance chain |
+| **Demo 2** | 1:25 | Agents side-by-side |
+| **Payload** | 1:40 | 23-model market data |
+
+---
+
+## Key Lines
+
+- "The agent's math was correct. Its market state was wrong."
 - "Same model, same workload, same agent. Only the market data changed."
 - "SerpApi discovers the change. LiveLLM verifies it. The agent reroutes."
 - "23 models, 9 providers, verified from official pricing pages."
 - "Content-addressed provenance — every fact traces to a search ID."
+- "Agents already pay for models. LiveLLM makes the economics they reason over live."
 
 ---
 
-## Tab behavior
+## What Judges Should Feel
 
-| Tab | What it shows | When |
-|-----|--------------|------|
-| Story | Streaming logs + verdict | Auto on "Run Demo" |
-| Pipeline | 9-step infrastructure logs | Auto on "Run Demo" |
-| Agents | 3 agents × 2 conditions | Click "Run Agent Comparison" |
-| Evidence | search_id, content_hash, routes, costs | Auto-populates from story |
-| Payload | 23-model markdown table | Click "Generate Payload" |
+1. **This is a real problem** — stale market data costs agents real money
+2. **SerpApi is causal** — remove it and the product becomes a stale table
+3. **The demo has a real behavioral consequence** — the same agent changes its route
+4. **It's infrastructure-shaped** — HTTP API, MCP, evidence history, temporal facts
+5. **The moat is real** — verified intelligence compounds and is sellable
 
 ---
 
-## What went wrong (and how we fixed it)
+## If Asked About Market Size
 
-1. **SSE streaming broken** — `decoder.decode(chunk)` should be `decoder.decode(chunk.value)`. Cloudflare Workers SSE works fine, the client had a bug.
-
-2. **Batch JSON felt dead** — Loading screen for 30 seconds. Fixed by switching to SSE.
-
-3. **"Click Run Demo" prompt was patronizing** — Removed. The hero button is self-explanatory for a technical audience.
-
-4. **LLM regex parsing** — LLMs return `ROUTE: X | COST: Y | REASON: Z` on one line. Need `match(/ROUTE:\s*(.+?)(?:\s*\|)/)` not `match(/ROUTE:\s*(.+)/)`.
-
-5. **Duplicate function bodies** — Old code left after edits caused syntax errors. Always verify with `node --check` before deploying.
-
-6. **GitHub secret scanning** — API tokens in HANDOVER.md blocked push. Redact before committing.
+- **Agent routing:** Every model router needs current pricing (OpenRouter, LiteLLM, Portkey)
+- **Agent frameworks:** CrewAI, AutoGen, LangChain all route to models
+- **Inference gateways:** Together, Anyscale, Fireworks need cost optimization
+- **Enterprise procurement:** Teams spending $10K+/mo on API calls need cost visibility
+- **x402 economy:** Machine-to-machine payments need machine-readable pricing
 
 ---
 
-## Reusable patterns for future hackathons
+## If Asked About Competition
 
-### The "problem → stale → live → savings" narrative
-Works for any system that improves decisions with fresh data. Replace "model routing" with your domain.
+- **CloudPrice:** Tracks compute prices, not LLM economics
+- **AgentDeals:** Tracks free tiers, not subscription amortization
+- **LiteLLM:** Routes models, doesn't verify prices
+- **OpenRouter:** Shows prices, doesn't detect changes or verify sources
 
-### SSE streaming for demos
-Makes any API call feel alive. Show the work happening, not a spinner.
+LiveLLM is the only system that discovers changes via search, verifies against official sources, and serves provenance-backed facts with temporal tracking.
 
-### Pre-computed math + LLM decisions
-Let code do the deterministic work (cost calculation, validation). Let LLM do the judgment work (routing, reasoning). Don't mix them.
+---
 
-### Content-addressed provenance
-SHA-256 everything. Search IDs, source hashes, request hashes. Judges love auditability.
+## Recording Checklist
 
-### Tab architecture
-Story (narrative) | Pipeline (infrastructure) | Payload (product surface). Three levels of depth for three levels of judge interest.
+- [ ] Landing page loads at `/`
+- [ ] "Try the Live Demo" goes to `/demo`
+- [ ] Demo tab: Run Demo → logs stream → verdict appears
+- [ ] Evidence tab: auto-populates from demo
+- [ ] Demo 2 tab: Run Agent Comparison → agents stream → results appear
+- [ ] Payload tab: Generate Payload → SerpApi call → markdown streams
+- [ ] No loading spinners stuck
+- [ ] No "click run demo first" text
+- [ ] All timestamps correct
+- [ ] No stale references to Pipeline, Story, or API tabs
