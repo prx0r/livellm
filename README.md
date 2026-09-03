@@ -80,7 +80,7 @@ npm run mcp
 ## Tests
 
 ```bash
-npm test          # 77 tests, zero credits (replay mode)
+npm test          # 76 tests, zero credits (replay mode)
 npm run build     # TypeScript compilation
 ```
 
